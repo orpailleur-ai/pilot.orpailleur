@@ -1,0 +1,63 @@
+name: Build and Push Docker Image
+
+on:
+  push:
+    branches:
+      - prod
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+env:
+  DOCKER_IMAGE: ${{ secrets.DOCKER_USERNAME }}/orpailleur-pilot
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        run: |
+          BRANCH=${GITHUB_REF#refs/heads/}
+          TAG=${GITHUB_REF#refs/tags/}
+
+          if [[ "$GITHUB_REF" == refs/tags/* ]]; then
+            echo "VERSION=${TAG}" >> $GITHUB_OUTPUT
+            echo "ENVIRONMENT=prod" >> $GITHUB_OUTPUT
+            echo "IMAGE_TAG=${TAG}" >> $GITHUB_OUTPUT
+          elif [[ "$BRANCH" == "prod" ]]; then
+            LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v1.0.0")
+            echo "VERSION=${LATEST_TAG}" >> $GITHUB_OUTPUT
+            echo "ENVIRONMENT=prod" >> $GITHUB_OUTPUT
+            echo "IMAGE_TAG=prod-${LATEST_TAG}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          no-cache: true
+          pull: true
+          tags: |
+            ${{ env.DOCKER_IMAGE }}:${{ steps.meta.outputs.IMAGE_TAG }}
+            ${{ env.DOCKER_IMAGE }}:${{ steps.meta.outputs.ENVIRONMENT }}-latest
+
+      - name: Image digest
+        run: echo "Image pushed - ${{ steps.meta.outputs.IMAGE_TAG }} and ${{ steps.meta.outputs.ENVIRONMENT }}-latest"

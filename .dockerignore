@@ -1,0 +1,12 @@
+node_modules
+.next
+out
+build
+.env
+.env.*
+.git
+.gitignore
+*.md
+coverage
+*.tsbuildinfo
+next-env.d.ts
