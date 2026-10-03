@@ -2,6 +2,10 @@ import {
   LayoutDashboard,
   Building2,
   ClipboardList,
+  Users,
+  Shield,
+  CreditCard,
+  FileText,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -31,7 +35,12 @@ export const APPS: AppDefinition[] = [
     icon: LayoutDashboard,
     color: 'var(--color-accent)',
     pages: [
+      { href: '/dashboard', labelKey: 'dashboard', icon: LayoutDashboard },
       { href: '/tenants', labelKey: 'tenants', icon: Building2 },
+      { href: '/users', labelKey: 'users', icon: Users },
+      { href: '/roles', labelKey: 'roles', icon: Shield },
+      { href: '/plans', labelKey: 'plans', icon: CreditCard },
+      { href: '/subscriptions', labelKey: 'subscriptions', icon: FileText },
     ],
   },
   {

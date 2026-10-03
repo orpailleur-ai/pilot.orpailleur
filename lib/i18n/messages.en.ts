@@ -36,7 +36,13 @@ export const en = {
   // Pages
   home: 'Home',
   tenants: 'Tenants',
+  users: 'Users',
+  roles: 'Roles',
+  plans: 'Plans',
+  subscriptions: 'Subscriptions',
+  invoices: 'Invoices',
   audit: 'Audit Log',
+  dashboard: 'Dashboard',
 
   // Theme
   light: 'Light',
@@ -44,6 +50,7 @@ export const en = {
   system: 'System',
   theme: 'Theme',
   appearance: 'Appearance',
+  settings: 'Settings',
 
   // Tenants
   new_tenant: 'New tenant',
@@ -52,9 +59,28 @@ export const en = {
   tenant_created: 'Tenant created',
   tenant_updated: 'Tenant updated',
   tenant_deleted: 'Tenant deleted',
+  tenant_deactivated: 'Tenant deactivated',
+  tenant_deactivate_confirm: 'Deactivate this tenant?',
   no_tenants: 'No tenants',
   no_tenants_hint: 'Create a tenant to get started.',
   no_results: 'No results',
+
+  // Sites
+  site_create: 'New site',
+  site_edit: 'Edit site',
+  site_updated: 'Site updated',
+  site_deleted: 'Site deleted',
+  no_sites: 'No sites',
+  no_sites_hint: 'Add a first site to this tenant.',
+
+  // Users
+  user_create: 'New user',
+  user_created: 'User created',
+  no_users: 'No users',
+  no_users_hint: 'Add a first user to this tenant.',
+
+  // Subscription (placeholder)
+  subscription: 'Subscription',
 
   // Profile
   profile: 'Profile',
@@ -69,6 +95,7 @@ export const en = {
   all: 'All',
   saving: 'Saving…',
   deactivate: 'Deactivate',
+  activate: 'Activate',
 
   // Audit
   action: 'Action',

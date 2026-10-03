@@ -36,7 +36,13 @@ export const fr = {
   // Pages
   home: 'Accueil',
   tenants: 'Tenants',
-  audit: 'Journal d\'audit',
+  users: 'Utilisateurs',
+  roles: 'Rôles',
+  plans: 'Plans',
+  subscriptions: 'Abonnements',
+  invoices: 'Factures',
+  audit: "Journal d'audit",
+  dashboard: 'Tableau de bord',
 
   // Theme
   light: 'Clair',
@@ -44,6 +50,7 @@ export const fr = {
   system: 'Système',
   theme: 'Thème',
   appearance: 'Apparence',
+  settings: 'Réglages',
 
   // Tenants
   new_tenant: 'Nouveau tenant',
@@ -52,9 +59,28 @@ export const fr = {
   tenant_created: 'Tenant créé',
   tenant_updated: 'Tenant mis à jour',
   tenant_deleted: 'Tenant supprimé',
+  tenant_deactivated: 'Tenant désactivé',
+  tenant_deactivate_confirm: 'Désactiver ce tenant ?',
   no_tenants: 'Aucun tenant',
   no_tenants_hint: 'Créez un tenant pour commencer.',
   no_results: 'Aucun résultat',
+
+  // Sites
+  site_create: 'Nouveau site',
+  site_edit: 'Modifier le site',
+  site_updated: 'Site mis à jour',
+  site_deleted: 'Site supprimé',
+  no_sites: 'Aucun site',
+  no_sites_hint: 'Ajoutez un premier site à ce tenant.',
+
+  // Users
+  user_create: 'Nouvel utilisateur',
+  user_created: 'Utilisateur créé',
+  no_users: 'Aucun utilisateur',
+  no_users_hint: 'Ajoutez un premier utilisateur à ce tenant.',
+
+  // Subscription (placeholder)
+  subscription: 'Abonnement',
 
   // Profile
   profile: 'Profil',
@@ -69,6 +95,7 @@ export const fr = {
   all: 'Tous',
   saving: 'Enregistrement…',
   deactivate: 'Désactiver',
+  activate: 'Activer',
 
   // Audit
   action: 'Action',

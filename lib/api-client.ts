@@ -84,6 +84,37 @@ export const auth = {
 
 // ── Admin Tenants ─────────────────────────────────────────────────────────────
 
+export interface TenantStats {
+  tenant: Tenant
+  counts: {
+    sites: number
+    sites_actifs: number
+    users: number
+    users_actifs: number
+    postes: number
+  }
+  usage: {
+    sites_pct: number
+    users_pct: number
+  }
+  recent_activity: AuditLog[]
+}
+
+export interface DashboardStats {
+  tenants_total: number
+  tenants_actifs: number
+  tenants_par_plan: Record<string, number>
+  users_total: number
+  sites_total: number
+  mrr_estime_cents: number
+  nouveaux_tenants_30j: number
+  recent_signups: Tenant[]
+  recent_audit: AuditLog[]
+  alerts: {
+    tenant_inactive: number
+  }
+}
+
 export const adminTenants = {
   list: () => request<Tenant[]>("GET", "/admin/tenants"),
   get: (id: string) => request<Tenant>("GET", `/admin/tenants/${id}`),
@@ -93,7 +124,107 @@ export const adminTenants = {
     request<Tenant>("PATCH", `/admin/tenants/${id}`, dto),
   delete: (id: string) =>
     request<void>("DELETE", `/admin/tenants/${id}`),
-};
+  getStats: (id: string) =>
+    request<TenantStats>(`GET`, `/admin/tenants/${id}/stats`),
+  getDashboardStats: () =>
+    request<DashboardStats>("GET", "/admin/dashboard/stats"),
+}
+
+// ── Sites ─────────────────────────────────────────────────────────────────────
+
+export interface Site {
+  id: string
+  tenant_id: string
+  nom: string
+  adresse: string | null
+  ville: string | null
+  code_postal: string | null
+  telephone: string | null
+  jour_ouverture: number
+  jour_fermeture: number
+  actif: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export interface CreateSiteDto {
+  nom: string
+  adresse?: string
+  ville?: string
+  code_postal?: string
+  telephone?: string
+  jour_ouverture?: number
+  jour_fermeture?: number
+}
+
+export const sites = {
+  list: (tenantId: string) =>
+    request<Site[]>("GET", `/admin/tenants/${tenantId}/sites`),
+  get: (id: string) => request<Site>("GET", `/sites/${id}`),
+  create: (tenantId: string, dto: CreateSiteDto) =>
+    request<Site>("POST", `/admin/tenants/${tenantId}/sites`, dto),
+  update: (id: string, dto: Partial<CreateSiteDto>) =>
+    request<Site>("PATCH", `/sites/${id}`, dto),
+  delete: (id: string) =>
+    request<void>("DELETE", `/sites/${id}`),
+}
+
+// ── Users (admin) ─────────────────────────────────────────────────────────────
+
+export interface AdminUser {
+  id: string
+  email: string
+  prenom: string | null
+  nom: string | null
+  avatar_url: string | null
+  actif: boolean
+  createdAt: string
+  updatedAt: string
+  tenants: Array<{
+    tenant_id: string
+    role_id: string
+    role_code: string
+    role_label: string
+  }>
+  sites: string[]
+}
+
+export interface CreateUserDto {
+  email: string
+  password: string
+  prenom?: string
+  nom?: string
+  actif?: boolean
+}
+
+export const adminUsers = {
+  list: () => request<AdminUser[]>("GET", "/admin/users"),
+  get: (id: string) => request<AdminUser>(`GET`, `/admin/users/${id}`),
+  create: (dto: CreateUserDto) =>
+    request<AdminUser>("POST", "/admin/users", dto),
+  update: (id: string, dto: Partial<CreateUserDto>) =>
+    request<AdminUser>("PATCH", `/admin/users/${id}`, dto),
+  delete: (id: string) =>
+    request<void>("DELETE", `/admin/users/${id}`),
+}
+
+// ── Roles ─────────────────────────────────────────────────────────────────────
+
+export interface Role {
+  id: string
+  code: string
+  label: string
+  is_system: boolean
+  createdAt: string
+  updatedAt: string
+  permissions?: string[]
+}
+
+export const roles = {
+  list: () => request<Role[]>("GET", "/admin/roles"),
+  get: (id: string) => request<Role>(`GET`, `/admin/roles/${id}`),
+  getPermissions: () => request<string[]>("GET", "/admin/roles/permissions"),
+}
 
 // ── Audit Logs ────────────────────────────────────────────────────────────────
 
