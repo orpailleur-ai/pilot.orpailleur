@@ -1,0 +1,27 @@
+/* Ordre des couches CSS — à importer EN PREMIER, avant toute autre feuille.
+ *
+ * Astryx range toutes les règles de ses composants dans `@layer astryx-base`
+ * et son reset dans `@layer reset`. Tailwind, lui, écrit son preflight et ses
+ * utilitaires dans ses propres couches (base / components / utilities).
+ *
+ * L'ordre des couches se fixe sur la PREMIÈRE déclaration `@layer` rencontrée
+ * dans le document, et l'ordre d'import des feuilles compte donc. Sans ce
+ * fichier, l'import de `astryx.css` avant `theme.css` faisait registraire
+ * `astryx-base` en premier : l'ordre retenu devenait
+ *
+ *     astryx-base, reset, astryx-theme
+ *
+ * alors qu'Astryx attend
+ *
+ *     reset, astryx-base, astryx-theme
+ *
+ * Déclarer la liste complète ici verrouille l'ordre quelles que soient les
+ * importations qui suivent, et dans n'importe quel ordre Next.js les
+ * assemblera.
+ *
+ * Les couches sont ordonnées de la plus faible à la plus forte : `reset` est
+ * donc la plus faible (typographie de base, bornée par les classes), et
+ * `utilities` la plus forte.
+ */
+
+@layer reset, astryx-base, astryx-theme, base, components, utilities;

@@ -1,26 +1,110 @@
-@import "tailwindcss";
+/* Les feuilles Astryx sont importées dans src/app/layout.tsx, pas ici :
+   les inliner par @import faisait passer 171 Ko de CSS par la chaîne
+   PostCSS/Tailwind et le build se faisait tuer par le OOM. Next.js les
+   compile en bundle séparé, ce qui est le bon comportement de toute façon.
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+   Ce fichier ne contient que : la couche Tailwind, la couleur de bordure par
+   défaut, et les jetons d'AMORÇAGE — ceux qui valent avant le premier rendu
+   client. La palette réelle est injectée par le ThemeProvider (voir
+   src/lib/theme-tokens.ts) et écrase tout ce qui suit.
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+   Ne pas y déclarer de @layer : l'ordre des couches est figé par
+   src/app/layers.css, importé en premier. */
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Couleur de bordure par défaut.
+ *
+ * Le preflight de Tailwind est désactivé (voir tailwind.config.ts) et le reset
+ * d'Astryx règle `border: 0 solid`, ce qui laisse la couleur à `currentColor`.
+ * Une classe de largeur seule — `border-b`, `border-e` — peindrait alors la
+ * bordure avec la couleur du texte, très éblouissant en mode sombre.
+ *
+ * On la rétablit donc ici. Le bloc est dans `reset` et NON hors couche, ni
+ * dans `base` : `reset` est la couche la plus faible, donc les composants
+ * Astryx (dans `astryx-base`) gardent la priorité sur leurs propres bordures,
+ * et les utilitaires Tailwind aussi. Seules les classes sans couleur
+ * explicite — le cas visé — reçoivent cette valeur. */
+@layer reset {
+  *,
+  ::before,
+  ::after {
+    border-color: var(--color-border);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* ============================================================
+   Brand CSS tokens — palette injectée par ThemeProvider
+   ============================================================ */
+:root {
+  /* Brand primary (or par défaut, avant le premier rendu client).
+     Seul `500` est canonique : le ThemeProvider dérive le reste de l'échelle
+     à partir de la couleur choisie par le tenant et écrase ces valeurs. */
+  --color-primary-50: #fef9e7;
+  --color-primary-100: #fdf0c3;
+  --color-primary-200: #fbe18a;
+  --color-primary-300: #f8cf4a;
+  --color-primary-400: #f5c018;
+  --color-primary-500: #c9a84c;
+  --color-primary-600: #a8872f;
+  --color-primary-700: #8a6e26;
+  --color-primary-800: #6c561e;
+  --color-primary-900: #4f3e16;
+
+  /* App logo */
+  --app-logo-url: none;
+}
+
+/* ============================================================
+   Jetons applicatifs
+   ------------------------------------------------------------
+   IMPORTANT — ne pas réécrire les jetons neutres d'Astryx.
+
+   Astryx pilote ses propres composants avec sa rampe de neutres
+   (--color-background-surface, --color-background-muted,
+   --color-border, --color-text-primary…). Les surcharger cassait
+   la lisibilité de ses composants : la puce sélectionnée d'un
+   SegmentedControl utilise --color-background-surface, et l'égaler
+   à la couleur de carte la faisait disparaître dans le fond.
+
+   On se contente donc d'ALIASER nos noms vers ceux d'Astryx, et de
+   ne surcharger que la famille « accent », qui est la seule chose
+   que le tenant choisit.
+   ============================================================ */
+/*
+   `color-scheme` n'est plus posé ici. C'est désormais le composant <Theme>
+   d'Astryx qui le publie sur son conteneur et synchronise `data-theme` sur
+   <html> ; nos sélecteurs `html:root.dark` se battaient avec lui et le
+   daylight en dépendait. Voir components/providers/theme-provider.tsx.
+*/
+
+html:root {
+  /* Nos alias, pointant sur la rampe d'Astryx (résolue par light-dark()).
+     Ce sont des ALIAS, pas des valeurs : on ne duplique aucune couleur,
+     donc le mode sombre est correct par construction. */
+  --color-background: var(--color-background-body);
+  --color-card: var(--color-background-surface);
+  --color-muted: var(--color-text-secondary);
+  --color-text: var(--color-text-primary);
+
+  --shadow-card: var(--shadow-low);
+  --shadow-popover: var(--shadow-high);
+
+  /* ── Accent de marque ──
+     Valeurs d'amorçage, avant le premier rendu client : le ThemeProvider les
+     remplace dès que le thème du tenant est chargé. L'or par défaut est
+     clair, donc le texte posé dessus est sombre. */
+  --color-accent: var(--color-primary-500);
+  --color-on-accent: #22190a;
+  --color-icon-accent: var(--color-primary-600);
+  --color-text-accent: var(--color-primary-700);
+
+  /* Les sémantiques ne sont PAS déclarées ici. Nos pages les nomment
+     `--color-danger` / `--color-success` / `--color-warning`, alors qu'Astryx
+     ne connaît que `--color-error` ; et les deux autres portent le même nom
+     qu'un jeton Astryx réel, donc un alias ici serait circulaire. Le
+     ThemeProvider écrit les six jetons (les deux vocabulaires) dès que le
+     thème est chargé — voir src/lib/theme-tokens.ts. */
 }
