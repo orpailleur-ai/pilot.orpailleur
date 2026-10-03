@@ -13,6 +13,8 @@ import { Spinner } from '@/components/ui/spinner'
 import {
   adminUsers,
   adminTenants,
+  roles,
+  apiClient,
   type AdminUser,
   type Role,
 } from '@/lib/api-client'
@@ -24,8 +26,7 @@ export default function TenantUsersPage() {
   const { t } = useI18n()
   const toast = useToast()
   const [tenantUsers, setTenantUsers] = useState<AdminUser[]>([])
-  const [allUsers, setAllUsers] = useState<AdminUser[]>([])
-  const [roles, setRoles] = useState<Role[]>([])
+  const [roleList, setRoleList] = useState<Role[]>([])
   const [loading, setLoading] = useState(true)
   const [fetchError, setFetchError] = useState<string | null>(null)
   const [showCreate, setShowCreate] = useState(false)
@@ -46,20 +47,12 @@ export default function TenantUsersPage() {
     setLoading(true)
     setFetchError(null)
     try {
-      const [users, tenantUsersData, rolesData] = await Promise.all([
-        adminUsers.list(),
-        adminTenants.get(tenantId).then(() =>
-          adminUsers.list().then((all) =>
-            all.filter((u) => u.tenants.some((t) => t.tenant_id === tenantId)),
-          ),
-        ),
-        adminUsers.list().then(() =>
-          import('@/lib/api-client').then((m) => m.roles.list()),
-        ),
+      const [users, rolesData] = await Promise.all([
+        adminTenants.getTenantUsers(tenantId),
+        roles.list(),
       ])
-      setAllUsers(users)
-      setTenantUsers(tenantUsersData)
-      setRoles(rolesData)
+      setTenantUsers(users)
+      setRoleList(rolesData)
     } catch (err) {
       setFetchError(err instanceof Error ? err.message : t('error'))
     } finally {
@@ -79,13 +72,11 @@ export default function TenantUsersPage() {
         nom: form.nom || undefined,
       })
       // Assign to tenant with default role
-      const defaultRole = roles.find((r) => r.code === 'user') ?? roles[0]
+      const defaultRole = roleList.find((r) => r.code === 'user') ?? roleList[0]
       if (defaultRole) {
-        await import('@/lib/api-client').then((m) =>
-          m.apiClient.post(`/admin/users/${newUser.id}/roles`, {
-            assignments: [{ tenant_id: tenantId, role_id: defaultRole.id }],
-          }),
-        )
+        await apiClient.post(`/admin/users/${newUser.id}/roles`, {
+          assignments: [{ tenant_id: tenantId, role_id: defaultRole.id }],
+        })
       }
       setShowCreate(false)
       setForm({ email: '', password: '', prenom: '', nom: '' })

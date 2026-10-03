@@ -8,6 +8,7 @@ import { TextInput } from '@astryxdesign/core'
 import { FieldGrid } from '@/components/ui/modal'
 import { Spinner } from '@/components/ui/spinner'
 import { InlineError } from '@/components/ui/inline-error'
+import { ConfirmDialog } from '@/components/composite/confirm-dialog'
 import { plans, type Plan } from '@/lib/api-client'
 
 function formatPrice(cents: number) {
@@ -24,6 +25,7 @@ export default function PlanDetailPage() {
   const [fetchError, setFetchError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [form, setForm] = useState({
     nom: '',
     description: '',
@@ -78,7 +80,6 @@ export default function PlanDetailPage() {
   }
 
   async function handleDelete() {
-    if (!confirm('Supprimer ce plan ?')) return
     setDeleting(true)
     try {
       await plans.delete(planId)
@@ -145,10 +146,21 @@ export default function PlanDetailPage() {
         </div>
 
         <div className="flex items-center justify-between">
-          <Button variant="destructive" label="Supprimer le plan" onClick={handleDelete} isLoading={deleting} />
+          <Button variant="destructive" label="Supprimer le plan" onClick={() => setShowDeleteConfirm(true)} />
           <Button variant="primary" label="Enregistrer" type="submit" isLoading={saving} />
         </div>
       </form>
+
+      <ConfirmDialog
+        isOpen={showDeleteConfirm}
+        onOpenChange={(open) => { if (!open) setShowDeleteConfirm(false) }}
+        title="Supprimer ce plan ?"
+        description="Cette action est irréversible. Tous les tenants utilisant ce plan devront être réassignés."
+        confirmLabel="Supprimer"
+        confirmVariant="destructive"
+        onConfirm={handleDelete}
+        isLoading={deleting}
+      />
     </div>
   )
 }

@@ -128,6 +128,8 @@ export const adminTenants = {
     request<TenantStats>(`GET`, `/admin/tenants/${id}/stats`),
   getDashboardStats: () =>
     request<DashboardStats>("GET", "/admin/dashboard/stats"),
+  getTenantUsers: (tenantId: string) =>
+    request<AdminUser[]>("GET", `/admin/tenants/${tenantId}/users`),
 }
 
 // ── Sites ─────────────────────────────────────────────────────────────────────
@@ -206,6 +208,8 @@ export const adminUsers = {
     request<AdminUser>("PATCH", `/admin/users/${id}`, dto),
   delete: (id: string) =>
     request<void>("DELETE", `/admin/users/${id}`),
+  getUserSites: (userId: string) =>
+    request<Site[]>("GET", `/admin/users/${userId}/sites/full`),
 }
 
 // ── Roles ─────────────────────────────────────────────────────────────────────

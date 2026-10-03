@@ -12,7 +12,6 @@ import { Spinner } from '@/components/ui/spinner'
 import {
   adminUsers,
   adminTenants,
-  sites as sitesApi,
   type AdminUser,
   type Tenant,
   type Site,
@@ -44,16 +43,14 @@ export default function UserSitesPage() {
     setLoading(true)
     setFetchError(null)
     try {
-      const [userData, tenantsData] = await Promise.all([
+      const [userData, tenantsData, userSites] = await Promise.all([
         adminUsers.get(userId),
         adminTenants.list(),
+        adminUsers.getUserSites(userId),
       ])
       setUser(userData)
       setTenants(tenantsData)
-      // Load sites for each tenant the user belongs to
-      const tenantIds = userData.tenants.map((t) => t.tenant_id)
-      const siteLists = await Promise.all(tenantIds.map((tid) => sitesApi.list(tid)))
-      setAllSites(siteLists.flat())
+      setAllSites(userSites)
     } catch (err) {
       setFetchError(err instanceof Error ? err.message : t('error'))
     } finally {
