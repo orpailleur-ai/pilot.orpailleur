@@ -210,20 +210,32 @@ export const adminUsers = {
 
 // ── Roles ─────────────────────────────────────────────────────────────────────
 
+export interface Permission {
+  id: string
+  code: string
+  label: string
+  module: string
+  action: string
+}
+
 export interface Role {
   id: string
   code: string
   label: string
-  is_system: boolean
+  isSystem: boolean
   createdAt: string
   updatedAt: string
-  permissions?: string[]
+  permissions?: Permission[]
 }
 
 export const roles = {
   list: () => request<Role[]>("GET", "/admin/roles"),
   get: (id: string) => request<Role>(`GET`, `/admin/roles/${id}`),
-  getPermissions: () => request<string[]>("GET", "/admin/roles/permissions"),
+  getPermissions: () => request<Permission[]>("GET", "/admin/roles/permissions"),
+  create: (dto: { code: string; label: string }) =>
+    request<Role>("POST", "/admin/roles", dto),
+  update: (id: string, dto: { label?: string; permission_ids?: string[] }) =>
+    request<Role>("PATCH", `/admin/roles/${id}`, dto),
 }
 
 // ── Audit Logs ────────────────────────────────────────────────────────────────
