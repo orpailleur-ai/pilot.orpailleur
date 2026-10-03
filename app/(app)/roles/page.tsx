@@ -46,11 +46,12 @@ export default function RolesPage() {
     if (!form.code.trim() || !form.label.trim()) return
     setSaving(true)
     try {
-      await roles.create(form as any)
+      const created = await roles.create({ code: form.code, label: form.label })
       setShowCreate(false)
       setForm({ code: '', label: '' })
       load()
-      toast({ body: 'Rôle créé', type: 'info' })
+      toast({ body: 'Rôle créé — configurez les permissions.', type: 'info' })
+      router.push(`/roles/${created.id}`)
     } catch (err) {
       toast({ body: err instanceof Error ? err.message : t('error'), type: 'error' })
     } finally {
