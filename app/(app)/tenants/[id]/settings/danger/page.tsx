@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { AlertTriangle } from 'lucide-react'
 import { useTenantDetail } from '@/components/composite/tenant-detail-context'
 import { ConfirmDialog } from '@/components/composite/confirm-dialog'
+import { PermissionGate } from '@/components/composite/permission-gate'
 import { Button, useToast } from '@astryxdesign/core'
 import { adminTenants } from '@/lib/api-client'
 import { useI18n } from '@/lib/i18n'
@@ -86,11 +87,13 @@ export default function TenantDangerPage() {
               Le tenant ne pourra plus se connecter, mais les données seront conservées.
             </p>
           </div>
-          <Button
-            variant="secondary"
-            label={t('deactivate')}
-            onClick={() => setShowDeactivate(true)}
-          />
+          <PermissionGate permission="TENANT_WRITE">
+            <Button
+              variant="secondary"
+              label={t('deactivate')}
+              onClick={() => setShowDeactivate(true)}
+            />
+          </PermissionGate>
         </div>
 
         <div className="flex items-center justify-between">
@@ -102,11 +105,13 @@ export default function TenantDangerPage() {
               Suppression définitive : toutes les données seront perdues.
             </p>
           </div>
-          <Button
-            variant="destructive"
-            label={t('delete')}
-            onClick={() => setShowDelete(true)}
-          />
+          <PermissionGate permission="TENANT_WRITE">
+            <Button
+              variant="destructive"
+              label={t('delete')}
+              onClick={() => setShowDelete(true)}
+            />
+          </PermissionGate>
         </div>
       </div>
 

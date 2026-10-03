@@ -11,6 +11,7 @@ import { EmptyState } from '@/components/ui/empty-state'
 import { InlineError } from '@/components/ui/inline-error'
 import { Spinner } from '@/components/ui/spinner'
 import { ConfirmDialog } from '@/components/composite/confirm-dialog'
+import { PermissionGate } from '@/components/composite/permission-gate'
 import { sites, type Site, type CreateSiteDto } from '@/lib/api-client'
 import { useI18n } from '@/lib/i18n'
 
@@ -198,13 +199,15 @@ export default function TenantSitesPage() {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex justify-end">
-        <Button
-          variant="primary"
-          size="sm"
-          icon={<Plus size={14} />}
-          label={t('site_create')}
-          onClick={() => setShowCreate(true)}
-        />
+        <PermissionGate permission="TENANT_WRITE">
+          <Button
+            variant="primary"
+            size="sm"
+            icon={<Plus size={14} />}
+            label={t('site_create')}
+            onClick={() => setShowCreate(true)}
+          />
+        </PermissionGate>
       </div>
 
       {fetchError && <InlineError message={fetchError} />}

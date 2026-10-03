@@ -7,6 +7,7 @@ import { Button, useToast } from '@astryxdesign/core'
 import { Spinner } from '@/components/ui/spinner'
 import { InlineError } from '@/components/ui/inline-error'
 import { EmptyState } from '@/components/ui/empty-state'
+import { PermissionGate } from '@/components/composite/permission-gate'
 import { plans, type Plan } from '@/lib/api-client'
 
 function formatPrice(cents: number) {
@@ -44,12 +45,14 @@ export default function PlansPage() {
         <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
           {planList.length} plan(s) disponible(s)
         </p>
-        <Button
-          variant="primary"
-          icon={<Plus size={14} />}
-          label="Nouveau plan"
-          onClick={() => router.push('/plans/new')}
-        />
+        <PermissionGate permission="BILLING_WRITE">
+          <Button
+            variant="primary"
+            icon={<Plus size={14} />}
+            label="Nouveau plan"
+            onClick={() => router.push('/plans/new')}
+          />
+        </PermissionGate>
       </div>
 
       {fetchError && <InlineError message={fetchError} />}

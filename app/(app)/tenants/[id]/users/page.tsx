@@ -10,6 +10,7 @@ import { DataTable, type Column } from '@/components/ui/data-table'
 import { EmptyState } from '@/components/ui/empty-state'
 import { InlineError } from '@/components/ui/inline-error'
 import { Spinner } from '@/components/ui/spinner'
+import { PermissionGate } from '@/components/composite/permission-gate'
 import {
   adminUsers,
   adminTenants,
@@ -154,13 +155,15 @@ export default function TenantUsersPage() {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex justify-end">
-        <Button
-          variant="primary"
-          size="sm"
-          icon={<Users size={14} />}
-          label={t('user_create')}
-          onClick={() => setShowCreate(true)}
-        />
+        <PermissionGate permission="USER_WRITE">
+          <Button
+            variant="primary"
+            size="sm"
+            icon={<Users size={14} />}
+            label={t('user_create')}
+            onClick={() => setShowCreate(true)}
+          />
+        </PermissionGate>
       </div>
 
       {fetchError && <InlineError message={fetchError} />}
