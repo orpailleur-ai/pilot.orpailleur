@@ -238,6 +238,93 @@ export const roles = {
     request<Role>("PATCH", `/admin/roles/${id}`, dto),
 }
 
+// ── Plans ─────────────────────────────────────────────────────────────────────
+
+export interface Plan {
+  id: string
+  code: string
+  nom: string
+  description: string | null
+  prixMensuelCents: number
+  prixAnnuelCents: number
+  nbSitesMax: number
+  nbUsersMax: number
+  features: string[]
+  actif: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export const plans = {
+  list: () => request<Plan[]>("GET", "/admin/plans"),
+  get: (id: string) => request<Plan>("GET", `/admin/plans/${id}`),
+  create: (dto: Omit<Plan, 'id' | 'createdAt' | 'updatedAt'>) =>
+    request<Plan>("POST", "/admin/plans", dto),
+  update: (id: string, dto: Partial<Omit<Plan, 'id' | 'createdAt' | 'updatedAt'>>) =>
+    request<Plan>("PATCH", `/admin/plans/${id}`, dto),
+  delete: (id: string) => request<void>("DELETE", `/admin/plans/${id}`),
+}
+
+// ── Subscriptions ───────────────────────────────────────────────────────────
+
+export type SubscriptionStatut = 'active' | 'past_due' | 'canceled' | 'expired'
+export type SubscriptionPeriode = 'monthly' | 'yearly'
+
+export interface Subscription {
+  id: string
+  tenant_id: string
+  plan_id: string
+  plan?: Plan
+  tenant?: { id: string; nom: string }
+  statut: SubscriptionStatut
+  periode: SubscriptionPeriode
+  dateDebut: string
+  dateFin: string
+  renouvelleAuto: boolean
+  prixCents: number
+  createdAt: string
+  updatedAt: string
+}
+
+export const subscriptions = {
+  list: () => request<Subscription[]>("GET", "/admin/subscriptions"),
+  listByTenant: (tenantId: string) =>
+    request<Subscription[]>("GET", `/admin/subscriptions?tenantId=${tenantId}`),
+  get: (id: string) => request<Subscription>("GET", `/admin/subscriptions/${id}`),
+  create: (dto: { tenantId: string; planId: string; periode?: SubscriptionPeriode }) =>
+    request<Subscription>("POST", "/admin/subscriptions", dto),
+  cancel: (id: string) =>
+    request<Subscription>("POST", `/admin/subscriptions/${id}/cancel`),
+}
+
+// ── Invoices ───────────────────────────────────────────────────────────────
+
+export type InvoiceStatut = 'draft' | 'open' | 'paid' | 'past_due' | 'void' | 'uncollectible'
+
+export interface Invoice {
+  id: string
+  tenant_id: string
+  subscription_id: string | null
+  tenant?: { id: string; nom: string }
+  numero: string
+  statut: InvoiceStatut
+  montantCents: number
+  devise: string
+  dateEmission: string
+  dateEcheance: string
+  datePaiement: string | null
+  pdfUrl: string | null
+  createdAt: string
+}
+
+export const invoices = {
+  list: (tenantId?: string) =>
+    tenantId
+      ? request<Invoice[]>("GET", `/admin/invoices?tenantId=${tenantId}`)
+      : request<Invoice[]>("GET", "/admin/invoices"),
+  get: (id: string) => request<Invoice>("GET", `/admin/invoices/${id}`),
+}
+
 // ── Audit Logs ────────────────────────────────────────────────────────────────
 
 export const auditLogs = {
