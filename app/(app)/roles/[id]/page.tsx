@@ -75,7 +75,7 @@ export default function RolePermissionsPage() {
       })
       setDirty(false)
       load()
-      toast({ body: 'Permissions mises à jour', type: 'info' })
+      toast({ body: t('permissions_updated'), type: 'info' })
     } catch (err) {
       toast({ body: err instanceof Error ? err.message : t('error'), type: 'error' })
     } finally {
@@ -101,7 +101,7 @@ export default function RolePermissionsPage() {
   }
 
   if (fetchError || !role) {
-    return <InlineError message={fetchError ?? 'Erreur'} />
+    return <InlineError message={fetchError ?? t('error')} />
   }
 
   return (

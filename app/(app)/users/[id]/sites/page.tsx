@@ -70,7 +70,7 @@ export default function UserSitesPage() {
       setShowAdd(false)
       setForm({ siteId: '' })
       load()
-      toast({ body: 'Site assigné', type: 'info' })
+      toast({ body: t('site_assigned'), type: 'info' })
     } catch (err) {
       toast({ body: err instanceof Error ? err.message : t('error'), type: 'error' })
     } finally {
@@ -86,7 +86,7 @@ export default function UserSitesPage() {
         site_ids: remaining,
       })
       load()
-      toast({ body: 'Site retiré', type: 'info' })
+      toast({ body: t('site_removed'), type: 'info' })
     } catch (err) {
       toast({ body: err instanceof Error ? err.message : t('error'), type: 'error' })
     } finally {

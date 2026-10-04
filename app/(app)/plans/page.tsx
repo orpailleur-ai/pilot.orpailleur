@@ -9,6 +9,7 @@ import { InlineError } from '@/components/ui/inline-error'
 import { EmptyState } from '@/components/ui/empty-state'
 import { PermissionGate } from '@/components/composite/permission-gate'
 import { plans, type Plan } from '@/lib/api-client'
+import { useI18n } from '@/lib/i18n'
 
 function formatPrice(cents: number) {
   return new Intl.NumberFormat('fr-FR', {
@@ -20,6 +21,7 @@ function formatPrice(cents: number) {
 export default function PlansPage() {
   const router = useRouter()
   const toast = useToast()
+  const { t } = useI18n()
   const [planList, setPlanList] = useState<Plan[]>([])
   const [loading, setLoading] = useState(true)
   const [fetchError, setFetchError] = useState<string | null>(null)
@@ -27,7 +29,7 @@ export default function PlansPage() {
   useEffect(() => {
     plans.list()
       .then(setPlanList)
-      .catch((err) => setFetchError(err instanceof Error ? err.message : 'Erreur'))
+      .catch((err) => setFetchError(err instanceof Error ? err.message : t('error')))
       .finally(() => setLoading(false))
   }, [])
 

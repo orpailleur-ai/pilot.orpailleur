@@ -53,6 +53,9 @@ export const fr = {
   settings: 'Réglages',
 
   // Tenants
+  select_tenant: 'Sélectionner un tenant',
+  all_tenants: 'Tous les tenants',
+  all_tenants_desc: 'Voir les données de tous les tenants',
   new_tenant: 'Nouveau tenant',
   delete_tenant: 'Supprimer ce tenant ?',
   delete_tenant_hint: '{nom} sera supprimé définitivement.',
@@ -103,4 +106,16 @@ export const fr = {
   date: 'Date',
   no_audit_logs: 'Aucune action admin enregistrée',
   audit_log_count: '{n} action(s) enregistrée(s)',
+
+  // ── Toast messages ───────────────────────────────────────────
+  plan_created: 'Plan créé',
+  plan_updated: 'Plan mis à jour',
+  role_created: 'Rôle créé — configurez les permissions.',
+  permissions_updated: 'Permissions mises à jour',
+  subscription_updated: 'Abonnement mis à jour',
+  subscription_canceled: 'Abonnement annulé',
+  site_assigned: 'Site assigné',
+  site_removed: 'Site retiré',
+  user_role_assigned: 'Rôle assigné',
+  user_role_removed: 'Rôle retiré',
 }

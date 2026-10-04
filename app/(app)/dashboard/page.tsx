@@ -24,7 +24,7 @@ export default function DashboardPage() {
   useEffect(() => {
     adminTenants.getDashboardStats()
       .then(setStats)
-      .catch((err) => setError(err instanceof Error ? err.message : 'Erreur'))
+      .catch((err) => setError(err instanceof Error ? err.message : t('error')))
       .finally(() => setLoading(false))
   }, [])
 

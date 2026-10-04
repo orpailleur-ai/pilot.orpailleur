@@ -22,7 +22,7 @@ export function UserDetailShell({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     adminUsers.get(userId)
       .then(setUser)
-      .catch((err) => setError(err instanceof Error ? err.message : 'Erreur'))
+      .catch((err) => setError(err instanceof Error ? err.message : t('error')))
       .finally(() => setIsLoading(false))
   }, [userId])
 

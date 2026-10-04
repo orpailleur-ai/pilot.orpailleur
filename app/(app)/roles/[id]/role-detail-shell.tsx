@@ -22,7 +22,7 @@ export function RoleDetailShell({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     roles.get(roleId)
       .then(setRole)
-      .catch((err) => setError(err instanceof Error ? err.message : 'Erreur'))
+      .catch((err) => setError(err instanceof Error ? err.message : t('error')))
       .finally(() => setIsLoading(false))
   }, [roleId])
 

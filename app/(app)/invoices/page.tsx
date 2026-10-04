@@ -7,6 +7,7 @@ import { InlineError } from '@/components/ui/inline-error'
 import { EmptyState } from '@/components/ui/empty-state'
 import { DataTable, type Column } from '@/components/ui/data-table'
 import { StatusPill } from '@/components/composite/status-pill'
+import { useI18n } from '@/lib/i18n'
 
 function formatPrice(cents: number) {
   return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(cents / 100)
@@ -22,6 +23,7 @@ const STATUT_LABELS: Record<InvoiceStatut, string> = {
 }
 
 export default function InvoicesPage() {
+  const { t } = useI18n()
   const [list, setList] = useState<Invoice[]>([])
   const [tenants, setTenants] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(true)
@@ -39,7 +41,7 @@ export default function InvoicesPage() {
         for (const t of tens) tensMap[t.id] = t.nom
         setTenants(tensMap)
       })
-      .catch((err) => setFetchError(err instanceof Error ? err.message : 'Erreur'))
+      .catch((err) => setFetchError(err instanceof Error ? err.message : t('error')))
       .finally(() => setLoading(false))
   }, [])
 

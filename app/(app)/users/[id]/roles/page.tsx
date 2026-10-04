@@ -75,7 +75,7 @@ export default function UserRolesPage() {
       setShowAdd(false)
       setForm({ tenantId: '', roleId: '' })
       load()
-      toast({ body: 'Rôle assigné', type: 'info' })
+      toast({ body: t('user_role_assigned'), type: 'info' })
     } catch (err) {
       toast({ body: err instanceof Error ? err.message : t('error'), type: 'error' })
     } finally {
@@ -93,7 +93,7 @@ export default function UserRolesPage() {
         assignments: remaining,
       })
       load()
-      toast({ body: 'Rôle retiré', type: 'info' })
+      toast({ body: t('user_role_removed'), type: 'info' })
     } catch (err) {
       toast({ body: err instanceof Error ? err.message : t('error'), type: 'error' })
     } finally {

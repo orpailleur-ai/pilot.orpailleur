@@ -50,7 +50,7 @@ export default function RolesPage() {
       setShowCreate(false)
       setForm({ code: '', label: '' })
       load()
-      toast({ body: 'Rôle créé — configurez les permissions.', type: 'info' })
+      toast({ body: t('role_created'), type: 'info' })
       router.push(`/roles/${created.id}`)
     } catch (err) {
       toast({ body: err instanceof Error ? err.message : t('error'), type: 'error' })

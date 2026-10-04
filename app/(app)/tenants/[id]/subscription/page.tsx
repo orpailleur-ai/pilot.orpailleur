@@ -71,7 +71,7 @@ export default function TenantSubscriptionPage() {
       setShowUpgrade(false)
       setForm({ planId: '', periode: 'monthly' })
       load()
-      toast({ body: 'Abonnement mis à jour', type: 'info' })
+      toast({ body: t('subscription_updated'), type: 'info' })
     } catch (err) {
       toast({ body: err instanceof Error ? err.message : t('error'), type: 'error' })
     } finally {
@@ -83,7 +83,7 @@ export default function TenantSubscriptionPage() {
     try {
       await subscriptions.cancel(subId)
       load()
-      toast({ body: 'Abonnement annulé', type: 'info' })
+      toast({ body: t('subscription_canceled'), type: 'info' })
     } catch (err) {
       toast({ body: err instanceof Error ? err.message : t('error'), type: 'error' })
     }

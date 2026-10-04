@@ -20,9 +20,9 @@ export function Sidebar({ logoUrl, orgName = 'Orpailleur' }: SidebarProps) {
   const t = useT()
 
   const [collapsed, setCollapsed] = useState(false)
-  const [expanded, setExpanded] = useState<Set<string>>(() => {
+  const [expanded, setExpanded] = useState<string | null>(() => {
     const app = findApp(pathname)
-    return new Set(app ? [app.id] : ['pilotage'])
+    return app?.id ?? null
   })
 
   useEffect(() => {
@@ -32,7 +32,7 @@ export function Sidebar({ logoUrl, orgName = 'Orpailleur' }: SidebarProps) {
   useEffect(() => {
     const app = findApp(pathname)
     if (!app) return
-    setExpanded((prev) => (prev.has(app.id) ? prev : new Set([...prev, app.id])))
+    setExpanded(app.id)
   }, [pathname])
 
   function toggleCollapsed() {
@@ -43,12 +43,7 @@ export function Sidebar({ logoUrl, orgName = 'Orpailleur' }: SidebarProps) {
   }
 
   function toggleApp(appId: string) {
-    setExpanded((prev) => {
-      const next = new Set(prev)
-      if (next.has(appId)) next.delete(appId)
-      else next.add(appId)
-      return next
-    })
+    setExpanded((prev) => (prev === appId ? null : appId))
   }
 
   const isActive = (href: string) =>
@@ -120,7 +115,7 @@ export function Sidebar({ logoUrl, orgName = 'Orpailleur' }: SidebarProps) {
             key={app.id}
             app={app}
             collapsed={collapsed}
-            isOpen={expanded.has(app.id)}
+            isOpen={expanded === app.id}
             onToggle={() => toggleApp(app.id)}
             isActive={isActive}
             t={t}

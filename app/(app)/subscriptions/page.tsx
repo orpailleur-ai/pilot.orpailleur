@@ -7,12 +7,14 @@ import { InlineError } from '@/components/ui/inline-error'
 import { EmptyState } from '@/components/ui/empty-state'
 import { DataTable, type Column } from '@/components/ui/data-table'
 import { StatusPill } from '@/components/composite/status-pill'
+import { useI18n } from '@/lib/i18n'
 
 function formatPrice(cents: number) {
   return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(cents / 100)
 }
 
 export default function SubscriptionsPage() {
+  const { t } = useI18n()
   const [list, setList] = useState<Subscription[]>([])
   const [tenants, setTenants] = useState<Record<string, string>>({})
   const [planNames, setPlanNames] = useState<Record<string, string>>({})
@@ -34,7 +36,7 @@ export default function SubscriptionsPage() {
         for (const p of pls) plansMap[p.id] = p.nom
         setPlanNames(plansMap)
       })
-      .catch((err) => setFetchError(err instanceof Error ? err.message : 'Erreur'))
+      .catch((err) => setFetchError(err instanceof Error ? err.message : t('error')))
       .finally(() => setLoading(false))
   }, [])
 

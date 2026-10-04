@@ -10,6 +10,7 @@ import { Spinner } from '@/components/ui/spinner'
 import { InlineError } from '@/components/ui/inline-error'
 import { ConfirmDialog } from '@/components/composite/confirm-dialog'
 import { plans, type Plan } from '@/lib/api-client'
+import { useI18n } from '@/lib/i18n'
 
 function formatPrice(cents: number) {
   return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(cents / 100)
@@ -20,6 +21,7 @@ export default function PlanDetailPage() {
   const router = useRouter()
   const planId = params.id as string
   const toast = useToast()
+  const { t } = useI18n()
   const [plan, setPlan] = useState<Plan | null>(null)
   const [loading, setLoading] = useState(true)
   const [fetchError, setFetchError] = useState<string | null>(null)
@@ -52,7 +54,7 @@ export default function PlanDetailPage() {
           actif: p.actif,
         })
       })
-      .catch((err) => setFetchError(err instanceof Error ? err.message : 'Erreur'))
+      .catch((err) => setFetchError(err instanceof Error ? err.message : t('error')))
       .finally(() => setLoading(false))
   }, [planId])
 
@@ -71,9 +73,9 @@ export default function PlanDetailPage() {
         actif: form.actif,
       })
       setPlan(updated)
-      toast({ body: 'Plan mis à jour', type: 'info' })
+      toast({ body: t('plan_updated'), type: 'info' })
     } catch (err) {
-      toast({ body: err instanceof Error ? err.message : 'Erreur', type: 'error' })
+      toast({ body: err instanceof Error ? err.message : t('error'), type: 'error' })
     } finally {
       setSaving(false)
     }
@@ -85,7 +87,7 @@ export default function PlanDetailPage() {
       await plans.delete(planId)
       router.push('/plans')
     } catch (err) {
-      toast({ body: err instanceof Error ? err.message : 'Erreur', type: 'error' })
+      toast({ body: err instanceof Error ? err.message : t('error'), type: 'error' })
     } finally {
       setDeleting(false)
     }

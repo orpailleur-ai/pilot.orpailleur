@@ -7,10 +7,12 @@ import { Button, useToast } from '@astryxdesign/core'
 import { TextInput } from '@astryxdesign/core'
 import { ModalSection, FieldGrid } from '@/components/ui/modal'
 import { plans, type Plan } from '@/lib/api-client'
+import { useI18n } from '@/lib/i18n'
 
 export default function PlanNewPage() {
   const router = useRouter()
   const toast = useToast()
+  const { t } = useI18n()
   const [saving, setSaving] = useState(false)
   const [form, setForm] = useState({
     code: '',
@@ -40,10 +42,10 @@ export default function PlanNewPage() {
         actif: true,
       }
       await plans.create(dto)
-      toast({ body: 'Plan créé', type: 'info' })
+      toast({ body: t('plan_created'), type: 'info' })
       router.push('/plans')
     } catch (err) {
-      toast({ body: err instanceof Error ? err.message : 'Erreur', type: 'error' })
+      toast({ body: err instanceof Error ? err.message : t('error'), type: 'error' })
     } finally {
       setSaving(false)
     }
