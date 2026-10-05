@@ -48,9 +48,6 @@ async function request<T>(
 
   if (res.status === 401) {
     clearToken();
-    if (typeof window !== "undefined") {
-      window.location.href = "/login";
-    }
     throw new Error("Non authentifié");
   }
 
