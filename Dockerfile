@@ -1,5 +1,5 @@
 FROM node:20-alpine AS builder
-ARG NEXT_PUBLIC_API_URL=https://api.orpailleur.local/api/v1
+ARG NEXT_PUBLIC_API_URL=http://185.245.183.123:3000/api/v1
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 WORKDIR /app
 COPY package.json package-lock.json ./
