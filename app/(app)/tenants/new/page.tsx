@@ -508,14 +508,16 @@ export default function NewTenantPage() {
     Promise.all([plans.list(), roles.list()])
       .then(([p, r]) => {
         setPlansList(p)
-        setRolesList(r)
+        // Exclure super_admin (rôle platform, pas tenant)
+        const tenantRoles = r.filter((role) => role.code !== 'super_admin')
+        setRolesList(tenantRoles)
         // Auto-sélectionner le premier plan
         if (p.length > 0) {
           setPlanStep((prev) => ({ ...prev, planId: p[0].id }))
         }
-        // Auto-sélectionner le premier rôle (le plus privilégié = premier dans la liste)
-        if (r.length > 0) {
-          setUserStep((prev) => ({ ...prev, roleId: r[0].id }))
+        // Auto-sélectionner le premier rôle (le plus privilégié)
+        if (tenantRoles.length > 0) {
+          setUserStep((prev) => ({ ...prev, roleId: tenantRoles[0].id }))
         }
       })
       .catch((err) => toast({ body: err instanceof Error ? err.message : t('error'), type: 'error' }))
