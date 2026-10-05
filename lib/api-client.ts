@@ -196,11 +196,18 @@ export interface CreateUserDto {
   actif?: boolean
 }
 
+export interface CreateUserWithTenantDto extends CreateUserDto {
+  tenant_id: string
+  role_id: string
+}
+
 export const adminUsers = {
   list: () => request<AdminUser[]>("GET", "/admin/users"),
   get: (id: string) => request<AdminUser>(`GET`, `/admin/users/${id}`),
   create: (dto: CreateUserDto) =>
     request<AdminUser>("POST", "/admin/users", dto),
+  createWithTenant: (dto: CreateUserWithTenantDto) =>
+    request<AdminUser>("POST", "/admin/users/with-tenant", dto),
   update: (id: string, dto: Partial<CreateUserDto>) =>
     request<AdminUser>("PATCH", `/admin/users/${id}`, dto),
   delete: (id: string) =>
@@ -387,6 +394,7 @@ export interface CreateTenantDto {
   plan?: string;
   nb_sites_max?: number;
   nb_users_max?: number;
+  actif?: boolean;
 }
 
 export interface AuditLog {

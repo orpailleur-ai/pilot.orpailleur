@@ -65,6 +65,12 @@ export const fr = {
   tenant_deactivated: 'Tenant désactivé',
   tenant_deactivate_confirm: 'Désactiver ce tenant ?',
   no_tenants: 'Aucun tenant',
+  onboarding: 'Onboarding',
+  tenant_onboarding: 'Créer un tenant (wizard)',
+  identity: 'Identité',
+  plan: 'Plan',
+  admin_initial: 'Admin initial',
+  summary: 'Récapitulatif',
   no_tenants_hint: 'Créez un tenant pour commencer.',
   no_results: 'Aucun résultat',
 

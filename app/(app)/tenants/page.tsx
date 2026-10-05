@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, Building2, Search, Trash2, CheckCircle, XCircle } from 'lucide-react'
+import { Plus, Building2, Search, Trash2, CheckCircle, XCircle, Wand2 } from 'lucide-react'
 import { TextInput, Button, useToast } from '@astryxdesign/core'
 import {
   adminTenants,
@@ -228,12 +228,20 @@ export default function TenantsPage() {
   ]
 
   const action = (
-    <Button
-      label={t('new_tenant')}
-      variant="primary"
-      icon={<Plus size={15} />}
-      onClick={() => setShowCreate(true)}
-    />
+    <div className="flex gap-2">
+      <Button
+        label="Onboarding"
+        variant="secondary"
+        icon={<Wand2 size={14} />}
+        onClick={() => router.push('/tenants/new')}
+      />
+      <Button
+        label={t('new_tenant')}
+        variant="primary"
+        icon={<Plus size={15} />}
+        onClick={() => setShowCreate(true)}
+      />
+    </div>
   )
 
   if (loading) {

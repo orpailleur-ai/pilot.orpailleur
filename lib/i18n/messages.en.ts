@@ -65,6 +65,12 @@ export const en = {
   tenant_deactivated: 'Tenant deactivated',
   tenant_deactivate_confirm: 'Deactivate this tenant?',
   no_tenants: 'No tenants',
+  onboarding: 'Onboarding',
+  tenant_onboarding: 'Create a tenant (wizard)',
+  identity: 'Identity',
+  plan: 'Plan',
+  admin_initial: 'Initial admin',
+  summary: 'Summary',
   no_tenants_hint: 'Create a tenant to get started.',
   no_results: 'No results',
 
