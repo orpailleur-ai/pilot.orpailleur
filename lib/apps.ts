@@ -6,6 +6,7 @@ import {
   Shield,
   CreditCard,
   FileText,
+  Receipt,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -41,6 +42,7 @@ export const APPS: AppDefinition[] = [
       { href: '/roles', labelKey: 'roles', icon: Shield },
       { href: '/plans', labelKey: 'plans', icon: CreditCard },
       { href: '/subscriptions', labelKey: 'subscriptions', icon: FileText },
+      { href: '/billing', labelKey: 'billing', icon: Receipt },
     ],
   },
   {

@@ -216,7 +216,7 @@ function lum(rgb: Rgb): number {
 
 /** Accent à utiliser selon le mode : le 400 en sombre, le 500 en clair. */
 export function accentFor(scale: Record<string, string>, isDark: boolean): string {
-  return (isDark ? scale['400'] ?? scale['500'] : scale['500']) ?? '#C9A84C'
+  return (isDark ? scale['400'] ?? scale['500'] : scale['500']) ?? '#3B82F6'
 }
 
 /** Ramène une couleur à une clarté HSL donnée, teinte et saturation intactes. */

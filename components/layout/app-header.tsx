@@ -11,13 +11,15 @@ import {
   LogOut,
   Menu,
   Check,
+  Search,
   type LucideIcon,
 } from 'lucide-react'
-import { SiteSwitcher } from '@/components/layout/site-switcher'
+import { TenantSwitcher } from '@/components/layout/tenant-switcher'
 import { KioskSwitcher } from '@/components/layout/kiosk-switcher'
 import { useAuth } from '@/components/providers/auth-context'
 import { useThemeMode, type ThemeMode } from '@/components/providers/theme-mode-provider'
 import { useI18n } from '@/lib/i18n'
+import { useCommandPalette } from '@/components/ui/command-palette/command-palette-context'
 
 const THEME_ICONS: Record<ThemeMode, LucideIcon> = {
   light: Sun,
@@ -41,6 +43,7 @@ export function AppHeader({ onMenuToggle, extra, menuButtonRef }: AppHeaderProps
   const { user, logout } = useAuth()
   const { mode, setMode } = useThemeMode()
   const { locale, setLocale, t } = useI18n()
+  const { open: openPalette } = useCommandPalette()
 
   const logoUrl: string | null = null
   const orgName = 'Orpailleur'
@@ -178,8 +181,23 @@ export function AppHeader({ onMenuToggle, extra, menuButtonRef }: AppHeaderProps
 
       {/* ── Right : site, kiosk, langue, thème, profil ── */}
       <div className="flex shrink-0 items-center gap-0.5">
-        <SiteSwitcher />
+        <TenantSwitcher />
         <KioskSwitcher />
+
+        {/* Search shortcut */}
+        <button
+          type="button"
+          onClick={openPalette}
+          aria-label="Rechercher (⌘K)"
+          className="hidden sm:flex items-center gap-2 rounded-lg border px-2.5 py-1.5 text-xs transition-colors hover:bg-[var(--color-background-muted)]"
+          style={{
+            borderColor: 'var(--color-border)',
+            color: 'var(--color-text-secondary)',
+          }}
+        >
+          <Search size={13} />
+          <span>⌘K</span>
+        </button>
 
         <DropdownMenu
           button={{

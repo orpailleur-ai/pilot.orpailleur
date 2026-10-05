@@ -6,7 +6,7 @@ import '@astryxdesign/core/astryx.css'
 import '@astryxdesign/theme-neutral/theme.css'
 import './globals.css'
 import { AuthProvider } from '@/components/providers/auth-context'
-import { SiteProvider } from '@/components/providers/site-context'
+import { TenantProvider } from '@/components/providers/tenant-context'
 import { ThemeModeProvider } from '@/components/providers/theme-mode-provider'
 import { I18nProvider } from '@/lib/i18n'
 
@@ -30,7 +30,7 @@ if(dark){r.classList.add('dark');}else{r.classList.remove('dark');}
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fr" data-theme="light" suppressHydrationWarning>
+    <html lang="fr" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeModeScript }} />
       </head>
@@ -38,7 +38,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <I18nProvider>
           <ThemeModeProvider>
             <AuthProvider>
-              <SiteProvider>{children}</SiteProvider>
+              <TenantProvider>{children}</TenantProvider>
             </AuthProvider>
           </ThemeModeProvider>
         </I18nProvider>

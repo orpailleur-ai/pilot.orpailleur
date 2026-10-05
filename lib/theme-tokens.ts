@@ -30,12 +30,12 @@ export interface BrandSettings {
   nom_boulangerie: string | null
 }
 
-const GOLD = '#C9A84C'
+const ACCENT = '#3B82F6'
 
-/** Thème de repli : l'or historique d'Orpailleur. */
+/** Thème de repli : bleu ardoise professionnel. */
 export const DEFAULT_BRAND_THEME: BrandTheme = {
   colors: {
-    primary: { '500': GOLD },
+    primary: { '500': ACCENT },
     danger: { '500': '#dc2626' },
     success: { '500': '#22c55e' },
     warning: { '500': '#f59e0b' },
@@ -59,7 +59,7 @@ function semanticColor(
 /** Couleur de marque affichée dans l'éditeur de thème, ou l'or par défaut. */
 export function primaryOf(brand: BrandTheme): string {
   const hex = brand.colors?.primary?.['500']
-  return hex ?? GOLD
+  return hex ?? ACCENT
 }
 
 /** Attribut porté par le <style> injecté (kept for compatibility). */

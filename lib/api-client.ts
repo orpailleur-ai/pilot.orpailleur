@@ -322,21 +322,25 @@ export interface Invoice {
 }
 
 export const invoices = {
-  list: (tenantId?: string) =>
-    tenantId
-      ? request<Invoice[]>("GET", `/admin/invoices?tenantId=${tenantId}`)
-      : request<Invoice[]>("GET", "/admin/invoices"),
+  list: (tenantId?: string, statut?: string) => {
+    const params = new URLSearchParams()
+    if (tenantId) params.set('tenantId', tenantId)
+    if (statut) params.set('statut', statut)
+    const qs = params.toString()
+    return request<Invoice[]>("GET", `/admin/invoices${qs ? `?${qs}` : ''}`)
+  },
   get: (id: string) => request<Invoice>("GET", `/admin/invoices/${id}`),
 }
 
 // ── Audit Logs ────────────────────────────────────────────────────────────────
 
 export const auditLogs = {
-  list: (params?: { limit?: number; offset?: number; action?: string }) => {
+  list: (params?: { limit?: number; offset?: number; action?: string; userId?: string }) => {
     const qs = new URLSearchParams();
     if (params?.limit) qs.set("limit", String(params.limit));
     if (params?.offset) qs.set("offset", String(params.offset));
     if (params?.action) qs.set("action", params.action);
+    if (params?.userId) qs.set("userId", params.userId);
     const query = qs.toString() ? `?${qs.toString()}` : "";
     return request<{ logs: AuditLog[]; total: number }>(
       "GET",

@@ -39,19 +39,19 @@
    Brand CSS tokens — palette injectée par ThemeProvider
    ============================================================ */
 :root {
-  /* Brand primary (or par défaut, avant le premier rendu client).
+  /* Brand primary (bleu ardoise par défaut, avant le premier rendu client).
      Seul `500` est canonique : le ThemeProvider dérive le reste de l'échelle
      à partir de la couleur choisie par le tenant et écrase ces valeurs. */
-  --color-primary-50: #fef9e7;
-  --color-primary-100: #fdf0c3;
-  --color-primary-200: #fbe18a;
-  --color-primary-300: #f8cf4a;
-  --color-primary-400: #f5c018;
-  --color-primary-500: #c9a84c;
-  --color-primary-600: #a8872f;
-  --color-primary-700: #8a6e26;
-  --color-primary-800: #6c561e;
-  --color-primary-900: #4f3e16;
+  --color-primary-50: #eff6ff;
+  --color-primary-100: #dbeafe;
+  --color-primary-200: #bfdbfe;
+  --color-primary-300: #93c5fd;
+  --color-primary-400: #60a5fa;
+  --color-primary-500: #3b82f6;
+  --color-primary-600: #2563eb;
+  --color-primary-700: #1d4ed8;
+  --color-primary-800: #1e40af;
+  --color-primary-900: #1e3a8a;
 
   /* App logo */
   --app-logo-url: none;
@@ -94,10 +94,10 @@ html:root {
 
   /* ── Accent de marque ──
      Valeurs d'amorçage, avant le premier rendu client : le ThemeProvider les
-     remplace dès que le thème du tenant est chargé. L'or par défaut est
-     clair, donc le texte posé dessus est sombre. */
+     remplace dès que le thème du tenant est chargé. Le bleu est assez sombre
+     pour que le blanc soit lisible dessus. */
   --color-accent: var(--color-primary-500);
-  --color-on-accent: #22190a;
+  --color-on-accent: #ffffff;
   --color-icon-accent: var(--color-primary-600);
   --color-text-accent: var(--color-primary-700);
 

@@ -50,6 +50,7 @@ export function ThemeModeProvider({ children }: { children: ReactNode }) {
     setResolvedTheme(effective)
 
     const root = document.documentElement
+    root.dataset.theme = effective
     if (effective === 'dark') {
       root.classList.add('dark')
     } else {
@@ -63,7 +64,9 @@ export function ThemeModeProvider({ children }: { children: ReactNode }) {
     const handler = (e: MediaQueryListEvent) => {
       const effective = e.matches ? 'dark' : 'light'
       setResolvedTheme(effective)
-      document.documentElement.classList.toggle('dark', e.matches)
+      const root = document.documentElement
+      root.dataset.theme = effective
+      root.classList.toggle('dark', e.matches)
     }
     mq.addEventListener('change', handler)
     return () => mq.removeEventListener('change', handler)

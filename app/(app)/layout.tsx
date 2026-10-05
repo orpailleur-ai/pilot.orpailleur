@@ -6,6 +6,7 @@ import { ToastViewport } from '@astryxdesign/core/Toast'
 import { useAuth } from '@/components/providers/auth-context'
 import { SidebarLayout } from '@/components/layouts/sidebar-layout'
 import { Spinner } from '@/components/ui/spinner'
+import { CommandPaletteProvider } from '@/components/ui/command-palette/command-palette-context'
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth()
@@ -30,9 +31,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   if (!isAuthenticated) return null
 
   return (
-    <>
+    <CommandPaletteProvider>
       <SidebarLayout>{children}</SidebarLayout>
       <ToastViewport position="bottomEnd" maxVisible={3} />
-    </>
+    </CommandPaletteProvider>
   )
 }
