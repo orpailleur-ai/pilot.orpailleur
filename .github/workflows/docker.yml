@@ -10,6 +10,7 @@ on:
 
 env:
   DOCKER_IMAGE: ${{ secrets.DOCKER_USERNAME }}/orpailleur-pilot
+  NEXT_PUBLIC_API_URL: ${{ secrets.PROD_API_URL }}
 
 jobs:
   build-and-push:
@@ -55,6 +56,10 @@ jobs:
           push: true
           no-cache: true
           pull: true
+          # NEXT_PUBLIC_* est fige au build dans le bundle client : sans ce
+          # build-arg, l image embarque l ARG par defaut du Dockerfile.
+          build-args: |
+            NEXT_PUBLIC_API_URL=${{ env.NEXT_PUBLIC_API_URL }}
           tags: |
             ${{ env.DOCKER_IMAGE }}:${{ steps.meta.outputs.IMAGE_TAG }}
             ${{ env.DOCKER_IMAGE }}:${{ steps.meta.outputs.ENVIRONMENT }}-latest

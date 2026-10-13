@@ -1,5 +1,9 @@
 FROM node:20-alpine AS builder
-ARG NEXT_PUBLIC_API_URL=http://185.245.183.123:3000/api/v1
+# La valeur par defaut doit rester unnom + HTTPS : le navigateur bloque
+# tout http:// depuis une page servie en HTTPS (mixed content), et le
+# build fige NEXT_PUBLIC_* dans le bundle client. Un defaut en http://
+# ou vers une IP ancienne produit une app silencieusement cassee.
+ARG NEXT_PUBLIC_API_URL=https://pilot.orpailleur-software.fr/api/v1
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 WORKDIR /app
 COPY package.json package-lock.json ./
