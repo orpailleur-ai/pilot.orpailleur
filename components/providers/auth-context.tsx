@@ -8,7 +8,13 @@ import {
   useCallback,
   type ReactNode,
 } from 'react'
-import { apiClient, setToken, clearToken } from '@/lib/api-client'
+import {
+  apiClient,
+  setTokens,
+  clearToken,
+  getTokenValue,
+  ACCESS_TOKEN_KEY,
+} from '@/lib/api-client'
 
 interface AuthUser {
   id: string
@@ -48,36 +54,61 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
-  useEffect(() => {
-    const token = sessionStorage.getItem('pilot_token')
+  // Unique point d'entrée pour valider une session. Utilisé au montage ET par
+  // `login()`, pour que l'état React et le stockage ne puissent pas diverger.
+  const restore = useCallback(async () => {
+    const token = getTokenValue()
     if (!token) {
+      setUser(null)
       setIsLoading(false)
       return
     }
-
-    apiClient.get<AuthUser>('/auth/me')
-      .then((userData) => {
-        setUser(userData)
-      })
-      .catch(() => {
-        clearToken()
-        clearAuthCookie()
-        clearLoginContext()
-        setUser(null)
-      })
-      .finally(() => setIsLoading(false))
+    try {
+      const userData = await apiClient.get<AuthUser>('/auth/me')
+      setUser(userData)
+    } catch {
+      // `request()` a déjà réessayé via le refresh token et purgé la session si
+      // elle était réellement morte : ici on ne fait que refléter cet état.
+      clearAuthCookie()
+      clearLoginContext()
+      setUser(null)
+    } finally {
+      setIsLoading(false)
+    }
   }, [])
 
-  const login = useCallback(async (email: string, password: string) => {
-    const response = await apiClient.post<{ accessToken: string }>('/auth/login/admin', { email, password })
-    const { accessToken } = response
+  useEffect(() => {
+    restore()
+  }, [restore])
 
-    sessionStorage.setItem('pilot_token', accessToken)
-    setToken(accessToken)
+  // Synchronisation inter-onglets : un login ou un logout dans un autre onglet
+  // doit être répercuté ici, sinon l'UI reste dans un état faux.
+  useEffect(() => {
+    function onStorage(e: StorageEvent) {
+      if (e.key === ACCESS_TOKEN_KEY) void restore()
+    }
+    window.addEventListener('storage', onStorage)
+    return () => window.removeEventListener('storage', onStorage)
+  }, [restore])
+
+  const login = useCallback(async (email: string, password: string) => {
+    const response = await apiClient.post<{
+      accessToken: string
+      refreshToken: string
+    }>('/auth/login/admin', { email, password })
+    const { accessToken, refreshToken } = response
+
+    // Le refresh token est indispensable : c'est lui qui permet à `request()`
+    // de renouveler un access token expiré sans renvoyer l'utilisateur sur
+    // /login (cf. refreshAccessToken dans lib/api-client.ts).
+    setTokens(accessToken, refreshToken)
     setAuthCookie(accessToken)
 
+    // On hydrate l'état AVANT de naviguer : sans cela `isAuthenticated` reste
+    // false et (app)/layout.tsx redirige immédiatement vers /login.
     const userData = await apiClient.get<AuthUser>('/auth/me')
     setUser(userData)
+    setIsLoading(false)
   }, [])
 
   const logout = useCallback(() => {

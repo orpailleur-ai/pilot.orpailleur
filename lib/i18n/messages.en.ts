@@ -85,6 +85,11 @@ export const en = {
   // Users
   user_create: 'New user',
   user_created: 'User created',
+  choose_image: 'Choose an image',
+  remove_avatar: 'Remove',
+  avatar_uploaded: 'Avatar uploaded',
+  avatar_removed: 'Avatar removed',
+  file_too_large: 'File too large (max 2 MB)',
   no_users: 'No users',
   no_users_hint: 'Add a first user to this tenant.',
 
@@ -121,7 +126,7 @@ export const en = {
   clear_filters: 'Reset filters',
 
   // Billing
-  billing: 'Billing',
+  billing: 'Dashboard',
   billing_subtitle: 'MRR, subscription health and invoicing',
   mrr_reel: 'Real MRR',
   month: 'month',
@@ -150,4 +155,8 @@ export const en = {
   site_removed: 'Site removed',
   user_role_assigned: 'Role assigned',
   user_role_removed: 'Role removed',
+  pilot_subtitle: 'Pilot — Administration',
+  access_restricted: 'Orpailleur administrators only',
+  language: 'Language',
+  preferences: 'Preferences',
 }

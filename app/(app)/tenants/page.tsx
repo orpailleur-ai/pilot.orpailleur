@@ -143,17 +143,19 @@ export default function TenantsPage() {
       header: t('name'),
       mobile: 'primary',
       render: (row) => (
-        <div className="flex items-center gap-2">
-          <Building2 size={14} style={{ color: 'var(--color-text-secondary)' }} />
-          <span style={{ color: 'var(--color-text-primary)' }}>{row.nom}</span>
+        <div className="flex flex-col gap-0.5">
+          <span
+            className="font-medium cursor-pointer"
+            style={{ color: 'var(--color-accent)' }}
+            onClick={() => router.push(`/tenants/${row.id}`)}
+          >
+            {row.nom}
+          </span>
+          <span className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+            {row.email ?? '—'}
+          </span>
         </div>
       ),
-    },
-    {
-      key: 'email',
-      header: t('contact'),
-      mobile: 'inline',
-      render: (row) => row.email ?? '—',
     },
     {
       key: 'plan',
@@ -214,15 +216,25 @@ export default function TenantsPage() {
       align: 'end',
       mobile: 'hidden',
       render: (row) => (
-        <Button
-          label=""
-          variant="ghost"
-          size="sm"
-          isIconOnly
-          icon={<Trash2 size={14} />}
-          isDisabled={deleting === row.id}
-          onClick={() => handleDelete(row.id, row.nom)}
-        />
+        <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+          <Button
+            label={t('view')}
+            variant="ghost"
+            size="sm"
+            isIconOnly
+            icon={<Building2 size={14} />}
+            onClick={() => router.push(`/tenants/${row.id}`)}
+          />
+          <Button
+            label=""
+            variant="ghost"
+            size="sm"
+            isIconOnly
+            icon={<Trash2 size={14} />}
+            isDisabled={deleting === row.id}
+            onClick={() => handleDelete(row.id, row.nom)}
+          />
+        </div>
       ),
     },
   ]
@@ -286,6 +298,7 @@ export default function TenantsPage() {
           columns={columns}
           rows={filtered.map(toRow)}
           rowKey={(row) => row.id}
+          onRowClick={(row) => router.push(`/tenants/${row.id}`)}
         />
       )}
 

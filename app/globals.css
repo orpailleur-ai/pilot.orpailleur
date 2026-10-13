@@ -108,3 +108,64 @@ html:root {
      ThemeProvider écrit les six jetons (les deux vocabulaires) dès que le
      thème est chargé — voir src/lib/theme-tokens.ts. */
 }
+
+/* ============================================================
+   Défilement
+   ------------------------------------------------------------
+   Dans la couche `utilities`, la plus forte de layers.css, pour passer
+   devant les classes hachées d'Astryx (dans `astryx-base`).
+   ============================================================ */
+@layer utilities {
+  /* Barres de défilement aux couleurs du thème.
+     Les jetons --color-border / --color-accent sont réécrits par le
+     ThemeProvider, donc le scrollbar suit le thème du tenant ET le mode
+     sombre sans code supplémentaire. `scrollbar-color` couvre Firefox,
+     les pseudo-éléments ::-webkit- couvrent Chrome/Safari/Edge. */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border) transparent;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track,
+  ::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: var(--color-border);
+    /* border transparent + background-clip: content-box dessinent un anneau
+       de 2px autour de la poignée sans déformer le motif. */
+    border: 2px solid transparent;
+    background-clip: content-box;
+    border-radius: 9999px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-accent);
+  }
+
+  /* Le conteneur `.orp-modal` porte la correction de hauteur du Dialog.
+     La surface d'Astryx est `position:fixed` + `height:auto`, alors que son
+     `inner` attend un parent flex (`flex:1; min-height:0`) et que le Layout
+     utilise `height:100%`. Sans hauteur résoluble, ces deux règles sont
+     inertes : le contenu déborde, le `max-height` le rogne, et comme la
+     surface est fixed la page ne peut pas défiler jusqu'à lui — les boutons
+     d'action en fin de formulaire deviennent inatteignables.
+     En déclarant la surface comme colonne flex bornée par le viewport, le
+     `min-height:0` de l'`inner` redevient efficace et le `overflow-y-auto`
+     du contenu scrolls enfin. */
+  .orp-modal {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .orp-modal > * {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+}

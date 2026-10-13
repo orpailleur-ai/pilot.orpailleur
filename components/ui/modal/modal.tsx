@@ -55,15 +55,24 @@ export function Modal({
 
   const width = getWidth(size)
 
+  // `orp-modal` porte la correction de la chaîne de hauteur — voir la règle
+  // homonyme dans app/globals.css. Sans elle, la surface du Dialog est en
+  // hauteur `auto` et son `max-height` rogne le contenu hors d'atteinte :
+  // `overflow-y-auto` ne défile pas, faute de hauteur de référence.
+  const surfaceClass = className ? `orp-modal ${className}` : 'orp-modal'
+
   return (
     <Dialog
       isOpen={isOpen}
       onOpenChange={onOpenChange}
       width={width}
+      // Défaut Astryx : 75dvh. On prend un peu plus de hauteur pour éviter de
+      // devoir faire défiler les formulaires longs.
+      maxHeight="calc(100dvh - 3rem)"
       purpose={preventClose ? 'required' : 'form'}
       aria-labelledby={titleId}
       aria-describedby={subtitle ? descId : undefined}
-      className={className}
+      className={surfaceClass}
     >
       <Layout height="fill">
         <LayoutFooter>

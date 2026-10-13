@@ -7,6 +7,7 @@ import {
   CreditCard,
   FileText,
   Receipt,
+  ReceiptText,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -42,6 +43,7 @@ export const APPS: AppDefinition[] = [
       { href: '/roles', labelKey: 'roles', icon: Shield },
       { href: '/plans', labelKey: 'plans', icon: CreditCard },
       { href: '/subscriptions', labelKey: 'subscriptions', icon: FileText },
+      { href: '/invoices', labelKey: 'invoices', icon: ReceiptText },
       { href: '/billing', labelKey: 'billing', icon: Receipt },
     ],
   },

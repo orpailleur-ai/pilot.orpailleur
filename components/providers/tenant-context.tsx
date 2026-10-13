@@ -9,6 +9,7 @@ import {
   type ReactNode,
 } from 'react'
 import { adminTenants, type Tenant } from '@/lib/api-client'
+import { useAuth } from '@/components/providers/auth-context'
 
 interface TenantContextValue {
   tenants: Tenant[]
@@ -48,13 +49,26 @@ export function TenantProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  // Load tenants once on mount
+  // Chargement des tenants, conditionné à l'état d'authentification.
+  //
+  // Ce provider enveloppe toute l'app, y compris /login. Sans ce garde, il
+  // déclenchait adminTenants.list() au montage de chaque page, y compris
+  // quand aucun token n'existe encore : la requête partait sans en-tête
+  // Authorization et revenait en 401 (visible dans les logs API sous
+  // « [401-diag] no Authorization header »).
+  const { isAuthenticated, isLoading: authLoading } = useAuth()
+
   useEffect(() => {
+    if (authLoading || !isAuthenticated) {
+      setIsLoading(false)
+      return
+    }
+    setIsLoading(true)
     adminTenants.list()
       .then(setTenants)
       .catch((err) => setError(err instanceof Error ? err.message : 'Erreur'))
       .finally(() => setIsLoading(false))
-  }, [])
+  }, [authLoading, isAuthenticated])
 
   const switchTenant = useCallback(async (id: string | null) => {
     setCurrentTenantId(id)

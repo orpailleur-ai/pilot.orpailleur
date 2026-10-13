@@ -22,6 +22,8 @@ export default function UserProfilePage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [form, setForm] = useState({ email: '', prenom: '', nom: '', password: '' })
+  const [uploadingAvatar, setUploadingAvatar] = useState(false)
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
 
   useEffect(() => {
     Promise.all([
@@ -107,6 +109,112 @@ export default function UserProfilePage() {
 
   return (
     <form onSubmit={handleSave} className="flex flex-col gap-5">
+      {/* ── Avatar : centré en haut du formulaire ── */}
+      <div
+        className="rounded-lg border p-5 flex flex-col items-center gap-3"
+        style={{ backgroundColor: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
+      >
+        <div className="w-16 h-16 rounded-full overflow-hidden flex items-center justify-center"
+          style={{ backgroundColor: 'var(--color-background-muted, rgba(10,19,23,0.05))' }}>
+          {avatarPreview || user.avatar_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={avatarPreview || (user.avatar_url as string)}
+              alt="avatar"
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <span className="text-base font-medium" style={{ color: 'var(--color-text-secondary)' }}>
+              {(form.prenom?.[0] || form.nom?.[0] || '?').toUpperCase()}
+            </span>
+          )}
+        </div>
+        <div className="flex gap-2">
+          <Button
+            variant="secondary"
+            size="sm"
+            label={t('choose_image', 'Choisir une image')}
+            isDisabled={uploadingAvatar}
+            isLoading={uploadingAvatar}
+            onClick={() => document.getElementById('pilot-avatar-input')?.click()}
+          />
+          {user.avatar_url && (
+            <Button
+              variant="ghost"
+              size="sm"
+              label={t('remove_avatar', 'Retirer')}
+              onClick={async () => {
+                try {
+                  const updated = await adminUsers.removeAvatar(userId)
+                  setUser(updated)
+                  setAvatarPreview(null)
+                  toast({ body: t('avatar_removed', 'Avatar retiré'), type: 'info' })
+                } catch (err) {
+                  toast({
+                    body: err instanceof Error ? err.message : t('error'),
+                    type: 'error',
+                  })
+                }
+              }}
+            />
+          )}
+        </div>
+        <p className="text-xs text-center" style={{ color: 'var(--color-text-secondary)' }}>
+          JPEG, PNG, WebP, GIF · max 2 Mo
+        </p>
+        <input
+          id="pilot-avatar-input"
+          type="file"
+          accept="image/jpeg,image/png,image/webp,image/gif"
+          className="hidden"
+          onChange={async (e) => {
+            const file = e.target.files?.[0]
+            if (!file) return
+            if (file.size > 2 * 1024 * 1024) {
+              toast({
+                body: t('file_too_large', 'Fichier trop volumineux (max 2 Mo)'),
+                type: 'error',
+              })
+              return
+            }
+            // Prévisualisation locale immédiate pendant l'upload
+            const objectUrl = URL.createObjectURL(file)
+            setAvatarPreview(objectUrl)
+            setUploadingAvatar(true)
+            try {
+              const base64: string = await new Promise((resolve, reject) => {
+                const reader = new FileReader()
+                reader.onload = () => {
+                  const result = reader.result as string
+                  const comma = result.indexOf(',')
+                  resolve(comma >= 0 ? result.slice(comma + 1) : result)
+                }
+                reader.onerror = () => reject(reader.error ?? new Error('FileReader failed'))
+                reader.readAsDataURL(file)
+              })
+              const res = await adminUsers.setAvatar(userId, {
+                data: base64,
+                filename: file.name,
+                mimeType: file.type,
+              })
+              setUser((u) => (u ? { ...u, avatar_url: res.avatar_url } : u))
+              setAvatarPreview(null)
+              toast({ body: t('avatar_uploaded', 'Avatar téléversé'), type: 'info' })
+            } catch (err) {
+              toast({
+                body: err instanceof Error ? err.message : t('error'),
+                type: 'error',
+              })
+            } finally {
+              URL.revokeObjectURL(objectUrl)
+              setAvatarPreview(null)
+              setUploadingAvatar(false)
+              if (e.target) e.target.value = ''
+            }
+          }}
+        />
+      </div>
+
       <div
         className="rounded-lg border p-5 space-y-4"
         style={{ backgroundColor: 'var(--color-surface)', borderColor: 'var(--color-border)' }}

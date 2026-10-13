@@ -85,6 +85,11 @@ export const fr = {
   // Users
   user_create: 'Nouvel utilisateur',
   user_created: 'Utilisateur créé',
+  choose_image: 'Choisir une image',
+  remove_avatar: 'Retirer',
+  avatar_uploaded: 'Avatar téléversé',
+  avatar_removed: 'Avatar retiré',
+  file_too_large: 'Fichier trop volumineux (max 2 Mo)',
   no_users: 'Aucun utilisateur',
   no_users_hint: 'Ajoutez un premier utilisateur à ce tenant.',
 
@@ -121,7 +126,7 @@ export const fr = {
   clear_filters: 'Réinitialiser',
 
   // Billing
-  billing: 'Facturation',
+  billing: 'Tableau de bord',
   billing_subtitle: 'MRR, santé des abonnements et facturation',
   mrr_reel: 'MRR réel',
   month: 'mois',
@@ -150,4 +155,8 @@ export const fr = {
   site_removed: 'Site retiré',
   user_role_assigned: 'Rôle assigné',
   user_role_removed: 'Rôle retiré',
+  pilot_subtitle: 'Pilot — Administration',
+  access_restricted: 'Accès réservé aux administrateurs Orpailleur',
+  language: 'Langue',
+  preferences: 'Préférences',
 }

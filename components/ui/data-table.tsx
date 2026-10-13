@@ -7,6 +7,8 @@ export interface Column<T> {
   align?: 'start' | 'end'
   /** Sur mobile, la colonne devient une ligne « libellé : valeur » */
   mobile?: 'primary' | 'inline' | 'hidden'
+  /** Désactive onRowClick quand l'utilisateur clique dans cette colonne */
+  noRowClick?: boolean
 }
 
 interface DataTableProps<T> {
@@ -85,6 +87,7 @@ export function DataTable<T>({ columns, rows, rowKey, empty, onRowClick }: DataT
                     key={c.key}
                     className={`px-4 py-3 align-middle ${alignClass(c.align)}`}
                     style={{ color: 'var(--color-text-primary)' }}
+                    onClick={c.noRowClick ? (e) => e.stopPropagation() : undefined}
                   >
                     {c.render(row)}
                   </td>

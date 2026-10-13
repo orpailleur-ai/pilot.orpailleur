@@ -11,6 +11,9 @@ FROM node:20-alpine AS prod
 WORKDIR /app
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
+# public/ is NOT part of the standalone trace, so it must be copied explicitly.
+# Without this every static asset (/icon.svg, /globe.svg, ...) 404s in production.
+COPY --from=builder /app/public ./public
 ENV NODE_ENV=production
 EXPOSE 3000
 CMD ["node", "server.js"]

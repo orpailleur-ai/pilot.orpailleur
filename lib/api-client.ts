@@ -7,35 +7,101 @@ const BASE =
   process.env.NEXT_PUBLIC_API_URL ??
   "http://localhost:3000/api/v1";
 
-function getToken(): string | null {
+/**
+ * Le couple de tokens est stocké dans localStorage (et mirrored dans
+ * sessionStorage) et NON dans sessionStorage seul.
+ *
+ * Raison : sessionStorage est cloisonné par onglet. Avec plusieurs onglets du
+ * pilot ouverts, chacun conserve son propre token ; un onglet connecté avant un
+ * déploiement garde un access token périmé et surtout aucun refresh token, donc
+ * incapable de se renouveler. Résultat observé : un 401 sur /admin/tenants qui
+ * éjecte vers /login, en boucle, alors que les autres onglets fonctionnent.
+ *
+ * En shared storage, un refresh effectué dans un onglet est immédiatement lu
+ * par les autres : plus de divergence, plus de boucle de déconnexion.
+ */
+export const ACCESS_TOKEN_KEY = "pilot_token";
+export const REFRESH_TOKEN_KEY = "pilot_refresh_token";
+
+function readToken(key: string): string | null {
   if (typeof window === "undefined") return null;
-  return sessionStorage.getItem("pilot_token");
+  const shared = window.localStorage.getItem(key);
+  if (shared) return shared;
+  // Migration : une session ouverte avant le passage en shared storage.
+  const legacy = window.sessionStorage.getItem(key);
+  if (legacy) {
+    window.localStorage.setItem(key, legacy);
+    return legacy;
+  }
+  return null;
+}
+
+function writeToken(key: string, value: string) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(key, value);
+  window.sessionStorage.setItem(key, value);
+}
+
+function dropToken(key: string) {
+  if (typeof window === "undefined") return;
+  window.localStorage.removeItem(key);
+  window.sessionStorage.removeItem(key);
+}
+
+function getToken(): string | null {
+  return readToken(ACCESS_TOKEN_KEY);
 }
 
 export function setToken(token: string) {
-  if (typeof window !== "undefined") {
-    sessionStorage.setItem("pilot_token", token);
-  }
+  writeToken(ACCESS_TOKEN_KEY, token);
+}
+
+/** Enregistre le couple access/refresh token. */
+export function setTokens(accessToken: string, refreshToken?: string) {
+  if (typeof window === "undefined") return;
+  writeToken(ACCESS_TOKEN_KEY, accessToken);
+  if (refreshToken) writeToken(REFRESH_TOKEN_KEY, refreshToken);
+}
+
+function getRefreshToken(): string | null {
+  return readToken(REFRESH_TOKEN_KEY);
 }
 
 export function clearToken() {
-  if (typeof window !== "undefined") {
-    sessionStorage.removeItem("pilot_token");
-  }
+  dropToken(ACCESS_TOKEN_KEY);
+  dropToken(REFRESH_TOKEN_KEY);
 }
 
-export function getTokenValue() {
+/** Lecture du token courant, partagée avec AuthProvider. */
+export function getTokenValue(): string | null {
   return getToken();
 }
 
-async function request<T>(
+/**
+ * Timeout par requête. Sans cela, une requête bloquée en amont (le reverse proxy
+ * tient les connexions jusqu'à 3600 s) laisse le `Promise.all` des pages en
+ * attente indéfiniment : l'écran reste figé sur le squelette de chargement.
+ */
+const DEFAULT_TIMEOUT_MS = 20_000;
+
+/** Nombre de nouvel essais pour les requêtes idempotentes (GET/HEAD). */
+const MAX_RETRIES = 2;
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+async function fetchOnce(
   method: string,
   path: string,
-  body?: unknown,
-): Promise<T> {
+  body: unknown,
+  timeoutMs: number,
+): Promise<Response> {
   const token = getToken();
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+
   const opts: RequestInit = {
     method,
+    signal: controller.signal,
     headers: {
       "Content-Type": "application/json",
       Accept: "application/json",
@@ -44,29 +110,129 @@ async function request<T>(
   };
   if (body !== undefined) opts.body = JSON.stringify(body);
 
-  const res = await fetch(`${BASE}${path}`, opts);
+  try {
+    return await fetch(`${BASE}${path}`, opts);
+  } finally {
+    clearTimeout(timer);
+  }
+}
 
-  if (res.status === 401) {
-    clearToken();
-    throw new Error("Non authentifié");
+/**
+ * Rafraîchit l'access token à partir du refresh token.
+ *
+ * Volontairement « single-flight » : au chargement d'une page, une dizaine de
+ * composants (dont deux providers) appellent l'API en parallèle. Sans ce garde,
+ * un access token expiré déclencherait une dizaine de POST /auth/refresh
+ * simultanés — amplifiant la charge et Station sur un 429, ce qui se traduit
+ * par une déconnexion alors que le refresh était valide.
+ */
+let refreshInFlight: Promise<boolean> | null = null;
+
+async function refreshAccessToken(): Promise<boolean> {
+  if (refreshInFlight) return refreshInFlight;
+
+  refreshInFlight = (async () => {
+    const refreshToken = getRefreshToken();
+    if (!refreshToken) return false;
+    try {
+      const res = await fetch(`${BASE}/auth/refresh`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ refreshToken }),
+        signal: AbortSignal.timeout(DEFAULT_TIMEOUT_MS),
+      });
+      if (!res.ok) return false;
+      const tokens = (await res.json()) as {
+        accessToken: string;
+        refreshToken?: string;
+      };
+      if (!tokens?.accessToken) return false;
+      setTokens(tokens.accessToken, tokens.refreshToken ?? refreshToken);
+      return true;
+    } catch {
+      return false;
+    } finally {
+      refreshInFlight = null;
+    }
+  })();
+
+  return refreshInFlight;
+}
+
+async function request<T>(
+  method: string,
+  path: string,
+  body?: unknown,
+): Promise<T> {
+  // Un POST n'est pas rejouable : le rejouer pourrait dupliquer une écriture.
+  const canRetry = method === "GET" || method === "HEAD";
+  let lastError: unknown;
+  // Un seul passage par le refresh par requête, pour éviter une boucle.
+  let refreshed = false;
+
+  for (let attempt = 0; attempt <= (canRetry ? MAX_RETRIES : 0); attempt++) {
+    if (attempt > 0) await sleep(300 * 2 ** (attempt - 1));
+
+    let res: Response;
+    try {
+      res = await fetchOnce(method, path, body, DEFAULT_TIMEOUT_MS);
+    } catch (err) {
+      lastError =
+        err instanceof Error && err.name === "AbortError"
+          ? new Error(`Délai dépassé (${DEFAULT_TIMEOUT_MS / 1000}s) — ${method} ${path}`)
+          : err;
+      // Coupure réseau ou timeout : rejouable si la requête est idempotente.
+      if (attempt < MAX_RETRIES && canRetry) continue;
+      throw lastError;
+    }
+
+    if (res.status === 401) {
+      // Un 401 isolé ne doit pas fermer la session : c'est ce comportement qui
+      // causait la boucle logout/relogin. On tente un refresh, puis on rejoue.
+      if (!refreshed && (await refreshAccessToken())) {
+        refreshed = true;
+        if (canRetry) {
+          // On rend une tentative au budget : le refresh a résolu le problème.
+          // `continue` va réincrémenter `attempt`, d'où le décrément.
+          attempt -= 1
+          continue
+        }
+      }
+      if (!refreshed) {
+        // Session réellement morte : on ne purge que si aucun refresh n'était
+        // disponible, sinon on aurait laissé un onglet valide se déconnecter.
+        clearToken()
+        throw new Error("Session expirée — reconnectez-vous.")
+      }
+      throw new Error("Non authentifié")
+    }
+
+    if (res.status === 204) return undefined as T;
+
+    if (!res.ok) {
+      // 429 / 408 / 5xx : transitoires, on rejoue. Les autres sont définitives.
+      const transient = res.status === 429 || res.status === 408 || res.status >= 500;
+      if (!transient || !canRetry) {
+        const err = await res.json().catch(() => ({ message: res.statusText }));
+        throw new Error(
+          (err as { message?: string }).message ?? `HTTP ${res.status}`,
+        );
+      }
+      lastError = new Error(`HTTP ${res.status}`);
+      continue;
+    }
+
+    return res.json() as Promise<T>;
   }
 
-  if (res.status === 204) return undefined as T;
-
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({ message: res.statusText }));
-    throw new Error(
-      (err as { message?: string }).message ?? `HTTP ${res.status}`,
-    );
-  }
-  return res.json() as Promise<T>;
+  throw lastError instanceof Error ? lastError : new Error("Échec de la requête");
 }
 
 // ── Auth ─────────────────────────────────────────────────────────────────────
 
 export const auth = {
   login: (email: string, password: string) =>
-    request<{ accessToken: string }>("POST", "/auth/login/admin", {
+    request<{ accessToken: string; refreshToken: string }>("POST", "/auth/login/admin", {
       email,
       password,
     }),
@@ -212,6 +378,20 @@ export const adminUsers = {
     request<AdminUser>("PATCH", `/admin/users/${id}`, dto),
   delete: (id: string) =>
     request<void>("DELETE", `/admin/users/${id}`),
+  /**
+   * Upload l'avatar (base64). Meme endpoint que la console :
+   * POST /admin/users/:id/avatar, permission USER_WRITE.
+   */
+  setAvatar: (
+    id: string,
+    payload: { data: string; filename: string; mimeType: string },
+  ) =>
+    request<{ avatar_url: string }>("POST", `/admin/users/${id}/avatar`, payload),
+  /** Retire l'avatar — le PATCH standard suffit, avatar_url = null. */
+  removeAvatar: (id: string) =>
+    request<AdminUser>("PATCH", `/admin/users/${id}`, {
+      avatar_url: null,
+    } as Partial<CreateUserDto>),
   getUserSites: (userId: string) =>
     request<Site[]>("GET", `/admin/users/${userId}/sites/full`),
 }
@@ -334,6 +514,28 @@ export const invoices = {
     return request<Invoice[]>("GET", `/admin/invoices${qs ? `?${qs}` : ''}`)
   },
   get: (id: string) => request<Invoice>("GET", `/admin/invoices/${id}`),
+  updateStatus: (id: string, statut: string, datePaiement?: string) =>
+    request<Invoice>("PATCH", `/admin/invoices/${id}`, { statut, datePaiement }),
+  /**
+   * Trigger async PDF generation for an invoice via Bull queue.
+   */
+  generatePdf: (id: string) =>
+    request<{ message: string; invoiceId: string }>("POST", `/admin/invoices/${id}/generate-pdf`),
+  /**
+   * Get a time-limited presigned download URL for an invoice PDF.
+   * Resolves the S3 key from the invoice's pdfUrl field.
+   */
+  downloadUrl: async (invoiceId: string): Promise<string> => {
+    const inv = await request<Invoice>("GET", `/admin/invoices/${invoiceId}`)
+    if (!inv.pdfUrl) throw new Error('PDF non disponible')
+    // pdfUrl format: http://host/bucket/{key}
+    const bucket = 'orpailleur-documents'
+    const idx = inv.pdfUrl.indexOf(`/${bucket}/`)
+    if (idx === -1) throw new Error('Format de lien PDF invalide')
+    const key = inv.pdfUrl.slice(idx + bucket.length + 2)
+    const result = await request<{ url: string }>("GET", `/admin/documents/presigned/${encodeURIComponent(key)}`)
+    return result.url
+  },
 }
 
 // ── Audit Logs ────────────────────────────────────────────────────────────────

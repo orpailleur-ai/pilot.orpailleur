@@ -3,12 +3,14 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { TextInput, Button, useToast } from '@astryxdesign/core'
-import { auth, setToken } from '@/lib/api-client'
+import { useAuth } from '@/components/providers/auth-context'
 import { useI18n } from '@/lib/i18n'
 import { InlineError } from '@/components/ui/inline-error'
+import { AuthPageControls } from '@/components/ui/auth-page-controls'
 
 export default function LoginPage() {
   const router = useRouter()
+  const { login } = useAuth()
   const { t } = useI18n()
   const toast = useToast()
   const [email, setEmail] = useState('')
@@ -21,8 +23,11 @@ export default function LoginPage() {
     setError(null)
     setLoading(true)
     try {
-      const tokens = await auth.login(email, password)
-      setToken(tokens.accessToken)
+      // Passe par le contexte : c'est lui qui stocke les tokens ET met à jour
+      // l'état React. Écrire seulement dans le stockage laissait
+      // `isAuthenticated` à false, et (app)/layout.tsx redirigeait
+      // immédiatement vers /login — d'où la boucle /login ↔ /tenants.
+      await login(email, password)
       router.push('/tenants')
     } catch (err) {
       const msg = err instanceof Error ? err.message : t('error')
@@ -38,6 +43,7 @@ export default function LoginPage() {
       className="min-h-screen flex items-center justify-center p-4"
       style={{ backgroundColor: 'var(--color-background-body)' }}
     >
+      <AuthPageControls />
       <div className="w-full max-w-sm">
         {/* Brand */}
         <div className="text-center mb-8">
@@ -54,7 +60,7 @@ export default function LoginPage() {
             Orpailleur
           </h1>
           <p className="text-sm mt-1" style={{ color: 'var(--color-text-secondary)' }}>
-            Pilot — Administration
+            {t('pilot_subtitle', 'Pilot — Administration')}
           </p>
         </div>
 
@@ -112,7 +118,7 @@ export default function LoginPage() {
           className="text-center text-xs mt-6"
           style={{ color: 'var(--color-text-secondary)' }}
         >
-          Accès réservé aux administrateurs Orpailleur
+          {t('access_restricted', 'Accès réservé aux administrateurs Orpailleur')}
         </p>
       </div>
     </div>

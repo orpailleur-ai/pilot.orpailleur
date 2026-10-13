@@ -18,6 +18,9 @@ const figtree = Figtree({
 export const metadata: Metadata = {
   title: 'Orpailleur — Pilot',
   description: 'Administration Orpailleur',
+  // Declaring the icon stops browsers probing /favicon.ico, which 404s
+  // because the repo ships no favicon.ico.
+  icons: { icon: '/icon.svg', apple: '/icon.svg' },
 }
 
 const themeModeScript = `(function(){try{

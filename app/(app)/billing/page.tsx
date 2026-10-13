@@ -11,6 +11,9 @@ import {
   Receipt,
   ArrowUpRight,
   ArrowDownRight,
+  Download,
+  Loader2,
+  FileText,
 } from 'lucide-react'
 import {
   adminTenants,
@@ -27,6 +30,7 @@ import { InlineError } from '@/components/ui/inline-error'
 import { KpiCard } from '@/components/composite/kpi-card'
 import { DataTable, type Column } from '@/components/ui/data-table'
 import { useRouter } from 'next/navigation'
+import { useToast } from '@astryxdesign/core'
 
 function formatEUR(cents: number): string {
   return new Intl.NumberFormat('fr-FR', {
@@ -54,12 +58,48 @@ const STATUT_LABELS: Record<string, { label: string; color: string; icon: React.
 export default function BillingPage() {
   const { t } = useI18n()
   const router = useRouter()
+  const toast = useToast()
   const [subs, setSubs] = useState<Subscription[]>([])
   const [plans, setPlans] = useState<Plan[]>([])
   const [tenants, setTenants] = useState<{ id: string; nom: string }[]>([])
   const [overdueInvoices, setOverdueInvoices] = useState<Invoice[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [generatingId, setGeneratingId] = useState<string | null>(null)
+
+  async function handleDownload(inv: Invoice) {
+    if (!inv.pdfUrl) {
+      toast({ body: 'PDF non disponible — en cours de génération', type: 'info' })
+      return
+    }
+    try {
+      const url = await invoices.downloadUrl(inv.id)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `${inv.numero}.pdf`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+    } catch {
+      toast({ body: 'Erreur de téléchargement', type: 'error' })
+    }
+  }
+
+  async function handleGeneratePdf(inv: Invoice) {
+    setGeneratingId(inv.id)
+    try {
+      await invoices.generatePdf(inv.id)
+      toast({ body: 'PDF en cours de génération — actualisez dans quelques secondes', type: 'info' })
+      setTimeout(async () => {
+        const updated = await invoices.list(undefined, 'past_due')
+        setOverdueInvoices(updated)
+      }, 3000)
+    } catch {
+      toast({ body: 'Erreur de génération', type: 'error' })
+    } finally {
+      setGeneratingId(null)
+    }
+  }
 
   useEffect(() => {
     Promise.all([
@@ -269,12 +309,38 @@ export default function BillingPage() {
                       {inv.numero} · {formatDate(inv.dateEcheance)}
                     </span>
                   </div>
-                  <span
-                    className="text-sm font-semibold flex-shrink-0 ms-2"
-                    style={{ color: 'var(--color-destructive, #ef4444)' }}
-                  >
-                    {formatEUR(inv.montantCents)}
-                  </span>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <span
+                      className="text-sm font-semibold"
+                      style={{ color: 'var(--color-destructive, #ef4444)' }}
+                    >
+                      {formatEUR(inv.montantCents)}
+                    </span>
+                    {inv.pdfUrl ? (
+                      <button
+                        onClick={() => handleDownload(inv)}
+                        className="flex items-center justify-center rounded p-1 transition-colors hover:bg-black/5"
+                        title="Télécharger le PDF"
+                        style={{ color: 'var(--color-text-secondary)' }}
+                      >
+                        <Download size={14} />
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => handleGeneratePdf(inv)}
+                        disabled={generatingId === inv.id}
+                        className="flex items-center justify-center rounded p-1 transition-colors hover:bg-black/5 disabled:opacity-50"
+                        title="Générer le PDF"
+                        style={{ color: 'var(--color-text-secondary)' }}
+                      >
+                        {generatingId === inv.id ? (
+                          <Loader2 size={14} className="animate-spin" />
+                        ) : (
+                          <FileText size={14} />
+                        )}
+                      </button>
+                    )}
+                  </div>
                 </div>
               ))}
               {overdueInvoices.length > 8 && (
