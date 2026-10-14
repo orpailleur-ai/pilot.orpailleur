@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 430" role="img" aria-label="Orpailleur">
+<circle cx="22" cy="22" r="22" fill="#143A5C"/>
+<circle cx="94" cy="22" r="22" fill="#143A5C"/>
+<circle cx="166" cy="22" r="22" fill="#143A5C"/>
+<circle cx="238" cy="22" r="22" fill="#143A5C"/>
+<circle cx="310" cy="22" r="22" fill="#143A5C"/>
+<circle cx="58" cy="94" r="22" fill="#143A5C"/>
+<circle cx="130" cy="94" r="22" fill="#143A5C"/>
+<circle cx="202" cy="94" r="22" fill="#143A5C"/>
+<circle cx="274" cy="94" r="22" fill="#143A5C"/>
+<circle cx="94" cy="166" r="22" fill="#143A5C"/>
+<circle cx="166" cy="166" r="22" fill="#143A5C"/>
+<circle cx="238" cy="166" r="22" fill="#143A5C"/>
+<circle cx="130" cy="238" r="22" fill="#143A5C"/>
+<circle cx="202" cy="238" r="22" fill="#143A5C"/>
+<polygon points="144,286 192,334 144,382 96,334" fill="#D8A629"/>
+</svg>

@@ -4,9 +4,14 @@
    compile en bundle séparé, ce qui est le bon comportement de toute façon.
 
    Ce fichier ne contient que : la couche Tailwind, la couleur de bordure par
-   défaut, et les jetons d'AMORÇAGE — ceux qui valent avant le premier rendu
-   client. La palette réelle est injectée par le ThemeProvider (voir
-   src/lib/theme-tokens.ts) et écrase tout ce qui suit.
+   défaut, et les jetons de marque de la charte Orpailleur v2.1.
+
+   Correction par rapport à une version antérieure : pilot n'a PAS de
+   ThemeProvider. Le commentaire annonçait une palette injectée à l'exécution
+   « qui écrase tout ce qui suit » — c'est la console, où le tenant choisit
+   sa couleur. Ici `lib/theme-tokens.ts` n'est qu'un jeu de constantes, et les
+   jetons ci-dessous font autorité : personne ne les réécrit après le
+   chargement.
 
    Ne pas y déclarer de @layer : l'ordre des couches est figé par
    src/app/layers.css, importé en premier. */
@@ -36,42 +41,97 @@
 }
 
 /* ============================================================
-   Brand CSS tokens — palette injectée par ThemeProvider
+   Charte Orpailleur v2.1 — palette
+   ------------------------------------------------------------
+   Relevée sur `Orpailleur-Branding-v2-1.pdf`, et non choisie à
+   la main. Le détail des valeurs, de leur provenance et des
+   contrastes vérifiés vit dans `lib/brand.ts` ; ce bloc n'est
+   que le reflet CSS, à garder synchronisé.
+
+   Pilot n'a PAS de ThemeProvider : rien n'injecte ces jetons
+   à l'exécution, ils font donc autorité. (Le commentaire qui
+   annonçait une injection par le ThemeProvider décrivait la
+   console — voir plus bas.)
    ============================================================ */
 :root {
-  /* Brand primary (bleu ardoise par défaut, avant le premier rendu client).
-     Seul `500` est canonique : le ThemeProvider dérive le reste de l'échelle
-     à partir de la couleur choisie par le tenant et écrase ces valeurs. */
-  --color-primary-50: #eff6ff;
-  --color-primary-100: #dbeafe;
-  --color-primary-200: #bfdbfe;
-  --color-primary-300: #93c5fd;
-  --color-primary-400: #60a5fa;
-  --color-primary-500: #3b82f6;
-  --color-primary-600: #2563eb;
-  --color-primary-700: #1d4ed8;
-  --color-primary-800: #1e40af;
-  --color-primary-900: #1e3a8a;
+  /* Échelle primaire — bleu nuit en 500.
+     200/300/400/500 viennent du document ; les autres en sont
+     dérivés par mélange, vers le blanc en dessous de 500 et
+     vers le noir au-dessus, ce qui garde la teinte constante.
+     `300` ne fait que 2,27:1 sur blanc : bordure ou aplat, pas
+     texte. */
+  --color-primary-50: #ECEFF2;
+  --color-primary-100: #D9DFE5;
+  --color-primary-200: #BFCBD7;
+  --color-primary-300: #9FB0C2;
+  --color-primary-400: #5E7590;
+  --color-primary-500: #143A5C;
+  --color-primary-600: #11314D;
+  --color-primary-700: #0E283F;
+  --color-primary-800: #0B2033;
+  --color-primary-900: #081827;
+
+  /* Les quatre couleurs nommées par le document. */
+  --color-brand-navy: #143A5C;
+  --color-brand-gold: #D8A629;
+  --color-brand-cream: #F6F6F3;
+  --color-brand-anthracite: #434343;
 
   /* App logo */
   --app-logo-url: none;
 }
 
 /* ============================================================
-   Jetons applicatifs
+   Neutres — ajustement DE MARQUE, pas de refonte
    ------------------------------------------------------------
-   IMPORTANT — ne pas réécrire les jetons neutres d'Astryx.
+   IMPORTANT — ne pas réécrire la structure des neutres d'Astryx.
 
-   Astryx pilote ses propres composants avec sa rampe de neutres
-   (--color-background-surface, --color-background-muted,
-   --color-border, --color-text-primary…). Les surcharger cassait
-   la lisibilité de ses composants : la puce sélectionnée d'un
+   Astryx pilote ses composants avec sa propre rampe
+   (--color-background-surface, --color-border,
+   --color-text-primary…). La surcharger *à plat* cassait la
+   lisibilité de ses composants : la puce sélectionnée d'un
    SegmentedControl utilise --color-background-surface, et l'égaler
    à la couleur de carte la faisait disparaître dans le fond.
 
-   On se contente donc d'ALIASER nos noms vers ceux d'Astryx, et de
-   ne surcharger que la famille « accent », qui est la seule chose
-   que le tenant choisit.
+   On ne touche donc qu'à des VALEURS, en préservant chaque
+   relation entre elles :
+     · le fond passe du gris froid #f1f1f1 au blanc cassé ;
+     · la surface reste le blanc pur — c'est ce qui crée la
+       hauteur de carte, et le document distingue les deux ;
+     · muted reste ÉGAL au fond, comme chez Astryx ;
+     · le texte passe du noir pur à l'anthracite du document ;
+     · la bordure passe du noir à 8 % au gris chaud du document.
+
+   La seule relation qu'il fallait RECALCULER est texte
+   principal / texte secondaire : l'anthracite #434343 est
+   plus sombre que le #474747 d'Astryx, et les deux se
+   seraient confondus (1,06:1). Le secondaire descend donc à
+   #5E5E5E — 5,99:1 sur le blanc cassé, et 1,53:1 face au
+   principal. Aucune teinte bleue du document ne convient
+   ici : la plus sombre, #5E7590, plafonne à 4,38:1 sur crème.
+   ============================================================ */
+:root {
+  --color-background-body: light-dark(#F6F6F3, #1b1b1b);
+  --color-background-muted: light-dark(#F6F6F3, #1b1b1b);
+  --color-text-primary: light-dark(#434343, #ffffff);
+  --color-text-secondary: light-dark(#5E5E5E, #9e9e9e);
+  --color-border: light-dark(#E2E2DD, #ffffff1A);
+}
+
+/* ============================================================
+   Jetons applicatifs
+   ------------------------------------------------------------
+   IMPORTANT — ne pas réécrire la STRUCTURE des jetons neutres d'Astryx.
+
+   Astryx pilote ses propres composants avec sa rampe de neutres. Les
+   surcharger à plat cassait la lisibilité : la puce sélectionnée d'un
+   SegmentedControl utilise --color-background-surface, et l'égaler à la
+   couleur de carte la faisait disparaître dans le fond.
+
+   On se contente donc d'ALIASER nos noms vers ceux d'Astryx. Les quelques
+   VALEURS retouchées plus haut — fond, texte, bordure — préservent toutes
+   les relations entre elles ; c'est la structure, pas les teintes, qu'il ne
+   faut pas casser.
    ============================================================ */
 /*
    `color-scheme` n'est plus posé ici. C'est désormais le composant <Theme>
@@ -93,20 +153,45 @@ html:root {
   --shadow-popover: var(--shadow-high);
 
   /* ── Accent de marque ──
-     Valeurs d'amorçage, avant le premier rendu client : le ThemeProvider les
-     remplace dès que le thème du tenant est chargé. Le bleu est assez sombre
-     pour que le blanc soit lisible dessus. */
-  --color-accent: var(--color-primary-500);
-  --color-on-accent: #ffffff;
-  --color-icon-accent: var(--color-primary-600);
-  --color-text-accent: var(--color-primary-700);
+     Le bleu nuit est la couleur dominante du document. En mode
+     sombre il NE PEUT PAS servir tel quel : sur le fond #1b1b1b
+     d'Astryx il ne fait que 1,47:1, et un bouton bleu nuit
+     disparaîtrait dans le fond. On bascule donc sur le bleu 200 du
+     document, avec le bleu nuit en texte par-dessus — 7,12:1.
 
-  /* Les sémantiques ne sont PAS déclarées ici. Nos pages les nomment
-     `--color-danger` / `--color-success` / `--color-warning`, alors qu'Astryx
-     ne connaît que `--color-error` ; et les deux autres portent le même nom
-     qu'un jeton Astryx réel, donc un alias ici serait circulaire. Le
-     ThemeProvider écrit les six jetons (les deux vocabulaires) dès que le
-     thème est chargé — voir src/lib/theme-tokens.ts. */
+     L'or, lui, reste un accent de MARQUE et n'est jamais un fond
+     supportant du texte : blanc sur or ne fait que 2,23:1. Sur
+     l'or, c'est le bleu nuit qui porte le texte (5,26:1). */
+  --color-accent: light-dark(var(--color-primary-500), var(--color-primary-200));
+  --color-on-accent: light-dark(#ffffff, var(--color-primary-500));
+  --color-icon-accent: light-dark(var(--color-primary-500), var(--color-primary-200));
+  --color-text-accent: light-dark(var(--color-primary-600), var(--color-primary-200));
+
+  /* Sémantiques — ALIAS, pas définition.
+     `--color-success` et `--color-warning` portent les mêmes noms qu'Astryx et
+     sont donc déjà résolus. Il manque `--color-danger`, que nos treize fichiers
+     nomment `--color-danger` alors qu'Astryx ne publie que `--color-error` :
+     il n'était défini dans AUCUNE feuille, et la couleur ne résolvait pas.
+     L'alias ci-dessous corrige ce défaut.
+
+     Les valeurs viennent donc d'Astryx, ce qui est le bon choix : ce sont des
+     couleurs FONCTIONNELLES, la charte ne dit rien d'elles, et les mélanger au
+     bleu nuit rendrait un échec indistinguable d'un élément normal.
+
+     ── Un défaut PRÉEXISTANT, mesuré et non corrigé ici ─────────────────────
+     En usage texte sur fond clair, ces trois couleurs sont sous le seuil AA :
+
+         erreur    #E3193B   4,34:1   (il était 4,16 sur l'ancien gris)
+         succès    #0D8626   4,35:1   (il était 4,17)
+         avertiss. #E9AF08   1,83:1   (il était 1,75)
+
+     Le passage au blanc cassé du document les a donc légèrement AMÉLIORÉES,
+     sans les rendre conformes — l'avertissement reste le pire, à 1,83:1. Le
+     défaut vient d'Astryx, pas de la charte, et le corriger demanderait de
+     retoucher une trentaine de fichiers : c'est un chantier à part, à ouvrir
+     explicitement, pas une correction à glisser dans un changement de
+     palette. Il est consigné ici pour qu'on ne le.redécouvre pas. */
+  --color-danger: var(--color-error);
 }
 
 /* ============================================================
@@ -117,9 +202,9 @@ html:root {
    ============================================================ */
 @layer utilities {
   /* Barres de défilement aux couleurs du thème.
-     Les jetons --color-border / --color-accent sont réécrits par le
-     ThemeProvider, donc le scrollbar suit le thème du tenant ET le mode
-     sombre sans code supplémentaire. `scrollbar-color` couvre Firefox,
+     Les jetons --color-border / --color-accent sont posés par la charte,
+     donc le scrollbar suit le thème ET le mode sombre sans code
+     supplémentaire. `scrollbar-color` couvre Firefox,
      les pseudo-éléments ::-webkit- couvrent Chrome/Safari/Edge. */
   * {
     scrollbar-width: thin;

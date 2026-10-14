@@ -7,6 +7,7 @@ import { PanelLeftClose, PanelLeftOpen, type LucideIcon } from 'lucide-react'
 import { APPS, findApp, type AppDefinition } from '@/lib/apps'
 import { useT } from '@/lib/i18n'
 import clsx from 'clsx'
+import { OrpailleurMark } from '@/components/brand/orpailleur-mark'
 
 const COLLAPSE_KEY = 'orpailleur_sidebar_collapsed'
 
@@ -65,21 +66,19 @@ export function Sidebar({ logoUrl, orgName = 'Orpailleur' }: SidebarProps) {
         )}
       >
         {logoUrl && logoUrl !== '' ? (
+          // Un logo de tenant prime TOUJOURS sur la marque : un groupe qui a
+          // téléversé le sien a voulu le voir, pas le nôtre.
           <img
             src={logoUrl}
             alt=""
             className="h-7 w-7 shrink-0 rounded-lg object-contain"
           />
         ) : (
-          <span
-            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-sm font-bold"
-            style={{
-              backgroundColor: 'var(--color-accent)',
-              color: 'var(--color-on-accent)',
-            }}
-          >
-            {orgName.charAt(0).toUpperCase()}
-          </span>
+          // Sans logo de tenant, le logotype. C'était une pastille avec la
+          // première lettre de l'organization — un « O » bleu dans un carré,
+          // qui ne ressemble à rien de la marque et se confond avec une
+          // icône d'application.
+          <OrpailleurMark size={26} />
         )}
 
         {!collapsed && (

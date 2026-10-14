@@ -30,18 +30,22 @@ export interface BrandSettings {
   nom_boulangerie: string | null
 }
 
-const ACCENT = '#3B82F6'
+const ACCENT = '#143A5C'
 
-/** Thème de repli : bleu ardoise professionnel. */
+/** Thème de repli : la charte Orpailleur v2.1 (voir lib/brand.ts). */
 export const DEFAULT_BRAND_THEME: BrandTheme = {
   colors: {
     primary: { '500': ACCENT },
-    danger: { '500': '#dc2626' },
-    success: { '500': '#22c55e' },
-    warning: { '500': '#f59e0b' },
+    // Fonctionnelles, pas de marque : le document ne les définit pas, et
+    // les mélanger au bleu nuit rendrait un échec indistinguable d'un
+    // élément normal. Mêmes valeurs que les jetons d'Astryx, pour que le
+    // repli et le rendu réel ne divergent pas.
+    danger: { '500': '#76000C' },
+    success: { '500': '#00490B' },
+    warning: { '500': '#4B3900' },
   },
   radius: { sm: '4px', md: '8px', lg: '16px', xl: '24px' },
-  fontFamily: 'Figtree',
+  fontFamily: 'Manrope',
 }
 
 /**

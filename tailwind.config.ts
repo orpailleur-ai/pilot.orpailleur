@@ -43,7 +43,11 @@ const config: Config = {
         DEFAULT: 'var(--color-accent)',
       },
       fontFamily: {
-        sans: ['Figtree', 'system-ui', 'sans-serif'],
+        // Manrope d'abord, puis la variable posée par next/font (voir
+        // app/layout.tsx), puis les replis système. L'ordre compte : sans
+        // la variable, un navigateur sans accès au webfont retomberait
+        // directement sur system-ui au lieu d'utiliser le nom local.
+        sans: ['var(--font-manrope)', 'Manrope', 'system-ui', 'sans-serif'],
       },
     },
   },

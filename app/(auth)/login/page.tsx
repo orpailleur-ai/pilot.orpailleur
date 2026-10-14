@@ -7,6 +7,7 @@ import { useAuth } from '@/components/providers/auth-context'
 import { useI18n } from '@/lib/i18n'
 import { InlineError } from '@/components/ui/inline-error'
 import { AuthPageControls } from '@/components/ui/auth-page-controls'
+import { OrpailleurAppIcon } from '@/components/brand/orpailleur-mark'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -45,16 +46,26 @@ export default function LoginPage() {
     >
       <AuthPageControls />
       <div className="w-full max-w-sm">
-        {/* Brand */}
+        {/* Marque */}
         <div className="text-center mb-8">
-          <div
-            className="inline-flex h-12 w-12 items-center justify-center rounded-xl mb-3"
-            style={{ backgroundColor: 'var(--color-accent)', color: 'var(--color-on-accent)' }}
-          >
-            <span className="text-xl font-bold">O</span>
+          {/* L'icône applicative du document : le tamis sur aplat bleu nuit.
+              C'était une pastille carrée avec un « O » — une icône
+              d'application générique, qui ne disait rien de la marque.
+
+              L'ICÔNE et non le logotype nu, et c'est délibéré : à cette
+              taille, un disque de la gerbe complète fait 4,5 px et le symbole
+              se réduit à une grappe de points. L'aplat donne la masse visuelle
+              que la seule grille n'a pas — c'est exactement pour cela que le
+              document le fournit à part.
+
+              Le bleu est une constante de marque, PAS `var(--color-accent)` :
+              le bleu nuit ne se verrait pas sur un aplat marine, et l'accent
+              bascule en mode sombre. Une marque ne se thématise pas. */}
+          <div className="mb-3 flex justify-center">
+            <OrpailleurAppIcon size={48} />
           </div>
           <h1
-            className="text-2xl font-bold"
+            className="text-2xl font-semibold tracking-wide"
             style={{ color: 'var(--color-text-primary)' }}
           >
             Orpailleur
