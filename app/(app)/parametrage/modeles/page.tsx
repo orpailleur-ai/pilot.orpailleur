@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { AlertTriangle, Check, Key, Pencil, Plus, Trash2 } from 'lucide-react'
 import { apiClient } from '@/lib/api-client'
 import { useI18n } from '@/lib/i18n'
-import { libelleScope } from '@/lib/i18n/scopes'
+import { libelleDetail, libelleScope } from '@/lib/i18n/scopes'
 import { PageHeader } from '@/components/layout/page-header'
 import { InlineError } from '@/components/ui/inline-error'
 import { TableSkeleton } from '@/components/ui/table-skeleton'
@@ -179,14 +179,29 @@ export default function ModelesPage() {
             const actif = lignes.find((m) => m.actif)
             return (
               <section key={scope.code}>
-                <div className="mb-2 flex items-baseline gap-2">
+                {/* Le nom traduit porte le titre ; le code n'est plus qu'un
+                    badge. L'inverse — un `ocr_vision` en titre et la
+                    traduction en petit gris — obligeait l'administrateur à
+                    connaître l'identifiant technique pour comprendre la
+                    section. */}
+                <div className="mb-1 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
                   <h2 className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-                    {scope.code}
-                  </h2>
-                  <span className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
                     {libelleScope(scope.code, t)}
-                  </span>
+                  </h2>
+                  <code
+                    className="rounded px-1 py-0.5 text-[11px]"
+                    style={{
+                      backgroundColor: 'var(--color-background-muted)',
+                      color: 'var(--color-text-secondary)',
+                      fontFamily: 'ui-monospace, monospace',
+                    }}
+                  >
+                    {scope.code}
+                  </code>
                 </div>
+                <p className="mb-2 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                  {libelleDetail(scope.code, t)}
+                </p>
                 {lignes.length === 0 ? (
                   <p
                     className="rounded-lg border px-3 py-2 text-xs"
@@ -393,7 +408,7 @@ function Formulaire({
           >
             {scopes.map((s) => (
               <option key={s.code} value={s.code}>
-                {s.code} — {libelleScope(s.code, t)}
+                {libelleScope(s.code, t)} ({s.code})
               </option>
             ))}
           </select>
@@ -455,32 +470,44 @@ function Formulaire({
             />
           </Champ>
 
-        <div className="grid grid-cols-2 gap-2">
-          <Champ label={t('ai_models_price_in')}>
-            <input
-              type="number"
-              step="0.01"
-              min="0"
-              value={String(v['prix_entree_eur_par_m'] ?? '')}
-              onChange={(e) => set('prix_entree_eur_par_m', e.target.value)}
-              placeholder={t('ai_models_unpriced')}
-              className="w-full rounded border px-2 py-1.5 text-sm"
-              style={champStyle()}
-            />
-          </Champ>
-          <Champ label={t('ai_models_price_out')}>
-            <input
-              type="number"
-              step="0.01"
-              min="0"
-              value={String(v['prix_sortie_eur_par_m'] ?? '')}
-              onChange={(e) => set('prix_sortie_eur_par_m', e.target.value)}
-              placeholder={t('ai_models_unpriced')}
-              className="w-full rounded border px-2 py-1.5 text-sm"
-              style={champStyle()}
-            />
-          </Champ>
-        </div>
+      </div>
+
+      {/* Les tarifs sortent de la grille à trois colonnes.
+          Dedans, ils tombaient sur UNE colonne puis étaient scindés en deux :
+          chaque champ tenait un sixième de la largeur du formulaire, et les
+          molettes de `type="number"` mangeaient encore la place. Un barème mal
+          saisi — 2,0000 au lieu de 2,00 — passe inapercçu dans un champ de
+          quelques pixels.
+
+          Leur propre rangée pleine largeur leur laisse une moitié de formulaire
+          chacun, sur petit écran seulement si la place manque. */}
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <Champ label={t('ai_models_price_in')}>
+          <input
+            type="number"
+            step="0.01"
+            min="0"
+            inputMode="decimal"
+            value={String(v['prix_entree_eur_par_m'] ?? '')}
+            onChange={(e) => set('prix_entree_eur_par_m', e.target.value)}
+            placeholder={t('ai_models_unpriced')}
+            className="w-full rounded border px-3 py-2 text-sm tabular-nums"
+            style={champStyle()}
+          />
+        </Champ>
+        <Champ label={t('ai_models_price_out')}>
+          <input
+            type="number"
+            step="0.01"
+            min="0"
+            inputMode="decimal"
+            value={String(v['prix_sortie_eur_par_m'] ?? '')}
+            onChange={(e) => set('prix_sortie_eur_par_m', e.target.value)}
+            placeholder={t('ai_models_unpriced')}
+            className="w-full rounded border px-3 py-2 text-sm tabular-nums"
+            style={champStyle()}
+          />
+        </Champ>
       </div>
 
       <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>

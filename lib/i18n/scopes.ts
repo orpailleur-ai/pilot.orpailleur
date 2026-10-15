@@ -60,6 +60,21 @@ export type Perimetre = (typeof PERIMETRES_CONNUS)[number]
 export type ClePerimetre = `ai_scope_${Perimetre}`
 
 /**
+ * Clé de la DESCRIPTION d'un périmètre, distincte de son NOM.
+ *
+ * Deux libellés et non un seul : l'en-tête doit porter « Extraction de texte »
+ * — ce que l'administrateur cherche — et non `ocr_vision`, un identifiant
+ * technique qu'il ne connaît pas. Le code reste visible, en badge, pour la
+ * traçabilité.
+ *
+ * La description, elle, explique CE QUE FAIT le périmètre. C'est elle qui
+ * évite de configurer le mauvais : sept notions proches, dont deux se
+ * distinguent seulement par l'étape (« lecture des lignes » contre « agent de
+ * raisonnement »).
+ */
+export type ClePerimetreDetail = `ai_scope_${Perimetre}_detail`
+
+/**
  * Constructeur de la clé d'un périmètre.
  *
  * Typé en `string` et non en `ClePerimetre` : la valeur vient du SERVEUR, à
@@ -69,6 +84,11 @@ export type ClePerimetre = `ai_scope_${Perimetre}`
  */
 export function clePerimetre(code: string): ClePerimetre {
   return `ai_scope_${code}` as ClePerimetre
+}
+
+/** Clé de la description, même convention que le nom. */
+export function clePerimetreDetail(code: string): ClePerimetreDetail {
+  return `ai_scope_${code}_detail` as ClePerimetreDetail
 }
 
 /**
@@ -106,6 +126,37 @@ export function libelleScope(
       )
     }
     return code
+  }
+
+  return libelle
+}
+/**
+ * Description d'un périmètre, avec repli sur une chaîne VIDE.
+ *
+ * Diffère de `libelleScope` sur un point : l'absence de description ne doit
+ * pas afficher un code. Le NOM est indispensable — c'est le titre de la
+ * section ; la description ne l'est pas, et une ligne vide ne se voit pas,
+ * alors qu'un `ocr_vision` en guise d'explication nuirait plus qu'elle
+ * n'aiderait.
+ *
+ * Le contrat de type EXIGE pourtant la clé dans les deux dictionnaires : une
+ * description manquante doit se voir à la compilation, pas seulement ici.
+ */
+export function libelleDetail(
+  code: string,
+  t: (cle: string) => string,
+): string {
+  const cle = clePerimetreDetail(code)
+  const libelle = t(cle)
+
+  if (libelle === cle) {
+    if (typeof console !== 'undefined') {
+      console.warn(
+        `[i18n] le périmètre « ${code} » n'a pas de description ` +
+          `(${cle} absent des dictionnaires). Ajoutez-la en FR et en EN.`,
+      )
+    }
+    return ''
   }
 
   return libelle

@@ -1,4 +1,4 @@
-import type { ClePerimetre } from './scopes'
+import type { ClePerimetre, ClePerimetreDetail } from './scopes'
 
 /* `satisfies` EXIGE les clés de périmètre sans interdire les autres.
  * Supprimer une traduction devient une erreur de type — donc une
@@ -185,12 +185,19 @@ export const fr = {
   ai_models_default_used: 'Aucun modèle configuré — utilisation de {model}.',
   app_parametrage: 'Paramétrage',
   ai_models_nav: 'Modèles IA',
-  ai_scope_ocr_vision: 'Extraction du texte (PDF → texte)',
-  ai_scope_ocr_reasoning: 'Lecture des lignes d’une facture',
-  ai_scope_ocr_agent: 'Agent de raisonnement sur facture',
-  ai_scope_import_recette: 'Import d’une recette',
-  ai_scope_categorisation: 'Classement d’une matière',
-  ai_scope_bot: 'Assistant conversationnel',
-  ai_scope_regroupement: 'Regroupement de lignes',
   ai_models_no_default: 'Ce module n’utilise aujourd’hui aucun modèle.',
-} satisfies Record<ClePerimetre, string> & Record<string, string>
+  ai_scope_ocr_vision: 'Extraction de texte',
+  ai_scope_ocr_reasoning: 'Lecture des lignes',
+  ai_scope_ocr_agent: 'Agent de raisonnement',
+  ai_scope_import_recette: 'Import de recette',
+  ai_scope_bot: 'Assistant',
+  ai_scope_regroupement: 'Regroupement de lignes',
+  ai_scope_categorisation: 'Classement des matières',
+  ai_scope_ocr_vision_detail: "Détecte le texte d'une facture (PDF → texte)",
+  ai_scope_ocr_reasoning_detail: 'Transforme le texte en lignes de produits, quantités et montants',
+  ai_scope_ocr_agent_detail: "Raisonne sur la facture pour l'interpréter",
+  ai_scope_import_recette_detail: 'Lit une recette et la transforme en données',
+  ai_scope_bot_detail: 'Répond aux questions sur les données',
+  ai_scope_categorisation_detail: 'Range un produit dans sa catégorie',
+  ai_scope_regroupement_detail: "Regroupe des lignes proches d'une même facture",
+} satisfies Record<ClePerimetre | ClePerimetreDetail, string> & Record<string, string>

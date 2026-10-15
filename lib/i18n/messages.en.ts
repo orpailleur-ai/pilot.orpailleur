@@ -1,4 +1,4 @@
-import type { ClePerimetre } from './scopes'
+import type { ClePerimetre, ClePerimetreDetail } from './scopes'
 
 /* `satisfies` EXIGE les clés de périmètre sans interdire les autres.
  * Supprimer une traduction devient une erreur de type — donc une
@@ -186,12 +186,19 @@ export const en = {
 
   app_parametrage: 'Settings',
   ai_models_nav: 'AI models',
-  ai_scope_ocr_vision: 'Text extraction (PDF → text)',
-  ai_scope_ocr_reasoning: 'Reading an invoice’s lines',
-  ai_scope_ocr_agent: 'Reasoning agent on an invoice',
+  ai_models_no_default: 'This module uses no model today.',
+  ai_scope_ocr_vision: 'Text extraction',
+  ai_scope_ocr_reasoning: 'Line reading',
+  ai_scope_ocr_agent: 'Reasoning agent',
   ai_scope_import_recette: 'Recipe import',
   ai_scope_bot: 'Conversational assistant',
-  ai_scope_categorisation: 'Categorising an ingredient',
-  ai_scope_regroupement: 'Grouping lines',
-  ai_models_no_default: 'This module uses no model today.',
-} satisfies Record<ClePerimetre, string> & Record<string, string>
+  ai_scope_categorisation: 'Ingredient categorising',
+  ai_scope_regroupement: 'Line grouping',
+  ai_scope_ocr_vision_detail: 'Reads the text of an invoice (PDF → text)',
+  ai_scope_ocr_reasoning_detail: 'Turns the text into product lines, quantities and amounts',
+  ai_scope_ocr_agent_detail: 'Reasons over the invoice to interpret it',
+  ai_scope_import_recette_detail: 'Reads a recipe and turns it into data',
+  ai_scope_bot_detail: 'Answers questions about the data',
+  ai_scope_categorisation_detail: 'Files a product under its category',
+  ai_scope_regroupement_detail: 'Groups lines that belong together',
+} satisfies Record<ClePerimetre | ClePerimetreDetail, string> & Record<string, string>
