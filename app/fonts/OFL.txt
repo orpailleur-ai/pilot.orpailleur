@@ -1,0 +1,20 @@
+Manrope — SIL Open Font License 1.1
+====================================
+
+Police à poids variable, sous-ensemble latin, servie en auto-hébergé.
+
+  Famille   : Manrope
+  Fichier   : Manrope-latin.woff2 (24 836 octets)
+  Graisses  : 400–600 (plage variable)
+  Source    : https://fonts.google.com/specimen/Manrope
+  Licence   : https://openfontlicense.org
+
+Le fichier est embarqué dans le dépôt et servi depuis notre propre origine.
+Aucun appel n'est fait à un service tiers au moment du build ni à l'exécution.
+
+`next/font/local` injecte le nom `Manrope` dans la feuille servie, ce qui est la
+dénomination « Reserved Font Name » prévue par la licence : la police est donc
+identifiée par son nom d'origine, comme l'exige la SIL OFL.
+
+Cette mention accompagne le fichier ; l'auto-hébergement sans elle violerait la
+licence.
