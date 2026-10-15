@@ -10,9 +10,22 @@ import {
 } from 'react'
 import { fr } from './messages.fr'
 import { en } from './messages.en'
+import type { ClePerimetre } from './scopes'
 
 export type Locale = 'fr' | 'en'
-export type Messages = typeof fr
+/**
+ * Contrat des dictionnaires.
+ *
+ * `Record<ClePerimetre, string>` IMPOSE les libellés de périmètre dans les
+ * DEUX langues : en supprimer un devient une erreur de type, donc une
+ * construction en échec.
+ *
+ * `Record<string, string>` complète sans figer les VALEURS sur des littéraux.
+ * `typeof fr` faisait ce figeage, et `en` ne pouvait alors pas lui être
+ * affecté — chaque dictionnaire a ses propres mots. La parité importe ; pas
+ * l'égalité des chaînes.
+ */
+export type Messages = Record<ClePerimetre, string> & Record<string, string>
 
 const messages: Record<Locale, Messages> = { fr, en }
 

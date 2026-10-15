@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { AlertTriangle, Check, Key, Pencil, Plus, Trash2 } from 'lucide-react'
 import { apiClient } from '@/lib/api-client'
 import { useI18n } from '@/lib/i18n'
+import { libelleScope } from '@/lib/i18n/scopes'
 import { PageHeader } from '@/components/layout/page-header'
 import { InlineError } from '@/components/ui/inline-error'
 import { TableSkeleton } from '@/components/ui/table-skeleton'
@@ -46,7 +47,6 @@ interface Modele {
   scope: string
   provider: string
   model: string
-  key_source: 'env' | 'db'
   env_var: string | null
   cle: string | null
   prix_entree_eur_par_m: number | null
@@ -161,7 +161,7 @@ export default function ModelesPage() {
       ) : (
         <button
           type="button"
-          onClick={() => setEdition({ key_source: 'env', provider: 'mistral' })}
+          onClick={() => setEdition({ provider: 'mistral' })}
           className="mb-4 inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium"
           style={{ backgroundColor: 'var(--color-accent)', color: 'var(--color-on-accent)' }}
         >
@@ -184,7 +184,7 @@ export default function ModelesPage() {
                     {scope.code}
                   </h2>
                   <span className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
-                    {libellePerimetre(scope.code, t)}
+                    {libelleScope(scope.code, t)}
                   </span>
                 </div>
                 {lignes.length === 0 ? (
@@ -219,21 +219,6 @@ export default function ModelesPage() {
       )}
     </>
   )
-}
-
-/**
- * Libellé d'un périmètre, traduit, avec repli sur le CODE.
- *
- * `t()` rend la CLE quand elle est absente du dictionnaire — le message
- *critique pour distinguer « pas encore traduit » de « traduit ». Un
- * périmètre ajouté à l'API sans libellé client affiche donc son code, technique
- * et lisible, plutôt que `ai_scope_foo` à l'écran ou une phrase française
- * dans une interface anglaise.
- */
-function libellePerimetre(code: string, t: (k: string) => string): string {
-  const cle = `ai_scope_${code}`
-  const libelle = t(cle)
-  return libelle === cle ? code : libelle
 }
 
 /**
@@ -289,7 +274,7 @@ function Ligne({
       </span>
       <span className="flex items-center gap-1 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
         <Key size={12} />
-        {m.key_source === 'db' ? m.cle ?? '••••' : m.env_var ?? '—'}
+        {m.cle ?? t('ai_models_key_db')}
       </span>
       <span className="text-xs tabular-nums" style={{ color: 'var(--color-text-secondary)' }}>
         {/* `null` s'affiche « non tarifé » : un prix nul afficherait 0,00 € sur
@@ -362,8 +347,6 @@ function Formulaire({
     scope: initial.scope ?? scopes[0]?.code ?? '',
     provider: initial.provider ?? 'mistral',
     model: initial.model ?? '',
-    key_source: initial.key_source ?? 'env',
-    env_var: initial.env_var ?? 'MISTRAL_API_KEY',
     api_key: '',
     prix_entree_eur_par_m: initial.prix_entree_eur_par_m ?? '',
     prix_sortie_eur_par_m: initial.prix_sortie_eur_par_m ?? '',
@@ -384,11 +367,15 @@ function Formulaire({
           scope: v['scope'],
           provider: v['provider'],
           model: v['model'],
-          key_source: v['key_source'],
-          env_var: v['key_source'] === 'env' ? v['env_var'] : null,
-          // Une clé vide ne doit pas être envoyée : elle viderait une clé
+          // La clé va TOUJOURS en base, chiffrée. L'option « variable
+          // d'environnement » a été retirée : elle exposait deux emplacements
+          // possibles pour le même secret, et rien n'indiquait lequel faisait
+          // foi. Une seule source, un seul état à lire.
+          key_source: 'db',
+          env_var: null,
+          // Une clé vide ne doit PAS être envoyée : elle viderait une clé
           // déjà enregistrée au lieu de la laisser en place.
-          api_key: v['key_source'] === 'db' && v['api_key'] ? v['api_key'] : undefined,
+          api_key: v['api_key'] ? v['api_key'] : undefined,
           prix_entree_eur_par_m: prix(v['prix_entree_eur_par_m']),
           prix_sortie_eur_par_m: prix(v['prix_sortie_eur_par_m']),
           actif: v['actif'],
@@ -406,7 +393,7 @@ function Formulaire({
           >
             {scopes.map((s) => (
               <option key={s.code} value={s.code}>
-                {s.code} — {libellePerimetre(s.code, t)}
+                {s.code} — {libelleScope(s.code, t)}
               </option>
             ))}
           </select>
@@ -438,44 +425,35 @@ function Formulaire({
           />
         </Champ>
 
-        <Champ label={t('ai_models_key_source')}>
-          <select
-            value={String(v['key_source'])}
-            onChange={(e) => set('key_source', e.target.value)}
-            className="w-full rounded border px-2 py-1.5 text-sm"
-            style={champStyle()}
-          >
-            <option value="env">{t('ai_models_key_env')}</option>
-            <option value="db" disabled={!chiffrement}>
-              {t('ai_models_key_db')}
-            </option>
-          </select>
-        </Champ>
+        {/* La clé va TOUJOURS en base, chiffrée. Pas de sélecteur de source :
+            deux emplacements possibles pour le même secret n'ont pas de
+            « valeur par défaut » lisible, et l'administrateur devait
+            deviner lequel faisait foi. Une source, un état à lire, et le
+            chiffrement imposé par le serveur — jamais un choix de
+            l'interface.
 
-        {v['key_source'] === 'env' ? (
-          <Champ label={t('ai_models_env_var')}>
-            <input
-              value={String(v['env_var'] ?? '')}
-              onChange={(e) => set('env_var', e.target.value)}
-              required
-              className="w-full rounded border px-2 py-1.5 text-sm"
-              style={champStyle()}
-            />
-          </Champ>
-        ) : (
+            Le champ reste désactivé sans clé maîtresse : l'API refuserait
+            l'enregistrement, et un bouton actif qui échoue est pire qu'un
+            formulaire qui explique pourquoi il est fermé. */}
           <Champ label={t('ai_models_api_key')}>
             <input
               type="password"
               autoComplete="new-password"
               value={String(v['api_key'] ?? '')}
               onChange={(e) => set('api_key', e.target.value)}
+              disabled={!chiffrement}
               required={!initial.id}
-              placeholder={initial.id ? t('ai_models_key_unchanged') : 'sk-…'}
-              className="w-full rounded border px-2 py-1.5 text-sm"
+              placeholder={
+                !chiffrement
+                  ? t('ai_models_key_locked')
+                  : initial.id
+                    ? t('ai_models_key_unchanged')
+                    : 'sk-…'
+              }
+              className="w-full rounded border px-2 py-1.5 text-sm disabled:opacity-50"
               style={champStyle()}
             />
           </Champ>
-        )}
 
         <div className="grid grid-cols-2 gap-2">
           <Champ label={t('ai_models_price_in')}>

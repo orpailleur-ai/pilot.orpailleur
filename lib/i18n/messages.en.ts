@@ -1,4 +1,12 @@
+import type { ClePerimetre } from './scopes'
+
+/* `satisfies` EXIGE les clés de périmètre sans interdire les autres.
+ * Supprimer une traduction devient une erreur de type — donc une
+ * construction en échec — au lieu d'un libellé qui s'affiche en dur
+ * après le basculement de langue. */
 export const en = {
+  ai_models_key_locked: 'encryption unavailable — no master key',
+  ai_models_key_db: 'API key',
   // Global
   loading: 'Loading…',
   error: 'Error',
@@ -168,10 +176,6 @@ export const en = {
   ai_models_scope: 'Scope',
   ai_models_provider: 'Provider',
   ai_models_model: 'Model',
-  ai_models_key_source: 'Key source',
-  ai_models_key_env: 'Environment variable',
-  ai_models_key_db: 'In database (encrypted)',
-  ai_models_env_var: 'Variable name',
   ai_models_api_key: 'API key',
   ai_models_key_unchanged: 'leave empty to keep',
   ai_models_price_in: 'Input (€/M)',
@@ -190,4 +194,4 @@ export const en = {
   ai_scope_categorisation: 'Categorising an ingredient',
   ai_scope_regroupement: 'Grouping lines',
   ai_models_no_default: 'This module uses no model today.',
-}
+} satisfies Record<ClePerimetre, string> & Record<string, string>

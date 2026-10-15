@@ -1,4 +1,11 @@
+import type { ClePerimetre } from './scopes'
+
+/* `satisfies` EXIGE les clés de périmètre sans interdire les autres.
+ * Supprimer une traduction devient une erreur de type — donc une
+ * construction en échec — au lieu d'un libellé qui s'affiche en dur
+ * après le basculement de langue. */
 export const fr = {
+  ai_models_key_locked: 'chiffrement indisponible — clé maîtresse absente',
   // Global
   loading: 'Chargement…',
   error: 'Erreur',
@@ -168,10 +175,7 @@ export const fr = {
   ai_models_scope: 'Périmètre',
   ai_models_provider: 'Fournisseur',
   ai_models_model: 'Modèle',
-  ai_models_key_source: 'Source de la clé',
-  ai_models_key_env: "Variable d'environnement",
   ai_models_key_db: 'En base (chiffrée)',
-  ai_models_env_var: 'Nom de la variable',
   ai_models_api_key: 'Clé API',
   ai_models_key_unchanged: 'laisser vide pour ne pas changer',
   ai_models_price_in: 'Entrée (€/M)',
@@ -185,8 +189,8 @@ export const fr = {
   ai_scope_ocr_reasoning: 'Lecture des lignes d’une facture',
   ai_scope_ocr_agent: 'Agent de raisonnement sur facture',
   ai_scope_import_recette: 'Import d’une recette',
-  ai_scope_bot: 'Assistant conversationnel',
   ai_scope_categorisation: 'Classement d’une matière',
+  ai_scope_bot: 'Assistant conversationnel',
   ai_scope_regroupement: 'Regroupement de lignes',
   ai_models_no_default: 'Ce module n’utilise aujourd’hui aucun modèle.',
-}
+} satisfies Record<ClePerimetre, string> & Record<string, string>
