@@ -181,4 +181,12 @@ export const fr = {
   ai_models_default_used: 'Aucun modèle configuré — utilisation de {model}.',
   app_parametrage: 'Paramétrage',
   ai_models_nav: 'Modèles IA',
+  ai_scope_ocr_vision: 'Extraction du texte (PDF → texte)',
+  ai_scope_ocr_reasoning: 'Lecture des lignes d’une facture',
+  ai_scope_ocr_agent: 'Agent de raisonnement sur facture',
+  ai_scope_import_recette: 'Import d’une recette',
+  ai_scope_bot: 'Assistant conversationnel',
+  ai_scope_categorisation: 'Classement d’une matière',
+  ai_scope_regroupement: 'Regroupement de lignes',
+  ai_models_no_default: 'Ce module n’utilise aujourd’hui aucun modèle.',
 }

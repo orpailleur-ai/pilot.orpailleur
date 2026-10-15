@@ -35,8 +35,10 @@ import { TableSkeleton } from '@/components/ui/table-skeleton'
  */
 
 interface ScopeInfo {
+  /** L'API ne renvoie QUE le code. Le libellé vit dans le dictionnaire du
+   *  client : une description rédigée côté API resterait en français après
+   *  bascule de langue, alors que les 49 autres libellés de l'écran suivent. */
   code: string
-  role: string
 }
 
 interface Modele {
@@ -182,7 +184,7 @@ export default function ModelesPage() {
                     {scope.code}
                   </h2>
                   <span className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
-                    {scope.role}
+                    {libellePerimetre(scope.code, t)}
                   </span>
                 </div>
                 {lignes.length === 0 ? (
@@ -190,7 +192,12 @@ export default function ModelesPage() {
                     className="rounded-lg border px-3 py-2 text-xs"
                     style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-secondary)' }}
                   >
-                    {t('ai_models_default_used', { model: defautDe(scope.code) })}
+                    {(() => {
+                      const defaut = defautDe(scope.code)
+                      return defaut
+                        ? t('ai_models_default_used', { model: defaut })
+                        : t('ai_models_no_default')
+                    })()}
                   </p>
                 ) : (
                   <ul className="flex flex-col gap-2">
@@ -214,8 +221,31 @@ export default function ModelesPage() {
   )
 }
 
-/** Modèle employé quand rien n'est configuré — le comportement d'aujourd'hui. */
-function defautDe(scope: string): string {
+/**
+ * Libellé d'un périmètre, traduit, avec repli sur le CODE.
+ *
+ * `t()` rend la CLE quand elle est absente du dictionnaire — le message
+ *critique pour distinguer « pas encore traduit » de « traduit ». Un
+ * périmètre ajouté à l'API sans libellé client affiche donc son code, technique
+ * et lisible, plutôt que `ai_scope_foo` à l'écran ou une phrase française
+ * dans une interface anglaise.
+ */
+function libellePerimetre(code: string, t: (k: string) => string): string {
+  const cle = `ai_scope_${code}`
+  const libelle = t(cle)
+  return libelle === cle ? code : libelle
+}
+
+/**
+ * Modèle employé quand rien n'est configuré.
+ *
+ * `null` pour les périmètres qui n'ont PAS de modèle par défaut. Ces modules
+ * n'appellent aujourd'hui aucun modèle : afficher « utilisation de
+ * mistral-small » affirmerait un comportement qui n'existe pas, et un
+ * administrateur pourrait croire que le module est couvert alors qu'il ne
+ * l'est pas.
+ */
+function defautDe(scope: string): string | null {
   const defauts: Record<string, string> = {
     ocr_vision: 'mistral-ocr-latest',
     ocr_reasoning: 'mistral-large',
@@ -223,7 +253,7 @@ function defautDe(scope: string): string {
     import_recette: 'mistral-small',
     bot: 'mistral-small',
   }
-  return defauts[scope] ?? 'mistral-small'
+  return defauts[scope] ?? null
 }
 
 function Ligne({
@@ -376,7 +406,7 @@ function Formulaire({
           >
             {scopes.map((s) => (
               <option key={s.code} value={s.code}>
-                {s.code} — {s.role}
+                {s.code} — {libellePerimetre(s.code, t)}
               </option>
             ))}
           </select>

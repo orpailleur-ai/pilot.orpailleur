@@ -182,4 +182,12 @@ export const en = {
 
   app_parametrage: 'Settings',
   ai_models_nav: 'AI models',
+  ai_scope_ocr_vision: 'Text extraction (PDF → text)',
+  ai_scope_ocr_reasoning: 'Reading an invoice’s lines',
+  ai_scope_ocr_agent: 'Reasoning agent on an invoice',
+  ai_scope_import_recette: 'Recipe import',
+  ai_scope_bot: 'Conversational assistant',
+  ai_scope_categorisation: 'Categorising an ingredient',
+  ai_scope_regroupement: 'Grouping lines',
+  ai_models_no_default: 'This module uses no model today.',
 }
