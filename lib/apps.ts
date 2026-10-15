@@ -8,6 +8,8 @@ import {
   FileText,
   Receipt,
   ReceiptText,
+  Cpu,
+  Settings,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -45,6 +47,19 @@ export const APPS: AppDefinition[] = [
       { href: '/subscriptions', labelKey: 'subscriptions', icon: FileText },
       { href: '/invoices', labelKey: 'invoices', icon: ReceiptText },
       { href: '/billing', labelKey: 'billing', icon: Receipt },
+    ],
+  },
+  {
+    id: 'parametrage',
+    labelKey: 'app_parametrage',
+    icon: Settings,
+    color: 'var(--color-text-secondary)',
+    pages: [
+      // Configuration des modèles IA. Placée dans son propre groupe et non
+      // sous « Pilotage » : c'est une décision d'exploitation, qui relève de
+      // l'administrateur de la plateforme et non de l'exploitant d'une
+      // boulangerie.
+      { href: '/parametrage/modeles', labelKey: 'ai_models_nav', icon: Cpu },
     ],
   },
   {
