@@ -69,7 +69,7 @@ export default function BillingPage() {
 
   async function handleDownload(inv: Invoice) {
     if (!inv.pdfUrl) {
-      toast({ body: 'PDF non disponible — en cours de génération', type: 'info' })
+      toast({ body: t('pdf_pending'), type: 'info' })
       return
     }
     try {
@@ -81,7 +81,7 @@ export default function BillingPage() {
       link.click()
       document.body.removeChild(link)
     } catch {
-      toast({ body: 'Erreur de téléchargement', type: 'error' })
+      toast({ body: t('pdf_download_error'), type: 'error' })
     }
   }
 
@@ -89,13 +89,13 @@ export default function BillingPage() {
     setGeneratingId(inv.id)
     try {
       await invoices.generatePdf(inv.id)
-      toast({ body: 'PDF en cours de génération — actualisez dans quelques secondes', type: 'info' })
+      toast({ body: t('pdf_retry'), type: 'info' })
       setTimeout(async () => {
         const updated = await invoices.list(undefined, 'past_due')
         setOverdueInvoices(updated)
       }, 3000)
     } catch {
-      toast({ body: 'Erreur de génération', type: 'error' })
+      toast({ body: t('pdf_generate_error'), type: 'error' })
     } finally {
       setGeneratingId(null)
     }

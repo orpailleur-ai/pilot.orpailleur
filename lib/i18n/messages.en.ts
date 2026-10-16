@@ -205,4 +205,13 @@ export const en = {
   ai_models_testing: 'Testing…',
   ai_models_retest: 'Retest',
   ai_models_test_hint: 'Checks the key and model against the provider, saving nothing.',
+  pdf_pending: 'PDF unavailable — being generated',
+  pdf_retry: 'PDF is being generated — refresh in a few seconds',
+  pdf_download_error: 'Download failed',
+  pdf_generate_error: 'Generation failed',
+  ai_models_test_ok: 'Connected in {ms} ms.',
+  ai_models_activated: 'Model activated',
+  ai_models_deactivated: 'Model deactivated',
+  ai_models_deleted: '{model} deleted',
+  ai_models_saved: 'Configuration saved',
 } satisfies Record<ClePerimetre | ClePerimetreDetail, string> & Record<string, string>

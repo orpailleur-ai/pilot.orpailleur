@@ -91,7 +91,7 @@ export default function InvoicesPage() {
 
   async function handleViewPdf(invoice: Invoice) {
     if (!invoice.pdfUrl) {
-      toast({ body: 'PDF non disponible — en cours de génération', type: 'info' })
+      toast({ body: t('pdf_pending'), type: 'info' })
       return
     }
     try {
@@ -111,7 +111,7 @@ export default function InvoicesPage() {
     setGeneratingId(invoice.id)
     try {
       await invoices.generatePdf(invoice.id)
-      toast({ body: 'PDF en cours de génération — actualisez dans quelques secondes', type: 'info' })
+      toast({ body: t('pdf_retry'), type: 'info' })
       // Refresh the invoice list after a short delay to pick up the new pdfUrl
       setTimeout(async () => {
         const updated = await invoices.list()

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { AlertTriangle, Check, Key, Loader2, Pencil, PlugZap, Plus, Trash2 } from 'lucide-react'
 import { apiClient } from '@/lib/api-client'
 import { useI18n } from '@/lib/i18n'
+import { useToast } from '@astryxdesign/core'
 import { libelleDetail, libelleScope } from '@/lib/i18n/scopes'
 import { PageHeader } from '@/components/layout/page-header'
 import { InlineError } from '@/components/ui/inline-error'
@@ -76,6 +77,7 @@ const FOURNISSEURS = ['mistral', 'openai', 'anthropic', 'litellm', 'ollama']
 
 export default function ModelesPage() {
   const { t } = useI18n()
+  const toast = useToast()
   const [scopes, setScopes] = useState<ScopeInfo[]>([])
   const [modeles, setModeles] = useState<Modele[]>([])
   const [chiffrement, setChiffrement] = useState(true)
@@ -118,8 +120,13 @@ export default function ModelesPage() {
       }
       setEdition(null)
       await charger()
+      // Sans ce toast, un enregistrement reussi ne se distinguait d'un clic
+      // perdu : le formulaire se fermait, c'etait tout. Une action qui ne dit
+      // rien avoir fait laisse l'utilisateur wonder s'il a SAVE ou non.
+      toast({ body: t('ai_models_saved'), type: 'info' })
     } catch (e: unknown) {
       setErreur(e instanceof Error ? e.message : t('error'))
+      toast({ body: e instanceof Error ? e.message : t('error'), type: 'error' })
     } finally {
       setEnregistrement(false)
     }
@@ -138,6 +145,17 @@ export default function ModelesPage() {
         ok: boolean; code: string; message: string; duree_ms?: number
       }>(`/admin/ai-modeles/${m.id}/tester`)
       setTests((p) => ({ ...p, [m.id]: { enCours: false, resultat: r } }))
+      // L'icone reste l'etat durable de la ligne ; le toast est
+      // l'ACCUSE DE RECEPTION. Un test d'OCR dure une seconde et demie :
+      // l'utilisateur a le temps de scroller ailleurs, et un simple changement
+      // de couleur passe inaperçu. Le message d'echec, lui, se lit d'un coup —
+      // c'est la raison d'etre du bouton.
+      toast({
+        body: r.ok
+          ? t('ai_models_test_ok', { ms: r.duree_ms ?? 0 })
+          : r.message,
+        type: r.ok ? 'info' : 'error',
+      })
     } catch (e: unknown) {
       setTests((p) => ({
         ...p,
@@ -150,6 +168,10 @@ export default function ModelesPage() {
           },
         },
       }))
+      toast({
+        body: e instanceof Error ? e.message : t('error'),
+        type: 'error',
+      })
     }
   }
 
@@ -158,8 +180,15 @@ export default function ModelesPage() {
     try {
       await apiClient.patch(`/admin/ai-modeles/${m.id}`, { actif: !m.actif })
       await charger()
+      // Dire QUOI a change. « Actif » seul laisse l'utilisateur deviner
+      // lequel des deux il vient de basculer.
+      toast({
+        body: m.actif ? t('ai_models_deactivated') : t('ai_models_activated'),
+        type: 'info',
+      })
     } catch (e: unknown) {
       setErreur(e instanceof Error ? e.message : t('error'))
+      toast({ body: e instanceof Error ? e.message : t('error'), type: 'error' })
     }
   }
 
@@ -168,8 +197,10 @@ export default function ModelesPage() {
     try {
       await apiClient.delete(`/admin/ai-modeles/${m.id}`)
       await charger()
+      toast({ body: t('ai_models_deleted', { model: m.model }), type: 'info' })
     } catch (e: unknown) {
       setErreur(e instanceof Error ? e.message : t('error'))
+      toast({ body: e instanceof Error ? e.message : t('error'), type: 'error' })
     }
   }
 

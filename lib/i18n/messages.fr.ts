@@ -204,4 +204,13 @@ export const fr = {
   ai_models_testing: 'Test…',
   ai_models_retest: 'Retester',
   ai_models_test_hint: 'Vérifie la clé et le modèle auprès du fournisseur, sans rien enregistrer.',
+  pdf_pending: 'PDF non disponible — en cours de génération',
+  pdf_retry: 'PDF en cours de génération — actualisez dans quelques secondes',
+  pdf_download_error: 'Erreur de téléchargement',
+  pdf_generate_error: 'Erreur de génération',
+  ai_models_test_ok: 'Connexion établie en {ms} ms.',
+  ai_models_activated: 'Modèle activé',
+  ai_models_deactivated: 'Modèle désactivé',
+  ai_models_deleted: '{model} supprimé',
+  ai_models_saved: 'Configuration enregistrée',
 } satisfies Record<ClePerimetre | ClePerimetreDetail, string> & Record<string, string>
