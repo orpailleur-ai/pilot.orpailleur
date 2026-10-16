@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
-import { AlertTriangle, Check, Key, Pencil, Plus, Trash2 } from 'lucide-react'
+import { AlertTriangle, Check, Key, Loader2, Pencil, PlugZap, Plus, Trash2 } from 'lucide-react'
 import { apiClient } from '@/lib/api-client'
 import { useI18n } from '@/lib/i18n'
 import { libelleDetail, libelleScope } from '@/lib/i18n/scopes'
@@ -42,6 +42,19 @@ interface ScopeInfo {
   code: string
 }
 
+/**
+ * Résultat d'un test de connexion, par configuration.
+ *
+ * Clé par `id` et non un état global : tester deux modèles en parallèle ne
+ * doit pas faire clignoter le bouton des autres. Et le RÉSULTAT est conservé —
+ * l'administrateur doit pouvoir relire le message d'un échec après avoir
+ * fermé la page.
+ */
+interface EtatTest {
+  enCours: boolean
+  resultat: { ok: boolean; code: string; message: string; duree_ms?: number } | null
+}
+
 interface Modele {
   id: string
   scope: string
@@ -51,6 +64,10 @@ interface Modele {
   cle: string | null
   prix_entree_eur_par_m: number | null
   prix_sortie_eur_par_m: number | null
+  tarif_base: 'jetons' | 'pages'
+  prix_page_eur: number | null
+  taux_usd_eur: number | null
+  tarif_maj_le: string | null
   actif: boolean
   updated_at: string
 }
@@ -65,6 +82,7 @@ export default function ModelesPage() {
   const [chargement, setChargement] = useState(true)
   const [erreur, setErreur] = useState('')
   const [edition, setEdition] = useState<Partial<Modele> | null>(null)
+  const [tests, setTests] = useState<Record<string, EtatTest>>({})
   const [enregistrement, setEnregistrement] = useState(false)
 
   const charger = useCallback(async () => {
@@ -104,6 +122,34 @@ export default function ModelesPage() {
       setErreur(e instanceof Error ? e.message : t('error'))
     } finally {
       setEnregistrement(false)
+    }
+  }
+
+  /**
+   * Teste une configuration contre le fournisseur.
+   *
+   * Le secret ne quitte JAMAIS le serveur : la clé est déchiffrée côté API,
+   * l'appel part de là, et la réponse ne contient ni la clé ni son début.
+   */
+  async function tester(m: Modele) {
+    setTests((p) => ({ ...p, [m.id]: { enCours: true, resultat: null } }))
+    try {
+      const r = await apiClient.post<{
+        ok: boolean; code: string; message: string; duree_ms?: number
+      }>(`/admin/ai-modeles/${m.id}/tester`)
+      setTests((p) => ({ ...p, [m.id]: { enCours: false, resultat: r } }))
+    } catch (e: unknown) {
+      setTests((p) => ({
+        ...p,
+        [m.id]: {
+          enCours: false,
+          resultat: {
+            ok: false,
+            code: 'appel',
+            message: e instanceof Error ? e.message : t('error'),
+          },
+        },
+      }))
     }
   }
 
@@ -223,6 +269,8 @@ export default function ModelesPage() {
                         onBasculer={() => basculer(m)}
                         onEditer={() => setEdition(m)}
                         onSupprimer={() => supprimer(m)}
+                        onTester={() => tester(m)}
+                        test={tests[m.id] ?? null}
                       />
                     ))}
                   </ul>
@@ -261,8 +309,12 @@ function Ligne({
   onBasculer,
   onEditer,
   onSupprimer,
+  onTester,
+  test,
 }: {
   m: Modele
+  onTester: () => void
+  test: EtatTest | null
   onBasculer: () => void
   onEditer: () => void
   onSupprimer: () => void
@@ -294,11 +346,18 @@ function Ligne({
       <span className="text-xs tabular-nums" style={{ color: 'var(--color-text-secondary)' }}>
         {/* `null` s'affiche « non tarifé » : un prix nul afficherait 0,00 € sur
             une période réellement facturée. */}
-        {m.prix_entree_eur_par_m == null
-          ? t('ai_models_unpriced')
-          : `${num.format(m.prix_entree_eur_par_m ?? 0)} / ${
-              m.prix_sortie_eur_par_m == null ? '—' : num.format(m.prix_sortie_eur_par_m)
-            } € / M`}
+        {/* Le barème n'est pas le même partout : l'OCR est facturé à la
+            PAGE, pas au jeton. Afficher « €/M » dessus donnerait un prix par
+            million de jetons pour un modèle qui ne compte pas de jetons. */}
+        {m.tarif_base === 'pages'
+          ? m.prix_page_eur == null
+            ? t('ai_models_unpriced')
+            : `${num.format(m.prix_page_eur * 1000)} € / 1000 pages`
+          : m.prix_entree_eur_par_m == null
+            ? t('ai_models_unpriced')
+            : `${num.format(m.prix_entree_eur_par_m)} / ${
+                m.prix_sortie_eur_par_m == null ? '—' : num.format(m.prix_sortie_eur_par_m)
+              } € / M`}
       </span>
       <span className="ml-auto flex items-center gap-1">
         <button
@@ -310,6 +369,38 @@ function Ligne({
             border: '1px solid var(--color-border)',
           }}
         >
+          {/* Tester avant d'activer : une configuration inactivée ne part
+              JAMAIS en production, et c'est justement celle qu'on veut
+              vérifier. Le test part sur l'endpoint du fournisseur
+              CORRESPONDANT au modèle — l'OCR n'existe pas sur
+              /v1/chat/completions et y répondrait « Invalid model » alors que
+              la clé est bonne. */}
+          <button
+            type="button"
+            onClick={onTester}
+            disabled={test?.enCours === true}
+            className="inline-flex items-center gap-1 rounded px-2 py-1 text-xs font-medium disabled:opacity-60"
+            style={{
+              color: test?.resultat?.ok ? 'var(--color-success)'
+                : test?.resultat ? 'var(--color-danger)' : 'var(--color-text-secondary)',
+              border: '1px solid var(--color-border)',
+            }}
+            title={test?.resultat?.message ?? t('ai_models_test_hint')}
+          >
+            {test?.enCours ? (
+              <Loader2 size={12} className="animate-spin" />
+            ) : test?.resultat?.ok ? (
+              <Check size={12} />
+            ) : (
+              <PlugZap size={12} />
+            )}
+            {test?.enCours
+              ? t('ai_models_testing')
+              : test?.resultat
+                ? t('ai_models_retest')
+                : t('ai_models_test')}
+          </button>
+
           {m.actif ? (
             <span className="inline-flex items-center gap-1">
               <Check size={12} />

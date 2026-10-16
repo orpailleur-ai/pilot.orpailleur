@@ -201,4 +201,8 @@ export const en = {
   ai_scope_bot_detail: 'Answers questions about the data',
   ai_scope_categorisation_detail: 'Files a product under its category',
   ai_scope_regroupement_detail: 'Groups lines that belong together',
+  ai_models_test: 'Test',
+  ai_models_testing: 'Testing…',
+  ai_models_retest: 'Retest',
+  ai_models_test_hint: 'Checks the key and model against the provider, saving nothing.',
 } satisfies Record<ClePerimetre | ClePerimetreDetail, string> & Record<string, string>

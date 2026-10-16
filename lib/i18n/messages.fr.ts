@@ -200,4 +200,8 @@ export const fr = {
   ai_scope_bot_detail: 'Répond aux questions sur les données',
   ai_scope_categorisation_detail: 'Range un produit dans sa catégorie',
   ai_scope_regroupement_detail: "Regroupe des lignes proches d'une même facture",
+  ai_models_test: 'Tester',
+  ai_models_testing: 'Test…',
+  ai_models_retest: 'Retester',
+  ai_models_test_hint: 'Vérifie la clé et le modèle auprès du fournisseur, sans rien enregistrer.',
 } satisfies Record<ClePerimetre | ClePerimetreDetail, string> & Record<string, string>
