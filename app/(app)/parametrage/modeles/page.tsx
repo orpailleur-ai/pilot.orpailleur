@@ -1,7 +1,8 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
-import { AlertTriangle, Check, Key, Loader2, Pencil, PlugZap, Plus, Trash2 } from 'lucide-react'
+import Link from 'next/link'
+import { AlertTriangle, Check, Eye, Key, Loader2, Pencil, PlugZap, Plus, Trash2 } from 'lucide-react'
 import { apiClient } from '@/lib/api-client'
 import { useI18n } from '@/lib/i18n'
 import { useToast } from '@astryxdesign/core'
@@ -449,6 +450,14 @@ function Ligne({
             t('ai_models_activate')
           )}
         </button>
+        <Link
+          href={`/parametrage/modeles/${m.id}`}
+          aria-label={t('ai_models_view')}
+          className="rounded p-1 transition-colors hover:bg-[var(--color-background-muted)]"
+          style={{ color: 'var(--color-text-secondary)' }}
+        >
+          <Eye size={14} />
+        </Link>
         <button
           type="button"
           onClick={onEditer}
