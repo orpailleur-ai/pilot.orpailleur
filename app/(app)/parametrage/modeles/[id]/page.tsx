@@ -334,16 +334,34 @@ function Ligne({ libelle, valeur, fort }: { libelle: string; valeur: string; for
  * `null` = non tarifé, et c'est DIFFÉRENT de 0 €. Un module gratuit se lirait
  * comme non facturé, et son coût réel cesserait d'être suivi.
  */
+/**
+ * Formate un montant.printé, quoi qu'il arrive.
+ *
+ * PostgreSQL rend ses `numeric` en CHAÎNE : `prix_entree_eur_par_m` vaut
+ * « 0.1337 », pas 0.1337. Le type du DTO ment donc, et un `.toFixed()` sur une
+ * chaîne lève `TypeError: s.toFixed is not a function` — ce qui cassait toute
+ * la page. L'API est désormais corrigée pour renvoyer des nombres, mais un
+ * garde ici évite que le même écran reparte en production à la prochaine
+ * colonne `numeric` : on ne dépend plus du type déclaré par le serveur.
+ */
+function montant(valeur: number | string | null | undefined, decimales = 4): string | null {
+  if (valeur === null || valeur === undefined || valeur === '') return null
+  const n = typeof valeur === 'number' ? valeur : Number(valeur)
+  if (!Number.isFinite(n)) return null
+  return n.toFixed(decimales).replace('.', ',')
+}
+
 function Carte({
   libelle,
   valeur,
   suffixe,
 }: {
   libelle: string
-  valeur: number | null
+  valeur: number | string | null
   suffixe: string
 }) {
   const { t } = useI18n()
+  const affiche = montant(valeur)
   return (
     <div
       className="rounded-lg border p-3"
@@ -355,13 +373,13 @@ function Carte({
       <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
         {libelle}
       </p>
-      {valeur == null ? (
+      {affiche === null ? (
         <p className="mt-1 text-sm italic" style={{ color: 'var(--color-text-secondary)' }}>
           {t('ai_models_unpriced')}
         </p>
       ) : (
         <p className="mt-1 text-lg font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-          {valeur.toFixed(4).replace('.', ',')} {suffixe}
+          {affiche} {suffixe}
         </p>
       )}
     </div>
@@ -372,12 +390,20 @@ function Carte({
 function Sparkline({ points }: { points: Stats['serie_30j'] }) {
   const largeur = 200
   const hauteur = 40
-  if (points.length === 0) return null
+  if (!Array.isArray(points) || points.length === 0) return null
   const pas = points.length > 1 ? largeur / (points.length - 1) : 0
-  const trace = (v: (p: Stats['serie_30j'][number]) => number) => {
-    const max = Math.max(...points.map(v), 1)
+  // `Number()` en entrée : PostgreSQL rend les `numeric`/`bigint` en chaîne,
+  // et une chaîne dans un calcul donne `NaN` — une courbe qui ne se trace
+  // au lieu d'une page blanche, mais une courbe fausse n'est pas mieux.
+  const trace = (cle: 'appels' | 'jetons_entree' | 'jetons_sortie') => {
+    const valeurs = points.map((p) => Number(p[cle] ?? 0) || 0)
+    const max = Math.max(...valeurs, 1)
     return points
-      .map((p, i) => `${i === 0 ? 'M' : 'L'}${(i * pas).toFixed(1)},${(hauteur - (v(p) / max) * (hauteur - 2) - 1).toFixed(1)}`)
+      .map((_p, i) => {
+        const x = i * pas
+        const y = hauteur - (valeurs[i] / max) * (hauteur - 2) - 1
+        return `${i === 0 ? 'M' : 'L'}${x.toFixed(1)},${y.toFixed(1)}`
+      })
       .join(' ')
   }
   return (
@@ -389,9 +415,9 @@ function Sparkline({ points }: { points: Stats['serie_30j'] }) {
       aria-label="appels par jour"
       preserveAspectRatio="none"
     >
-      <path d={trace((p) => p.jetons_entree)} fill="none" stroke="var(--color-border)" strokeWidth={1.5} strokeOpacity={0.6} vectorEffect="non-scaling-stroke" />
-      <path d={trace((p) => p.jetons_sortie)} fill="none" stroke="var(--color-border)" strokeWidth={1.5} strokeOpacity={0.8} vectorEffect="non-scaling-stroke" />
-      <path d={trace((p) => p.appels)} fill="none" stroke="var(--color-accent)" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+      <path d={trace('jetons_entree')} fill="none" stroke="var(--color-border)" strokeWidth={1.5} strokeOpacity={0.6} vectorEffect="non-scaling-stroke" />
+      <path d={trace('jetons_sortie')} fill="none" stroke="var(--color-border)" strokeWidth={1.5} strokeOpacity={0.8} vectorEffect="non-scaling-stroke" />
+      <path d={trace('appels')} fill="none" stroke="var(--color-accent)" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
     </svg>
   )
 }
