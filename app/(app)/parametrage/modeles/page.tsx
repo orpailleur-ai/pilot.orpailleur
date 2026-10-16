@@ -391,6 +391,46 @@ function Ligne({
               } € / M`}
       </span>
       <span className="ml-auto flex items-center gap-1">
+        {/* Tester avant d'activer : une configuration inactive ne part
+            JAMAIS en production, et c'est justement celle qu'on veut
+            vérifier. Le test part sur l'endpoint du fournisseur
+            CORRESPONDANT au modèle — l'OCR n'existe pas sur
+            /v1/chat/completions et y répondrait « Invalid model » alors que
+            la clé est bonne.
+
+            Ce bouton était imbriqué dans celui d'activation. `<button>`
+            dans `<button>` est du HTML invalide : le parseur referme
+            automatiquement le parent au premier `<button>` rencontré, le DOM
+            est reconstruit, et les gestionnaires React ne tombent plus sur
+            les nœuds visés — les boutons s'affichent, plus rien ne se passe.
+            D'où « aucune action ne fonctionne » sur cette page. */}
+        <button
+          type="button"
+          onClick={onTester}
+          disabled={test?.enCours === true}
+          className="inline-flex items-center gap-1 rounded px-2 py-1 text-xs font-medium disabled:opacity-60"
+          style={{
+            color: test?.resultat?.ok ? 'var(--color-success)'
+              : test?.resultat ? 'var(--color-danger)' : 'var(--color-text-secondary)',
+            border: '1px solid var(--color-border)',
+          }}
+          title={test?.resultat?.message ?? t('ai_models_test_hint')}
+        >
+          {test?.enCours ? (
+            <Loader2 size={12} className="animate-spin" />
+          ) : test?.resultat?.ok ? (
+            <Check size={12} />
+          ) : (
+            <PlugZap size={12} />
+          )}
+          {test?.enCours
+            ? t('ai_models_testing')
+            : test?.resultat
+              ? t('ai_models_retest')
+              : t('ai_models_test')}
+        </button>
+
+        {/* Activation : bouton FRÈRE du précédent, jamais son parent. */}
         <button
           type="button"
           onClick={onBasculer}
@@ -400,38 +440,6 @@ function Ligne({
             border: '1px solid var(--color-border)',
           }}
         >
-          {/* Tester avant d'activer : une configuration inactivée ne part
-              JAMAIS en production, et c'est justement celle qu'on veut
-              vérifier. Le test part sur l'endpoint du fournisseur
-              CORRESPONDANT au modèle — l'OCR n'existe pas sur
-              /v1/chat/completions et y répondrait « Invalid model » alors que
-              la clé est bonne. */}
-          <button
-            type="button"
-            onClick={onTester}
-            disabled={test?.enCours === true}
-            className="inline-flex items-center gap-1 rounded px-2 py-1 text-xs font-medium disabled:opacity-60"
-            style={{
-              color: test?.resultat?.ok ? 'var(--color-success)'
-                : test?.resultat ? 'var(--color-danger)' : 'var(--color-text-secondary)',
-              border: '1px solid var(--color-border)',
-            }}
-            title={test?.resultat?.message ?? t('ai_models_test_hint')}
-          >
-            {test?.enCours ? (
-              <Loader2 size={12} className="animate-spin" />
-            ) : test?.resultat?.ok ? (
-              <Check size={12} />
-            ) : (
-              <PlugZap size={12} />
-            )}
-            {test?.enCours
-              ? t('ai_models_testing')
-              : test?.resultat
-                ? t('ai_models_retest')
-                : t('ai_models_test')}
-          </button>
-
           {m.actif ? (
             <span className="inline-flex items-center gap-1">
               <Check size={12} />
