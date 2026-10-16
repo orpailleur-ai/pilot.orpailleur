@@ -70,7 +70,7 @@ export default function PlanNewPage() {
       <form onSubmit={handleSubmit} className="flex flex-col gap-5 max-w-lg">
         <div
           className="rounded-lg border p-5 space-y-4"
-          style={{ backgroundColor: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
+          style={{ backgroundColor: 'var(--color-background-surface)', borderColor: 'var(--color-border)' }}
         >
           <h2 className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
             Identité
@@ -104,7 +104,7 @@ export default function PlanNewPage() {
 
         <div
           className="rounded-lg border p-5 space-y-4"
-          style={{ backgroundColor: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
+          style={{ backgroundColor: 'var(--color-background-surface)', borderColor: 'var(--color-border)' }}
         >
           <h2 className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
             Tarification
@@ -131,7 +131,7 @@ export default function PlanNewPage() {
 
         <div
           className="rounded-lg border p-5 space-y-4"
-          style={{ backgroundColor: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
+          style={{ backgroundColor: 'var(--color-background-surface)', borderColor: 'var(--color-border)' }}
         >
           <h2 className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
             Limites
@@ -156,7 +156,7 @@ export default function PlanNewPage() {
 
         <div
           className="rounded-lg border p-5 space-y-4"
-          style={{ backgroundColor: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
+          style={{ backgroundColor: 'var(--color-background-surface)', borderColor: 'var(--color-border)' }}
         >
           <h2 className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
             Fonctionnalités incluses
@@ -165,7 +165,7 @@ export default function PlanNewPage() {
             className="w-full rounded-md border px-3 py-2 text-sm"
             style={{
               borderColor: 'var(--color-border)',
-              backgroundColor: 'var(--color-surface)',
+              backgroundColor: 'var(--color-background-surface)',
               color: 'var(--color-text-primary)',
             }}
             rows={5}

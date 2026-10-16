@@ -265,7 +265,7 @@ export default function TenantInvoicesPage() {
               <input
                 type="date"
                 className="h-9 rounded-md border px-3 text-sm"
-                style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-surface)', color: 'var(--color-text-primary)' }}
+                style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-background-surface)', color: 'var(--color-text-primary)' }}
                 value={paymentDate}
                 onChange={(e) => setPaymentDate(e.target.value)}
               />

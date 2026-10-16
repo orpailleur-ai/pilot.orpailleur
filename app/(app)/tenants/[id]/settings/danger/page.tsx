@@ -52,7 +52,7 @@ export default function TenantDangerPage() {
     <div
       className="rounded-lg border p-6 flex flex-col gap-5"
       style={{
-        backgroundColor: 'var(--color-surface)',
+        backgroundColor: 'var(--color-background-surface)',
         borderColor: 'color-mix(in srgb, var(--color-danger) 30%, var(--color-border))',
       }}
     >

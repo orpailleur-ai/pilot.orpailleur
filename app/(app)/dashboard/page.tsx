@@ -103,7 +103,7 @@ export default function DashboardPage() {
         {/* Plan distribution */}
         <div
           className="rounded-lg border p-5 space-y-4"
-          style={{ backgroundColor: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
+          style={{ backgroundColor: 'var(--color-background-surface)', borderColor: 'var(--color-border)' }}
         >
           <h2 className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
             Répartition par plan
@@ -114,7 +114,7 @@ export default function DashboardPage() {
         {/* Recent audit */}
         <div
           className="rounded-lg border p-5 space-y-4"
-          style={{ backgroundColor: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
+          style={{ backgroundColor: 'var(--color-background-surface)', borderColor: 'var(--color-border)' }}
         >
           <h2 className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
             Activité récente
@@ -126,7 +126,7 @@ export default function DashboardPage() {
       {/* Recent signups */}
       <div
         className="rounded-lg border p-5 space-y-4"
-        style={{ backgroundColor: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
+        style={{ backgroundColor: 'var(--color-background-surface)', borderColor: 'var(--color-border)' }}
       >
         <h2 className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
           Dernières inscriptions

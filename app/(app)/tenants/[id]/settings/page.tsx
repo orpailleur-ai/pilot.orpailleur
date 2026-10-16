@@ -100,7 +100,7 @@ export default function TenantSettingsPage() {
       {/* Identity */}
       <div
         className="rounded-lg border p-5 space-y-4"
-        style={{ backgroundColor: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
+        style={{ backgroundColor: 'var(--color-background-surface)', borderColor: 'var(--color-border)' }}
       >
         <h2 className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
           Identité
@@ -131,7 +131,7 @@ export default function TenantSettingsPage() {
       {/* Contact */}
       <div
         className="rounded-lg border p-5 space-y-4"
-        style={{ backgroundColor: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
+        style={{ backgroundColor: 'var(--color-background-surface)', borderColor: 'var(--color-border)' }}
       >
         <h2 className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
           Contact

@@ -47,7 +47,7 @@ export default function Error({
         <div
           className="inline-flex h-12 w-12 items-center justify-center rounded-xl mb-4"
           style={{
-            backgroundColor: 'var(--color-surface)',
+            backgroundColor: 'var(--color-background-surface)',
             color: 'var(--color-text-secondary)',
           }}
         >

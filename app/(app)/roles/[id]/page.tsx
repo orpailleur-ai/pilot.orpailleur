@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { Fragment, useState, useEffect, useMemo } from 'react'
 import { useParams } from 'next/navigation'
 import { Lock } from 'lucide-react'
 import { Button, useToast } from '@astryxdesign/core'
@@ -123,7 +123,7 @@ export default function RolePermissionsPage() {
       <div className="rounded-lg border overflow-hidden" style={{ borderColor: 'var(--color-border)' }}>
         <table className="w-full text-sm">
           <thead>
-            <tr style={{ backgroundColor: 'var(--color-surface)' }}>
+            <tr style={{ backgroundColor: 'var(--color-background-surface)' }}>
               <th
                 className="border-b px-4 py-3 text-left font-semibold"
                 style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
@@ -146,14 +146,24 @@ export default function RolePermissionsPage() {
           </thead>
           <tbody>
             {grouped.map(([module, perms]) => (
-              <>
-                <tr key={`header-${module}`}>
+              /*
+               * `key` sur le FRAGMENT, pas sur un `<tr>` intérieur.
+               *
+               * La version précédente posait la clé sur la ligne d'en-tête du
+               * groupe, à l'intérieur d'un `<>` nu : React ignore la clé d'un
+               * enfant quand le parent direct n'en a pas. Résultat, un
+               * warning « each child in a list should have a unique key », et
+               * un ré-affichage qui peut.attacher la mauvaise ligne au mauvais
+               * module après un changement d'état.
+               */
+              <Fragment key={module}>
+                <tr>
                   <td
                     colSpan={3}
                     className="border-b px-4 py-2 font-semibold text-xs uppercase tracking-wide"
                     style={{
                       borderColor: 'var(--color-border)',
-                      backgroundColor: 'color-mix(in srgb, var(--color-surface) 60%, transparent)',
+                      backgroundColor: 'color-mix(in srgb, var(--color-background-surface) 60%, transparent)',
                       color: 'var(--color-accent)',
                     }}
                   >
@@ -199,7 +209,7 @@ export default function RolePermissionsPage() {
                     </tr>
                   )
                 })}
-              </>
+              </Fragment>
             ))}
           </tbody>
         </table>

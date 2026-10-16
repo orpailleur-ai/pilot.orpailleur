@@ -388,7 +388,7 @@ function UserStepForm({
                 onChange={(e) => onChange({ ...data, roleId: e.target.value })}
                 className="w-full rounded-lg border px-3 py-2 text-sm"
                 style={{
-                  backgroundColor: 'var(--color-surface)',
+                  backgroundColor: 'var(--color-background-surface)',
                   borderColor: 'var(--color-border)',
                   color: 'var(--color-text-primary)',
                 }}
@@ -462,7 +462,7 @@ function SummaryStep({
       <div
         className="rounded-lg border border-border p-4 text-xs"
         style={{
-          backgroundColor: 'var(--color-surface)',
+          backgroundColor: 'var(--color-background-surface)',
           color: 'var(--color-text-secondary)',
         }}
       >

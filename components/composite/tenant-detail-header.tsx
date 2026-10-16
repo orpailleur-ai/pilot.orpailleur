@@ -26,7 +26,7 @@ export function TenantDetailHeader({ tenant, actions }: TenantDetailHeaderProps)
     <div
       className="flex flex-col gap-4 rounded-lg border p-5"
       style={{
-        backgroundColor: 'var(--color-surface)',
+        backgroundColor: 'var(--color-background-surface)',
         borderColor: 'var(--color-border)',
       }}
     >

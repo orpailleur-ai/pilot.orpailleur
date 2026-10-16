@@ -210,7 +210,7 @@ export default function AuditPage() {
           onChange={(e) => setActionFilter(e.target.value)}
           className="rounded-lg border px-3 py-1.5 text-sm"
           style={{
-            backgroundColor: 'var(--color-surface)',
+            backgroundColor: 'var(--color-background-surface)',
             borderColor: 'var(--color-border)',
             color: 'var(--color-text-primary)',
           }}
@@ -231,7 +231,7 @@ export default function AuditPage() {
           placeholder={t('filter_by_user')}
           className="rounded-lg border px-3 py-1.5 text-sm flex-1 min-w-[180px]"
           style={{
-            backgroundColor: 'var(--color-surface)',
+            backgroundColor: 'var(--color-background-surface)',
             borderColor: 'var(--color-border)',
             color: 'var(--color-text-primary)',
           }}

@@ -65,7 +65,7 @@ export default function TenantOverviewPage() {
       <div
         className="rounded-lg border p-5 space-y-4"
         style={{
-          backgroundColor: 'var(--color-surface)',
+          backgroundColor: 'var(--color-background-surface)',
           borderColor: 'var(--color-border)',
         }}
       >
@@ -135,7 +135,7 @@ export default function TenantOverviewPage() {
       <div
         className="rounded-lg border p-5"
         style={{
-          backgroundColor: 'var(--color-surface)',
+          backgroundColor: 'var(--color-background-surface)',
           borderColor: 'var(--color-border)',
         }}
       >

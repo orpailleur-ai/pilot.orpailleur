@@ -16,7 +16,7 @@ export function KpiCard({ label, value, delta, deltaLabel, icon }: KpiCardProps)
     <div
       className="rounded-lg border p-4 flex flex-col gap-2"
       style={{
-        backgroundColor: 'var(--color-surface)',
+        backgroundColor: 'var(--color-background-surface)',
         borderColor: 'var(--color-border)',
       }}
     >

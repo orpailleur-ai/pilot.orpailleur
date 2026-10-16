@@ -112,7 +112,7 @@ export default function UserProfilePage() {
       {/* ── Avatar : centré en haut du formulaire ── */}
       <div
         className="rounded-lg border p-5 flex flex-col items-center gap-3"
-        style={{ backgroundColor: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
+        style={{ backgroundColor: 'var(--color-background-surface)', borderColor: 'var(--color-border)' }}
       >
         <div className="w-16 h-16 rounded-full overflow-hidden flex items-center justify-center"
           style={{ backgroundColor: 'var(--color-background-muted, rgba(10,19,23,0.05))' }}>
@@ -217,7 +217,7 @@ export default function UserProfilePage() {
 
       <div
         className="rounded-lg border p-5 space-y-4"
-        style={{ backgroundColor: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
+        style={{ backgroundColor: 'var(--color-background-surface)', borderColor: 'var(--color-border)' }}
       >
         <h2 className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
           Informations du compte
@@ -250,7 +250,7 @@ export default function UserProfilePage() {
 
       <div
         className="rounded-lg border p-5 space-y-4"
-        style={{ backgroundColor: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
+        style={{ backgroundColor: 'var(--color-background-surface)', borderColor: 'var(--color-border)' }}
       >
         <h2 className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
           Changer le mot de passe
@@ -271,7 +271,7 @@ export default function UserProfilePage() {
       {effectivePermissions.length > 0 && (
         <div
           className="rounded-lg border p-5 space-y-4"
-          style={{ backgroundColor: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
+          style={{ backgroundColor: 'var(--color-background-surface)', borderColor: 'var(--color-border)' }}
         >
           <div className="flex items-center gap-2">
             <ShieldCheck size={15} style={{ color: 'var(--color-accent)' }} />

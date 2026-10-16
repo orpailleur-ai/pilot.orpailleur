@@ -295,7 +295,7 @@ export default function BillingPage() {
                 <div
                   key={inv.id}
                   className="flex items-center justify-between rounded-lg border p-3"
-                  style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-surface)' }}
+                  style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-background-surface)' }}
                 >
                   <div className="flex flex-col gap-0.5 min-w-0">
                     <span
@@ -388,7 +388,7 @@ export default function BillingPage() {
                   <div
                     key={s.id}
                     className="flex items-center justify-between rounded-lg border p-3"
-                    style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-surface)' }}
+                    style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-background-surface)' }}
                   >
                     <div className="flex flex-col gap-0.5 min-w-0">
                       <span

@@ -236,7 +236,7 @@ export default function UsersPage() {
           className="h-8 rounded-md border px-2 text-sm"
           style={{
             borderColor: 'var(--color-border)',
-            backgroundColor: 'var(--color-surface)',
+            backgroundColor: 'var(--color-background-surface)',
             color: 'var(--color-text-primary)',
           }}
           value={filterTenant}
@@ -251,7 +251,7 @@ export default function UsersPage() {
           className="h-8 rounded-md border px-2 text-sm"
           style={{
             borderColor: 'var(--color-border)',
-            backgroundColor: 'var(--color-surface)',
+            backgroundColor: 'var(--color-background-surface)',
             color: 'var(--color-text-primary)',
           }}
           value={filterStatus}

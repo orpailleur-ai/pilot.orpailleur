@@ -49,7 +49,7 @@ export function RoleDetailShell({ children }: { children: React.ReactNode }) {
       <div
         className="flex items-center justify-between rounded-lg border p-5"
         style={{
-          backgroundColor: 'var(--color-surface)',
+          backgroundColor: 'var(--color-background-surface)',
           borderColor: 'var(--color-border)',
         }}
       >

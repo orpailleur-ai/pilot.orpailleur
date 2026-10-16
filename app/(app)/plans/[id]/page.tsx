@@ -107,7 +107,7 @@ export default function PlanDetailPage() {
       </div>
 
       <form onSubmit={handleSave} className="flex flex-col gap-5 max-w-lg">
-        <div className="rounded-lg border p-5 space-y-4" style={{ backgroundColor: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
+        <div className="rounded-lg border p-5 space-y-4" style={{ backgroundColor: 'var(--color-background-surface)', borderColor: 'var(--color-border)' }}>
           <h2 className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>Identité</h2>
           <FieldGrid columns={2}>
             <TextInput label="Code" value={plan.code} isRequired width="100%" isDisabled />
@@ -116,7 +116,7 @@ export default function PlanDetailPage() {
           <TextInput label="Description" value={form.description} onChange={(v) => setForm((f) => ({ ...f, description: v }))} width="100%" />
         </div>
 
-        <div className="rounded-lg border p-5 space-y-4" style={{ backgroundColor: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
+        <div className="rounded-lg border p-5 space-y-4" style={{ backgroundColor: 'var(--color-background-surface)', borderColor: 'var(--color-border)' }}>
           <h2 className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>Tarification</h2>
           <FieldGrid columns={2}>
             <TextInput label="Prix mensuel (centimes)" type="text" value={form.prixMensuelCents} onChange={(v) => setForm((f) => ({ ...f, prixMensuelCents: v }))} width="100%" />
@@ -128,7 +128,7 @@ export default function PlanDetailPage() {
           </p>
         </div>
 
-        <div className="rounded-lg border p-5 space-y-4" style={{ backgroundColor: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
+        <div className="rounded-lg border p-5 space-y-4" style={{ backgroundColor: 'var(--color-background-surface)', borderColor: 'var(--color-border)' }}>
           <h2 className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>Limites</h2>
           <FieldGrid columns={2}>
             <TextInput label="Nb sites max" type="text" value={form.nbSitesMax} onChange={(v) => setForm((f) => ({ ...f, nbSitesMax: v }))} width="100%" />
@@ -136,11 +136,11 @@ export default function PlanDetailPage() {
           </FieldGrid>
         </div>
 
-        <div className="rounded-lg border p-5 space-y-4" style={{ backgroundColor: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
+        <div className="rounded-lg border p-5 space-y-4" style={{ backgroundColor: 'var(--color-background-surface)', borderColor: 'var(--color-border)' }}>
           <h2 className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>Fonctionnalités</h2>
           <textarea
             className="w-full rounded-md border px-3 py-2 text-sm"
-            style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-surface)', color: 'var(--color-text-primary)' }}
+            style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-background-surface)', color: 'var(--color-text-primary)' }}
             rows={5}
             value={form.features}
             onChange={(e) => setForm((f) => ({ ...f, features: e.target.value }))}

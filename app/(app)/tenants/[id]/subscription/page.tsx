@@ -198,7 +198,7 @@ export default function TenantSubscriptionPage() {
                 </label>
                 <select
                   className="h-9 w-full rounded-md border px-2 text-sm"
-                  style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-surface)', color: 'var(--color-text-primary)' }}
+                  style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-background-surface)', color: 'var(--color-text-primary)' }}
                   value={form.planId}
                   onChange={(e) => setForm((f) => ({ ...f, planId: e.target.value }))}
                   required
@@ -220,7 +220,7 @@ export default function TenantSubscriptionPage() {
                 </label>
                 <select
                   className="h-9 w-full rounded-md border px-2 text-sm"
-                  style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-surface)', color: 'var(--color-text-primary)' }}
+                  style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-background-surface)', color: 'var(--color-text-primary)' }}
                   value={form.periode}
                   onChange={(e) => setForm((f) => ({ ...f, periode: e.target.value as 'monthly' | 'yearly' }))}
                 >

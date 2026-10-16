@@ -82,7 +82,7 @@ function PlanCard({ plan }: { plan: Plan }) {
     <div
       className="rounded-lg border p-5 flex flex-col gap-4 cursor-pointer transition-colors"
       style={{
-        backgroundColor: 'var(--color-surface)',
+        backgroundColor: 'var(--color-background-surface)',
         borderColor: 'var(--color-border)',
       }}
       onClick={() => router.push(`/plans/${plan.id}`)}

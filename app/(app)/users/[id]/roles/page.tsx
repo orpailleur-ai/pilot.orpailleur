@@ -220,7 +220,7 @@ export default function UserRolesPage() {
                   className="h-9 w-full rounded-md border px-2 text-sm"
                   style={{
                     borderColor: 'var(--color-border)',
-                    backgroundColor: 'var(--color-surface)',
+                    backgroundColor: 'var(--color-background-surface)',
                     color: 'var(--color-text-primary)',
                   }}
                   value={form.tenantId}
@@ -244,7 +244,7 @@ export default function UserRolesPage() {
                   className="h-9 w-full rounded-md border px-2 text-sm"
                   style={{
                     borderColor: 'var(--color-border)',
-                    backgroundColor: 'var(--color-surface)',
+                    backgroundColor: 'var(--color-background-surface)',
                     color: 'var(--color-text-primary)',
                   }}
                   value={form.roleId}

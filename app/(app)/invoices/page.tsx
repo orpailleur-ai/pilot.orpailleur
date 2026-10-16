@@ -145,7 +145,7 @@ export default function InvoicesPage() {
             type="text"
             placeholder="Rechercher par tenant ou numéro…"
             className="h-9 rounded-md border px-3 text-sm sm:w-64"
-            style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-surface)', color: 'var(--color-text-primary)' }}
+            style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-background-surface)', color: 'var(--color-text-primary)' }}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -281,7 +281,7 @@ export default function InvoicesPage() {
               <input
                 type="date"
                 className="h-9 rounded-md border px-3 text-sm"
-                style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-surface)', color: 'var(--color-text-primary)' }}
+                style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-background-surface)', color: 'var(--color-text-primary)' }}
                 value={paymentDate}
                 onChange={(e) => setPaymentDate(e.target.value)}
               />
