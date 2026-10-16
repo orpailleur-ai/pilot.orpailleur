@@ -35,7 +35,11 @@ jobs:
           cache: npm
 
       - name: Install
-        run: npm ci
+        # Mêmes options que le Dockerfile, volontairement. Vérifier un arbre
+        # différent de celui qu'on embarque ne prouverait rien : le
+        # `--legacy-peer-deps` n'est pas cosmétique, sans lui `npm ci` échoue
+        # sur ce lock (picomatch), alors que le build de l'image passe.
+        run: npm ci --legacy-peer-deps
 
       - name: Types
         run: npm run typecheck
