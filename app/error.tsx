@@ -71,7 +71,7 @@ export default function Error({
         {error.digest && (
           <p
             className="text-xs mb-6 font-mono"
-            style={{ color: 'var(--color-text-tertiary)' }}
+            style={{ color: 'var(--color-text-secondary)' }}
           >
             référence : {error.digest}
           </p>

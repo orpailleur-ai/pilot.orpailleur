@@ -82,6 +82,28 @@
 
   /* App logo */
   --app-logo-url: none;
+
+  /* ── Rayons ──────────────────────────────────────────────────
+     Même raison que la palette ci-dessus : pilot n'a pas de
+     ThemeProvider, donc ces variables n'étaient posées par personne.
+
+     `tailwind.config.ts` mappe `rounded-sm|md|lg|xl` dessus depuis
+     toujours, mais aucune feuille ne les déclarait. Une substitution
+     non résolue rend la déclaration `border-radius` invalide, donc
+     intégralement ignorée : chaque `rounded-lg` de pilot revenait en
+     réalité à un angle droit. C'est le même défaut que `--color-surface`,
+     et il est d'autant plus trompeur qu'un rayon absent se remarque moins
+     qu'un fond transparent — on lit « pas arrondi » là où la charte
+     demande 16 px.
+
+     Valeurs = `brand.radius` de la console, la géométrie du tamis
+     relevée sur le document. Les quatre doublons d'Astryx
+     (`--radius-inner`, `--radius-element`, `--radius-container`,
+     `--radius-page`) sont déjà publiés par sa feuille. */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
 }
 
 /* ============================================================

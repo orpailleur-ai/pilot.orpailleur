@@ -13,7 +13,38 @@ env:
   NEXT_PUBLIC_API_URL: ${{ secrets.PROD_API_URL }}
 
 jobs:
+  # ── Garde-fou, avant tout push ────────────────────────────────────────────
+  #
+  # Ce job existait pas : le workflow construisait et poussait l'image sans
+  # jamais lire le code. Une régression de type variable CSS passait donc en
+  # production — c'est exactement ce qui est arrivé avec `--color-surface`,
+  # 49 fois, et avec `--radius-lg` qui rendait tous les arrondis nuls.
+  #
+  # Rien de ce que vérifie ce job n'est visible à l'œil nu ni au build : une
+  # substitution CSS non résolue est ignorée en silence par le navigateur.
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Types
+        run: npm run typecheck
+
+      - name: Variables CSS
+        run: npm run check:tokens
+
   build-and-push:
+    needs: verify
     runs-on: ubuntu-latest
 
     steps:
