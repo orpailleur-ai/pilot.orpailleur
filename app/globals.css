@@ -9,9 +9,12 @@
    Correction par rapport à une version antérieure : pilot n'a PAS de
    ThemeProvider. Le commentaire annonçait une palette injectée à l'exécution
    « qui écrase tout ce qui suit » — c'est la console, où le tenant choisit
-   sa couleur. Ici `lib/theme-tokens.ts` n'est qu'un jeu de constantes, et les
-   jetons ci-dessous font autorité : personne ne les réécrit après le
-   chargement.
+   sa couleur. Ici les jetons ci-dessous font autorité : personne ne les
+   réécrit après le chargement.
+
+   L'ancien `lib/theme-tokens.ts` a été supprimé : il ne servait qu'à
+   pilot et décrivait un thème par tenant, que pilot n'a jamais lu. Aucun
+   code ne l'importait — les jetons d'ici sont les seuls lus par le rendu.
 
    Ne pas y déclarer de @layer : l'ordre des couches est figé par
    src/app/layers.css, importé en premier. */

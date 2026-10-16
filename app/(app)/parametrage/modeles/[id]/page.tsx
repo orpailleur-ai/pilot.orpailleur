@@ -3,11 +3,18 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { ArrowLeft, Check, History, TrendingUp } from 'lucide-react'
-import { Button, Spinner } from '@astryxdesign/core'
+import { Button, Spinner, useToast } from '@astryxdesign/core'
 import { apiClient } from '@/lib/api-client'
 import { useI18n } from '@/lib/i18n'
 import { libelleDetail, libelleScope } from '@/lib/i18n/scopes'
 import { InlineError } from '@/components/ui/inline-error'
+import { CopyButton } from '@/components/ui/copy-button'
+
+/** Résultat d'un test de clé. Même forme que sur la page liste. */
+interface EtatTest {
+  enCours: boolean
+  resultat: { ok: boolean; code: string; message: string; duree_ms?: number } | null
+}
 
 /** Reprend la forme de `Modele` dans la page liste — les deux doivent évoluer ensemble. */
 interface Modele {
@@ -15,6 +22,8 @@ interface Modele {
   scope: string
   provider: string
   model: string
+  /** `env` : la clé vient d'une variable d'environnement. `db` : chiffrée. */
+  key_source: 'env' | 'db'
   env_var: string | null
   cle: string | null
   prix_entree_eur_par_m: number | null
@@ -47,6 +56,8 @@ interface Entree {
   nouvelle_valeur: string | null
   changed_by: string | null
   created_at: string
+  /** Présent sur une entrée de test : durée de l'appel, en ms. */
+  duree_ms?: number
 }
 
 const eur = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' })
@@ -54,6 +65,7 @@ const nombre = new Intl.NumberFormat('fr-FR')
 
 export default function ModeleDetailPage() {
   const { t } = useI18n()
+  const toast = useToast()
   const router = useRouter()
   const { id } = useParams<{ id: string }>()
 
@@ -62,6 +74,7 @@ export default function ModeleDetailPage() {
   const [historique, setHistorique] = useState<Entree[]>([])
   const [chargement, setChargement] = useState(true)
   const [erreur, setErreur] = useState('')
+  const [etatTest, setEtatTest] = useState<EtatTest>({ enCours: false, resultat: null })
 
   const charger = useCallback(async () => {
     setChargement(true)
@@ -97,6 +110,38 @@ export default function ModeleDetailPage() {
   useEffect(() => {
     void charger()
   }, [charger])
+
+  /**
+   * Teste la clé auprès du fournisseur, sans rien enregistrer.
+   *
+   * Même contrat que le bouton de la page liste : la clé est vérifiée, rien
+   * n'est écrit. Un test d'OCR dure une seconde et demie — l'utilisateur a le
+   * temps de scroller ailleurs, et un simple changement de couleur passerait
+   * inaperçu. Le toast est donc l'accusé de réception, et l'icône de la carte
+   * l'état durable.
+   */
+  const testerCle = useCallback(async () => {
+    if (!modele) return
+    setEtatTest({ enCours: true, resultat: null })
+    try {
+      const r = await apiClient.post<{
+        ok: boolean; code: string; message: string; duree_ms?: number
+      }>(`/admin/ai-modeles/${modele.id}/tester`)
+      setEtatTest({ enCours: false, resultat: r })
+      toast({
+        body: r.ok ? t('ai_models_test_ok', { ms: r.duree_ms ?? 0 }) : r.message,
+        type: r.ok ? 'info' : 'error',
+      })
+    } catch (e: unknown) {
+      setEtatTest({
+        enCours: false,
+        resultat: {
+          ok: false, code: 'erreur', message: e instanceof Error ? e.message : t('error'),
+        },
+      })
+      toast({ body: e instanceof Error ? e.message : t('error'), type: 'error' })
+    }
+  }, [modele, t, toast])
 
   // En-tête commun : retour + libellé du périmètre.
   const entete = (
@@ -173,15 +218,18 @@ export default function ModeleDetailPage() {
           <Ligne libelle={t('ai_models_model')} valeur={modele.model} />
           <Ligne libelle={t('ai_models_provider')} valeur={modele.provider} />
           <Ligne
-            libelle={t('ai_models_api_key')}
-            valeur={modele.cle ?? modele.env_var ?? t('ai_models_key_db')}
-          />
-          <Ligne
             libelle={t('ai_models_updated_at')}
             valeur={new Date(modele.updated_at).toLocaleDateString('fr-FR')}
           />
         </dl>
       </section>
+
+      {/* ── Clé d'API : son propre encart ───────────────────────────────────
+          La clé était une ligne parmi d'autres dans une <dl> mélangeant
+          modèle, fournisseur, date. Elle est le SECRET de la fiche : elle
+          mérite son titre, sa source lisible, son masque copiable, son test et
+          son journal — pas une ligne dans un tableau. */}
+      <CleCard modele={modele} historique={historique} onTest={testerCle} test={etatTest} />
 
       {/* ── Tarif ── */}
       <section
@@ -316,6 +364,141 @@ export default function ModeleDetailPage() {
 }
 
 // ── Briques ──────────────────────────────────────────────────────────────────────
+
+/**
+ * Ancienneté relative, en français.
+ *
+ * Volontairement simple et LOCALE plutôt qu'une librairie : deux granularités
+ * suffisent — « il y a 2 h », « il y a 3 j ». Au-delà de quelques semaines,
+ * la date absolue est plus parlante qu'un « il y a 47 j » qu'il faut
+ * recompter. On bascule donc sur la date complète au-delà de 30 jours.
+ */
+function anciennete(iso: string | null | undefined): string {
+  if (!iso) return ''
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return ''
+  const secondes = Math.max(0, Math.floor((Date.now() - d.getTime()) / 1000))
+  const paliers: Array<[number, string]> = [
+    [60, 's'], [3600, 'min'], [86400, 'h'], [2592000, 'j'],
+  ]
+  let unite = 's'
+  let valeur = secondes
+  for (const [seuil, u] of paliers) {
+    if (secondes >= seuil) { unite = u; valeur = Math.floor(secondes / seuil) }
+  }
+  if (unite === 's') return `il y a ${valeur} s`
+  // Une seule lettre : « il y a 2 h » se lit sans effort, « il y a 2 heures »
+  // alourdit la ligne sans rien ajouter.
+  return `il y a ${valeur} ${unite}`
+}
+
+/**
+ * Encart « Clé d'API ».
+ *
+ * La clé est le SECRET de la fiche : elle sort du `<dl>` général pour avoir son
+ * titre, sa source lisible (variable d'environnement ou base chiffrée), son
+ * masque copiable, son test et son journal. On ne montre jamais la clé en
+ * clair — l'API ne la transmet pas au navigateur — mais le masque (4 derniers
+ * caractères) aide à la reconnaître dans le coffre du fournisseur, et « Copier »
+ * le recopie sans révéler le secret.
+ */
+function CleCard({
+  modele,
+  historique,
+  test,
+  onTest,
+}: {
+  modele: Modele
+  historique: Entree[]
+  test: EtatTest
+  onTest: () => void
+}) {
+  const { t } = useI18n()
+
+  const sourceLabel =
+    modele.key_source === 'db'
+      ? t('ai_models_key_source_db')
+      : (modele.env_var ?? t('ai_models_key_source_env'))
+
+  // Ce que « Copier » doit mettre dans le presse-papier : le masque, ou à
+  // défaut le nom de la variable d'environnement. Jamais la clé — l'API ne
+  // l'envoie pas au navigateur de toute façon.
+  const aCopier = modele.cle ?? modele.env_var ?? ''
+
+  // Dernier changement et dernier test, lus dans le journal.
+  const dernierTest = historique.find((h) => h.action === 'test' || /test/i.test(h.action))
+  const dernierChangement = historique.find((h) => h.action !== 'test' && !/test/i.test(h.action))
+  const aChange = Boolean(dernierChangement || modele.updated_at)
+
+  return (
+    <section
+      className="rounded-xl border p-5"
+      style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-card)' }}
+    >
+      <h2 className="mb-4 text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+        {t('ai_models_key_section')}
+      </h2>
+
+      <dl className="grid gap-x-8 gap-y-3 text-sm sm:grid-cols-2">
+        <Ligne libelle={t('ai_models_key_source_db')} valeur={sourceLabel} />
+        <Ligne
+          libelle={t('ai_models_api_key')}
+          valeur={aCopier || '—'}
+        />
+      </dl>
+
+      <div className="mt-4 flex flex-wrap items-center gap-2">
+        {aCopier && (
+          <CopyButton value={aCopier} label={t('ai_models_key_copy')} />
+        )}
+        <Button
+          label={test.enCours ? t('ai_models_testing') : t('ai_models_test')}
+          icon={test.enCours ? undefined : test.resultat?.ok ? <Check size={13} /> : undefined}
+          variant={test.resultat && !test.resultat.ok ? 'destructive' : 'secondary'}
+          size="sm"
+          onClick={onTest}
+          isDisabled={test.enCours}
+        />
+      </div>
+
+      <dl className="mt-4 border-t pt-3 text-xs" style={{ borderColor: 'var(--color-border)' }}>
+        <dt className="text-secondary" style={{ color: 'var(--color-text-secondary)' }}>
+          {t('ai_models_test')}
+        </dt>
+        <dd className="mb-2" style={{ color: 'var(--color-text-primary)' }}>
+          {test.enCours
+            ? t('ai_models_testing')
+            : test.resultat
+              ? test.resultat.ok
+                ? t('ai_models_key_tested_just_now', { ms: test.resultat.duree_ms ?? 0 })
+                : t('ai_models_key_tested_ko_just_now')
+              : dernierTest
+                ? t('ai_models_key_tested_ok', {
+                    ago: anciennete(dernierTest.created_at),
+                    ms: dernierTest.duree_ms ?? 0,
+                  })
+                : t('ai_models_key_never_used')}
+        </dd>
+
+        <dt className="text-secondary" style={{ color: 'var(--color-text-secondary)' }}>
+          {t('ai_models_history')}
+        </dt>
+        <dd style={{ color: 'var(--color-text-primary)' }}>
+          {dernierChangement
+            ? dernierChangement.changed_by
+              ? t('ai_models_key_modified_by', {
+                  ago: anciennete(dernierChangement.created_at),
+                  auteur: dernierChangement.changed_by,
+                })
+              : t('ai_models_key_modified_unknown', { ago: anciennete(dernierChangement.created_at) })
+            : aChange
+              ? t('ai_models_key_modified_unknown', { ago: anciennete(modele.updated_at) })
+              : t('ai_models_key_never_modified')}
+        </dd>
+      </dl>
+    </section>
+  )
+}
 
 function Ligne({ libelle, valeur, fort }: { libelle: string; valeur: string; fort?: boolean }) {
   return (
