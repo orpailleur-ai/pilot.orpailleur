@@ -23,7 +23,11 @@ interface DataTableProps<T> {
  * Tableau de données responsive.
  *
  * ≥ md  : vraie table, entête alignée sur les colonnes.
- * < md  : les mêmes données en cartes empilées, libellé + valeur.
+ * < md  : les mêmes données en cartes empilées, libellé + valeur, pour éviter
+ *         le défilement horizontal sur téléphone.
+ *
+ * Le comportement est piloté par les mêmes `columns` — pas de doublon à
+ * maintenir entre les deux rendus.
  */
 export function DataTable<T>({ columns, rows, rowKey, empty, onRowClick }: DataTableProps<T>) {
   if (rows.length === 0) {
@@ -39,6 +43,15 @@ export function DataTable<T>({ columns, rows, rowKey, empty, onRowClick }: DataT
 
   const alignClass = (align?: 'start' | 'end') =>
     align === 'end' ? 'text-right' : 'text-left'
+
+  const handleRowClick = (e: React.MouseEvent, row: T) => {
+    if (!onRowClick) return
+    // Don't navigate if the click came from inside a button, anchor, or a column marked noRowClick
+    const target = e.target as HTMLElement
+    const isInteractive = target.closest('button, a, input, select, textarea, [role="button"]')
+    if (isInteractive) return
+    onRowClick(row)
+  }
 
   return (
     <>
@@ -75,7 +88,7 @@ export function DataTable<T>({ columns, rows, rowKey, empty, onRowClick }: DataT
             {rows.map((row) => (
               <tr
                 key={rowKey(row)}
-                onClick={onRowClick ? () => onRowClick(row) : undefined}
+                onClick={(e) => handleRowClick(e, row)}
                 className="border-b last:border-0 transition-colors"
                 style={{
                   borderColor: 'var(--color-border)',
@@ -110,18 +123,21 @@ export function DataTable<T>({ columns, rows, rowKey, empty, onRowClick }: DataT
               boxShadow: 'var(--shadow-card)',
             }}
           >
+            {/* Titre */}
             <div
               className="font-medium"
               style={{ color: 'var(--color-text-primary)' }}
-              onClick={onRowClick ? () => onRowClick(row) : undefined}
+              onClick={(e) => handleRowClick(e, row)}
             >
               {cardTitle?.render(row)}
             </div>
 
+            {/* Lignes libellé / valeur */}
             {cardInline.map((c) => (
               <div
                 key={c.key}
                 className="mt-1.5 flex items-baseline justify-between gap-3 text-sm"
+                onClick={c.noRowClick ? (e) => e.stopPropagation() : undefined}
               >
                 <span
                   className="shrink-0 text-xs"
@@ -138,8 +154,12 @@ export function DataTable<T>({ columns, rows, rowKey, empty, onRowClick }: DataT
               </div>
             ))}
 
+            {/* Actions */}
             {cardRest.length > 0 && (
-              <div className="mt-2 flex items-center justify-end gap-1 border-t pt-2">
+              <div
+                className="mt-2 flex items-center justify-end gap-1 border-t pt-2"
+                onClick={(e) => e.stopPropagation()}
+              >
                 {cardRest.map((c) => (
                   <span key={c.key}>{c.render(row)}</span>
                 ))}

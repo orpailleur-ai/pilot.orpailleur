@@ -5,6 +5,18 @@
  * constantes et de la géométrie : aucune dépendance, aucun import React, donc
  * importable depuis un composant serveur, un script de build ou un test.
  *
+ * SOURCE UNIQUE — `console.orpailleur/src/lib/brand.ts` porte le même contenu.
+ * Les deux dépôts restent indépendants, sans monorepo ni paquet partagé : un
+ * troisième dépôt pour quatre palettes et une grille coûterait plus cher en
+ * friction qu'il ne rapporterait. La cohérence se maintient donc par
+ * report manuel, et ce fichier en est la copie de référence côté pilot —
+ * pilot n'a qu'UNE seule couleur, celle de la charte, sans thème par tenant.
+ *
+ * Toute divergence doit être JUSTIFIÉE et écrite ici. Une correction
+ * apportée à console et non reportée est un bug d'affichage, pas un détail :
+ * les deux applications doivent se ressembler, sinon l'utilisateur voit deux
+ * produits différents.
+ *
  * ── Provenance ─────────────────────────────────────────────────────────────
  *
  * Toutes les valeurs proviennent de `Orpailleur-Branding-v2-1.pdf`, relevéées

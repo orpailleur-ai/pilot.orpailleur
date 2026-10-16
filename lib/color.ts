@@ -22,6 +22,9 @@ export function parseHex(hex: string | null | undefined): Rgb | null {
   if (!hex) return null
   let h = hex.trim().replace(/^#/, '')
   if (h.length === 3 || h.length === 4) h = h.split('').map((c) => c + c).join('')
+  // 8 chiffres = RVB + alpha. On l'accepte en ignorant l'alpha : la couleur
+  // seule suffit partout où seule la teinte compte, et les appelants qui ont
+  // besoin de l'opacité emploient `flatten` / `contrastWithAlpha`.
   if (h.length === 8) h = h.slice(0, 6)
   if (!/^[0-9a-fA-F]{6}$/.test(h)) return null
   const n = parseInt(h, 16)
@@ -61,7 +64,7 @@ export function toHex({ r, g, b }: Rgb): string {
   )
 }
 
-// ── WCAG ─────────────────────────────────────────────────────────────────────
+// ── WCAG ──────────────────────────────────────────────────────────────────────
 
 function channelLuminance(c: number): number {
   const s = c / 255
@@ -84,7 +87,7 @@ export function contrastRatio(a: string, b: string): number | null {
   const la = relativeLuminance(a)
   const lb = relativeLuminance(b)
   if (la === null || lb === null) return null
-  const [hi, lo]: [number, number] = la > lb ? [la, lb] : [lb, la]
+  const [hi, lo] = la > lb ? [la, lb] : [lb, la]
   return (hi + 0.05) / (lo + 0.05)
 }
 
@@ -193,6 +196,8 @@ export function buildPrimaryScale(hex: string): Record<string, string> {
 
   const { h, s } = toHsl(rgb)
 
+  // En mode sombre on éclaircit un peu pour rester lisible sur fond noir ;
+  // on borne la clarté pour ne pas partir dans un pastel.
   const at = (l: number) => toHex(fromHsl(h, s, Math.min(0.94, Math.max(0.04, l))))
 
   return {
@@ -242,7 +247,26 @@ export function withAlpha(hex: string, alpha: number): string | null {
  *
  * Une bordure n'a pas à atteindre 3:1 — elle n'est pas porteuse
  * d'information, elle découpe. Mais elle doit être *visible* : on vise
- * ~1.3:1, le seuil en deçà duquel deux surfaces se confondent à l'œil.
+ * ~1.3:1, le seuil en deçà duquel deux surfaces se confondent à l'œil. Sous
+ * 1.2, la bordure devient un fantôme : présente dans le DOM, invisible à
+ * l'écran — c'était exactement le cas du gris `#e2e8f0` du thème par défaut,
+ * à 55 % sur du blanc il ne donnait que 1.12 et les tableaux semblaient sans
+ * encadrés.
+ *
+ * Deux leviers, dans cet ordre :
+ *
+ *   1. l'opacité, tant qu'elle suffit. Une teinte sombre atteint le seuil très
+ *      tôt, une teinte pale a besoin d'opacité — et une opacité trop forte
+ *      transformerait la bordure en aplat, ce qui n'est pas l'effet voulu ;
+ *   2. à défaut, la clarté de la teinte. Certaines couleurs ne peuvent pas
+ *      atteindre le seuil quelle que soit l'opacité : `#e2e8f0` est à 92 % de
+ *      luminance, il n'est *presque* pas colourable sur du blanc. On l'assombrit
+ *      alors en gardant sa teinte et sa saturation, jusqu'à ce que la
+ *      bordure existe.
+ *
+ * L'ordre compte : on préserve l'opacité tant que possible, parce que c'est
+ * elle qui donne la finesse du trait. On ne touche à la teinte qu'en dernier
+ * recours, pour ne pas déformer le choix du tenant plus que nécessaire.
  */
 export function borderColor(
   hex: string,
@@ -251,6 +275,7 @@ export function borderColor(
 ): string {
   if (!parseHex(hex) || !parseHex(background)) return hex
 
+  // 1. Opacité croissante — le levier le moins intrusif.
   for (let a = 0.2; a <= 0.9; a += 0.05) {
     const candidate = withAlpha(hex, a)
     if (candidate && (contrastWithAlpha(candidate, background) ?? 0) >= targetRatio) {
@@ -258,6 +283,8 @@ export function borderColor(
     }
   }
 
+  // 2. Teinte trop pâle pour être révélée par l'opacité : on l'assombrit,
+  //    à opacité maximale, jusqu'à ce qu'elle se distingue enfin du fond.
   const l = lum(parseHex(hex)!)
   for (let lightness = l - 0.05; lightness >= 0.02; lightness -= 0.03) {
     const darker = withLightness(hex, lightness)
@@ -270,17 +297,32 @@ export function borderColor(
 
 /**
  * Variante « sombre » d'une couleur de surface choisie pour le mode clair.
+ *
+ * Le tenant saisit une seule valeur par surface, pensée pour le fond clair.
+ * Plutôt que de l'ignorer en mode sombre — ce qui laissait un fond blanc sous
+ * un texte blanc — on retourne sa clarté : une surface claire devient une
+ * surface sombre de même teinte, ce qui préserve l'intention graphique.
+ *
+ * `depth` distingue les plans : le fond de page descend plus bas que les
+ * cartes, pour que celles-ci restent détachées.
  */
 export function darkSurface(hex: string, depth: 'body' | 'card' | 'popover'): string | null {
   const rgb = parseHex(hex)
   if (!rgb) return null
   const l = lum(rgb)
+  // Une surface déjà sombre est laissée telle quelle : la salir plus ne
+  // rendrait rien et l'opacité de la teinte sature.
   if (l < 0.3) return hex
   return withLightness(hex, depth === 'body' ? 0.07 : depth === 'card' ? 0.12 : 0.16)
 }
 
 /**
  * Texte lisible sur une surface donnée, par variation de contraste.
+ *
+ * Contrairement à `contrastingTextColor` (noir ou blanc), on part de la
+ * couleur du texte du thème et on l'éclaircit ou l'assombrit jusqu'à passer le
+ * seuil AA. C'est ce qu'il faut pour `--color-text-secondary`, où l'on veut
+ * rester dans la famille du texte plutôt que basculer brutalement au noir.
  */
 export function readableOn(hex: string, background: string, minRatio = 4.5): string {
   const bg = parseHex(background)
@@ -290,6 +332,8 @@ export function readableOn(hex: string, background: string, minRatio = 4.5): str
 
   if (contrastRatio(hex, background)! >= minRatio) return hex
 
+  // On remonte vers le blanc d'abord (l_background est le cas courant : un
+  // texte trop clair sur fond clair), puis vers le noir en dernier recours.
   for (let l = lum(fg) + 0.1; l <= 1; l += 0.05) {
     const candidate = withLightness(hex, l)
     if (candidate && contrastRatio(candidate, background)! >= minRatio) return candidate

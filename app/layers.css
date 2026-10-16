@@ -1,5 +1,7 @@
 /* Ordre des couches CSS — à importer EN PREMIER, avant toute autre feuille.
  *
+ * Pourquoi ce fichier existe :
+ *
  * Astryx range toutes les règles de ses composants dans `@layer astryx-base`
  * et son reset dans `@layer reset`. Tailwind, lui, écrit son preflight et ses
  * utilitaires dans ses propres couches (base / components / utilities).
@@ -20,7 +22,7 @@
  * assemblera.
  *
  * Les couches sont ordonnées de la plus faible à la plus forte : `reset` est
- * donc la plus faible (typographie de base, bornée par les classes), et
+ * donc la plus faible (typographie de base,-bornée par les classes), et
  * `utilities` la plus forte.
  */
 
