@@ -49,15 +49,17 @@ export function CardLayout({ children }: { children: React.ReactNode }) {
       />
 
       <main className="flex-1 overflow-y-auto">
-        <div className="{/* Aligné sur console : meme plafond et meme gouttiere, pour que les
-            deux applications aient le meme prix de ligne. 1280 px (max-w-7xl)
-            ouvrait de la marge de chaque côté dès 1281 px, ce que console
-            n'a pas.
+        {/*
+          Aligné sur console : même plafond et même gouttière, pour que les
+          deux applications aient le même prix de ligne. 1280 px (max-w-7xl)
+          ouvrait de la marge de chaque côté dès 1281 px, ce que console
+          n'a pas.
 
-            Le plafond reste, malgre la demande de retrait des marges : sans
-            lui, les tableaux deviennent des lignes interminable sur un tres
-            large écran. Console porte la meme borne pour la meme raison. */}
-          mx-auto w-full max-w-[1800px] px-4 py-4 sm:px-6 sm:px-5">
+          Le plafond reste, malgré la demande de retrait des marges : sans
+          lui, les tableaux deviennent des lignes interminables sur un très
+          large écran. Console porte la même borne pour la même raison.
+        */}
+        <div className="mx-auto w-full max-w-[1800px] px-4 py-4 sm:px-6">
           {children}
         </div>
       </main>

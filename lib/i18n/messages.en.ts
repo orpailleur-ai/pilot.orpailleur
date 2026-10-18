@@ -27,6 +27,23 @@ export const en = {
   collapse: 'Collapse',
   expand: 'Expand',
   back: 'Back',
+  // Tabs
+  profile_tab: 'Profile',
+  roles_tab: 'Roles',
+  sites_tab: 'Sites',
+  permissions_tab: 'Permissions',
+  // Not found
+  user_not_found: 'User not found',
+  role_not_found: 'Role not found',
+  tenant_not_found: 'Tenant not found',
+  // Badges
+  system_badge: 'System',
+  // Tenant tabs
+  overview_tab: 'Overview',
+  users_tab: 'Users',
+  subscription_tab: 'Subscription',
+  invoices_tab: 'Invoices',
+  settings_tab: 'Settings',
   next: 'Next',
   previous: 'Previous',
   yes: 'Yes',

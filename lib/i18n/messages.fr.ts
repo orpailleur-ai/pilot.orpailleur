@@ -26,6 +26,23 @@ export const fr = {
   collapse: 'Réduire',
   expand: 'Développer',
   back: 'Retour',
+  // Tabs
+  profile_tab: 'Profil',
+  roles_tab: 'Rôles',
+  sites_tab: 'Sites',
+  permissions_tab: 'Permissions',
+  // Not found
+  user_not_found: 'Utilisateur introuvable',
+  role_not_found: 'Rôle introuvable',
+  tenant_not_found: 'Tenant introuvable',
+  // Badges
+  system_badge: 'Système',
+  // Tenant tabs
+  overview_tab: "Vue d'ensemble",
+  users_tab: 'Utilisateurs',
+  subscription_tab: 'Abonnement',
+  invoices_tab: 'Factures',
+  settings_tab: 'Réglages',
   next: 'Suivant',
   previous: 'Précédent',
   yes: 'Oui',
