@@ -1,11 +1,13 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { CreditCard } from 'lucide-react'
 import { subscriptions, adminTenants, plans as plansApi, type Subscription } from '@/lib/api-client'
 import { Spinner } from '@/components/ui/spinner'
 import { InlineError } from '@/components/ui/inline-error'
 import { EmptyState } from '@/components/ui/empty-state'
 import { DataTable, type Column } from '@/components/ui/data-table'
+import { PageHeader } from '@/components/layout/page-header'
 import { StatusPill } from '@/components/composite/status-pill'
 import { useI18n } from '@/lib/i18n'
 
@@ -22,28 +24,38 @@ export default function SubscriptionsPage() {
   const [fetchError, setFetchError] = useState<string | null>(null)
 
   useEffect(() => {
-    Promise.all([
-      subscriptions.list(),
-      adminTenants.list(),
-      plansApi.list(),
-    ])
-      .then(([subs, tens, pls]) => {
-        setList(subs)
-        const tensMap: Record<string, string> = {}
-        for (const t of tens) tensMap[t.id] = t.nom
-        setTenants(tensMap)
-        const plansMap: Record<string, string> = {}
-        for (const p of pls) plansMap[p.id] = p.nom
-        setPlanNames(plansMap)
-      })
-      .catch((err) => setFetchError(err instanceof Error ? err.message : t('error')))
-      .finally(() => setLoading(false))
+    void load()
   }, [])
+
+  async function load() {
+    setLoading(true)
+    setFetchError(null)
+    try {
+      const [subs, tens, pls] = await Promise.all([
+        subscriptions.list(),
+        adminTenants.list(),
+        plansApi.list(),
+      ])
+      setList(subs)
+      const tensMap: Record<string, string> = {}
+      for (const ten of tens) tensMap[ten.id] = ten.nom
+      setTenants(tensMap)
+      const plansMap: Record<string, string> = {}
+      for (const p of pls) plansMap[p.id] = p.nom
+      setPlanNames(plansMap)
+    } catch (err) {
+      setFetchError(err instanceof Error ? err.message : t('error'))
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const activeCount = list.filter((s) => s.statut === 'active').length
 
   const columns: Column<Subscription>[] = [
     {
       key: 'tenant',
-      header: 'Tenant',
+      header: t('subscriptions_tenant'),
       mobile: 'primary',
       render: (row) => (
         <span style={{ color: 'var(--color-text-primary)', fontWeight: 500 }}>
@@ -53,7 +65,7 @@ export default function SubscriptionsPage() {
     },
     {
       key: 'plan',
-      header: 'Plan',
+      header: t('subscriptions_plan'),
       mobile: 'inline',
       render: (row) => (
         <span style={{ color: 'var(--color-accent)' }}>
@@ -63,17 +75,17 @@ export default function SubscriptionsPage() {
     },
     {
       key: 'periode',
-      header: 'Période',
+      header: t('subscriptions_periode'),
       mobile: 'hidden',
       render: (row) => (
         <span style={{ color: 'var(--color-text-secondary)' }}>
-          {row.periode === 'yearly' ? 'Annuel' : 'Mensuel'}
+          {row.periode === 'yearly' ? t('subscriptions_annuel') : t('subscriptions_mensuel')}
         </span>
       ),
     },
     {
       key: 'prix',
-      header: 'Prix',
+      header: t('subscriptions_prix'),
       mobile: 'hidden',
       align: 'end',
       render: (row) => (
@@ -84,17 +96,25 @@ export default function SubscriptionsPage() {
     },
     {
       key: 'statut',
-      header: 'Statut',
+      header: t('subscriptions_statut'),
       mobile: 'inline',
       render: (row) => (
         <StatusPill
-          status={row.statut === 'active' ? 'active' : row.statut === 'canceled' ? 'canceled' : row.statut === 'expired' ? 'expired' : 'past_due'}
+          status={
+            row.statut === 'active'
+              ? 'active'
+              : row.statut === 'canceled'
+              ? 'canceled'
+              : row.statut === 'expired'
+              ? 'expired'
+              : 'past_due'
+          }
         />
       ),
     },
     {
       key: 'dateFin',
-      header: "Date d'échéance",
+      header: t('subscriptions_date_fin'),
       mobile: 'hidden',
       align: 'end',
       render: (row) => (
@@ -105,16 +125,37 @@ export default function SubscriptionsPage() {
     },
   ]
 
-  if (loading) return <div className="flex justify-center py-16"><Spinner size={8} /></div>
+  if (loading) {
+    return (
+      <div className="flex justify-center py-16">
+        <Spinner size={8} />
+      </div>
+    )
+  }
 
   return (
-    <div className="space-y-5">
-      <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-        {list.length} subscription(s) active(s)
-      </p>
-      {fetchError ? <InlineError message={fetchError} /> :
-       list.length === 0 ? <EmptyState title="Aucune subscription" description="Les subscriptions apparaîtront ici une fois créées." /> :
-       <DataTable columns={columns} rows={list} rowKey={(row) => row.id} />}
-    </div>
+    <>
+      <PageHeader
+        title={t('subscriptions_title')}
+        icon={<CreditCard size={20} style={{ color: 'var(--color-text-primary)' }} />}
+      />
+
+      {fetchError ? (
+        <InlineError message={fetchError} />
+      ) : list.length === 0 ? (
+        <EmptyState
+          icon={<CreditCard size={24} />}
+          title={t('subscriptions_empty')}
+          description={t('subscriptions_empty_hint')}
+        />
+      ) : (
+        <>
+          <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+            {t('subscriptions_count', { n: activeCount })}
+          </p>
+          <DataTable columns={columns} rows={list} rowKey={(row) => row.id} />
+        </>
+      )}
+    </>
   )
 }

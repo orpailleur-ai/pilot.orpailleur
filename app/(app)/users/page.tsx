@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Users, Plus, Search, CheckCircle, XCircle } from 'lucide-react'
+import { Users, Plus, Search } from 'lucide-react'
 import { Button, useToast } from '@astryxdesign/core'
 import { TextInput } from '@astryxdesign/core'
 import { Modal, ModalSection, FieldGrid } from '@/components/ui/modal'
@@ -10,6 +10,7 @@ import { DataTable, type Column } from '@/components/ui/data-table'
 import { EmptyState } from '@/components/ui/empty-state'
 import { InlineError } from '@/components/ui/inline-error'
 import { Spinner } from '@/components/ui/spinner'
+import { PageHeader } from '@/components/layout/page-header'
 import {
   adminUsers,
   adminTenants,
@@ -43,7 +44,7 @@ export default function UsersPage() {
   })
 
   useEffect(() => {
-    load()
+    void load()
   }, [])
 
   async function load() {
@@ -108,15 +109,11 @@ export default function UsersPage() {
   const columns: Column<AdminUser>[] = [
     {
       key: 'email',
-      header: 'Email',
+      header: t('users_email'),
       mobile: 'primary',
       render: (row) => (
         <div className="flex flex-col gap-0.5">
-          <span
-            className="font-medium cursor-pointer"
-            style={{ color: 'var(--color-accent)' }}
-            onClick={() => router.push(`/users/${row.id}`)}
-          >
+          <span className="font-medium" style={{ color: 'var(--color-accent)' }}>
             {row.email}
           </span>
           {[row.prenom, row.nom].filter(Boolean).length > 0 && (
@@ -182,13 +179,9 @@ export default function UsersPage() {
       mobile: 'inline',
       render: (row) =>
         row.actif ? (
-          <span className="flex items-center gap-1" style={{ color: 'var(--color-success)' }}>
-            <CheckCircle size={12} /> {t('active')}
-          </span>
+          <span style={{ color: 'var(--color-success)' }}>{t('users_filter_active')}</span>
         ) : (
-          <span className="flex items-center gap-1" style={{ color: 'var(--color-danger)' }}>
-            <XCircle size={12} /> {t('inactive')}
-          </span>
+          <span style={{ color: 'var(--color-danger)' }}>{t('users_filter_inactive')}</span>
         ),
     },
   ]
@@ -211,26 +204,20 @@ export default function UsersPage() {
   }
 
   return (
-    <div className="space-y-5">
-      <div className="flex items-center justify-between">
-        <div>
-          {/* Title is in PageHeader via layout */}
-        </div>
-        {action}
-      </div>
+    <>
+      <PageHeader title={t('users')} action={action} />
 
       {fetchError && <InlineError message={fetchError} />}
 
       {/* Filters */}
       <div className="flex flex-wrap gap-3">
         <TextInput
-          label="Rechercher"
-          isLabelHidden
+          label={t('users_search')}
           value={search}
           onChange={(v) => setSearch(v)}
           placeholder="Email, nom, prénom…"
           startIcon={<Search size={14} />}
-          width="200px"
+          width="220px"
         />
         <select
           className="h-8 rounded-md border px-2 text-sm"
@@ -242,7 +229,7 @@ export default function UsersPage() {
           value={filterTenant}
           onChange={(e) => setFilterTenant(e.target.value)}
         >
-          <option value="">Tous les tenants</option>
+          <option value="">{t('users_filter_tenant')}</option>
           {tenants.map((ten) => (
             <option key={ten.id} value={ten.id}>{ten.nom}</option>
           ))}
@@ -257,9 +244,9 @@ export default function UsersPage() {
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value)}
         >
-          <option value="">Tous les statuts</option>
-          <option value="active">Actif</option>
-          <option value="inactive">Inactif</option>
+          <option value="">{t('users_filter_status')}</option>
+          <option value="active">{t('users_filter_active')}</option>
+          <option value="inactive">{t('users_filter_inactive')}</option>
         </select>
       </div>
 
@@ -270,7 +257,12 @@ export default function UsersPage() {
           description={search || filterTenant || filterStatus ? undefined : t('no_users_hint')}
         />
       ) : (
-        <DataTable columns={columns} rows={filtered} rowKey={(row) => row.id} />
+        <DataTable
+          columns={columns}
+          rows={filtered}
+          rowKey={(row) => row.id}
+          onRowClick={(row) => router.push(`/users/${row.id}`)}
+        />
       )}
 
       {/* Create modal */}
@@ -281,10 +273,10 @@ export default function UsersPage() {
         size="md"
       >
         <form onSubmit={handleCreate} className="space-y-5">
-          <ModalSection title="Compte">
+          <ModalSection title={t('users_account')}>
             <FieldGrid columns={1}>
               <TextInput
-                label="Email"
+                label={t('users_email')}
                 type="email"
                 value={form.email}
                 onChange={(v) => setForm((f) => ({ ...f, email: v }))}
@@ -293,7 +285,7 @@ export default function UsersPage() {
                 placeholder="paul.dupont@example.fr"
               />
               <TextInput
-                label="Mot de passe"
+                label={t('users_password')}
                 type="password"
                 value={form.password}
                 onChange={(v) => setForm((f) => ({ ...f, password: v }))}
@@ -304,16 +296,16 @@ export default function UsersPage() {
             </FieldGrid>
           </ModalSection>
 
-          <ModalSection title="Identité">
+          <ModalSection title={t('users_identity')}>
             <FieldGrid columns={2}>
               <TextInput
-                label="Prénom"
+                label={t('users_prenom')}
                 value={form.prenom}
                 onChange={(v) => setForm((f) => ({ ...f, prenom: v }))}
                 width="100%"
               />
               <TextInput
-                label="Nom"
+                label={t('users_nom')}
                 value={form.nom}
                 onChange={(v) => setForm((f) => ({ ...f, nom: v }))}
                 width="100%"
@@ -329,7 +321,7 @@ export default function UsersPage() {
               className="flex-1"
             />
             <Button
-              label={saving ? t('saving') : t('add')}
+              label={saving ? t('loading') : t('add')}
               variant="primary"
               type="submit"
               isLoading={saving}
@@ -338,6 +330,6 @@ export default function UsersPage() {
           </div>
         </form>
       </Modal>
-    </div>
+    </>
   )
 }

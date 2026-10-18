@@ -128,7 +128,7 @@ export default function AuditPage() {
       setLoading(false)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, actionFilter, userIdFilter])
+  }, [page, actionFilter, userIdFilter, t, router])
 
   useEffect(() => {
     if (!authLoading) fetchLogs()
@@ -200,7 +200,7 @@ export default function AuditPage() {
         <div className="flex items-center gap-2">
           <Filter size={14} style={{ color: 'var(--color-text-secondary)' }} />
           <span className="text-xs font-medium" style={{ color: 'var(--color-text-secondary)' }}>
-            Filtres
+            {t('audit_filters')}
           </span>
         </div>
 
@@ -228,7 +228,7 @@ export default function AuditPage() {
           type="text"
           value={userIdFilter}
           onChange={(e) => setUserIdFilter(e.target.value)}
-          placeholder={t('filter_by_user')}
+          placeholder={t('audit_filter_user')}
           className="rounded-lg border px-3 py-1.5 text-sm flex-1 min-w-[180px]"
           style={{
             backgroundColor: 'var(--color-background-surface)',
@@ -243,7 +243,7 @@ export default function AuditPage() {
             className="text-xs underline"
             style={{ color: 'var(--color-text-secondary)' }}
           >
-            {t('clear_filters', 'Réinitialiser')}
+            {t('audit_clear_filters')}
           </button>
         )}
       </div>

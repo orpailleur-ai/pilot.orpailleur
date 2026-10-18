@@ -10,6 +10,7 @@ import { DataTable, type Column } from '@/components/ui/data-table'
 import { EmptyState } from '@/components/ui/empty-state'
 import { InlineError } from '@/components/ui/inline-error'
 import { Spinner } from '@/components/ui/spinner'
+import { PageHeader } from '@/components/layout/page-header'
 import { roles, type Role } from '@/lib/api-client'
 import { useI18n } from '@/lib/i18n'
 
@@ -25,7 +26,7 @@ export default function RolesPage() {
   const [form, setForm] = useState({ code: '', label: '' })
 
   useEffect(() => {
-    load()
+    void load()
   }, [])
 
   async function load() {
@@ -62,15 +63,14 @@ export default function RolesPage() {
   const columns: Column<Role>[] = [
     {
       key: 'label',
-      header: 'Nom',
+      header: t('name'),
       mobile: 'primary',
       render: (row) => (
         <div className="flex items-center gap-2">
           <Shield size={14} style={{ color: 'var(--color-accent)' }} />
           <span
-            className="font-medium cursor-pointer"
+            className="font-medium"
             style={{ color: 'var(--color-accent)' }}
-            onClick={() => router.push(`/roles/${row.id}`)}
           >
             {row.label}
           </span>
@@ -82,7 +82,7 @@ export default function RolesPage() {
                 color: 'var(--color-text-secondary)',
               }}
             >
-              <Lock size={10} /> Système
+              <Lock size={10} /> {t('roles_system')}
             </span>
           )}
         </div>
@@ -90,7 +90,7 @@ export default function RolesPage() {
     },
     {
       key: 'code',
-      header: 'Code',
+      header: t('roles_code'),
       mobile: 'inline',
       render: (row) => (
         <span
@@ -106,18 +106,18 @@ export default function RolesPage() {
     },
     {
       key: 'isSystem',
-      header: 'Type',
+      header: t('roles_type'),
       mobile: 'hidden',
       render: (row) =>
         row.isSystem ? (
-          <span style={{ color: 'var(--color-text-secondary)' }}>Système</span>
+          <span style={{ color: 'var(--color-text-secondary)' }}>{t('roles_system')}</span>
         ) : (
-          <span style={{ color: 'var(--color-accent)' }}>Custom</span>
+          <span style={{ color: 'var(--color-accent)' }}>{t('roles_custom')}</span>
         ),
     },
     {
       key: 'permissions',
-      header: 'Permissions',
+      header: t('roles_permissions'),
       mobile: 'hidden',
       render: (row) => (
         <span style={{ color: 'var(--color-text-secondary)' }}>
@@ -131,7 +131,7 @@ export default function RolesPage() {
     <Button
       variant="primary"
       icon={<Plus size={14} />}
-      label="Nouveau rôle"
+      label={t('roles_new')}
       onClick={() => setShowCreate(true)}
     />
   )
@@ -145,33 +145,42 @@ export default function RolesPage() {
   }
 
   return (
-    <div className="space-y-5">
-      <div className="flex justify-end">{action}</div>
+    <>
+      <PageHeader
+        title={t('roles_title')}
+        icon={<Shield size={20} style={{ color: 'var(--color-text-primary)' }} />}
+        action={action}
+      />
 
       {fetchError && <InlineError message={fetchError} />}
 
       {roleList.length === 0 ? (
         <EmptyState
           icon={<Shield size={24} />}
-          title="Aucun rôle"
-          description="Créez un rôle custom pour gérer les permissions."
+          title={t('roles_empty')}
+          description={t('roles_empty_hint')}
         />
       ) : (
-        <DataTable columns={columns} rows={roleList} rowKey={(row) => row.id} />
+        <DataTable
+          columns={columns}
+          rows={roleList}
+          rowKey={(row) => row.id}
+          onRowClick={(row) => router.push(`/roles/${row.id}`)}
+        />
       )}
 
       {/* Create modal */}
       <Modal
         isOpen={showCreate}
         onOpenChange={(open) => { if (!open) setShowCreate(false) }}
-        title="Nouveau rôle custom"
+        title={t('roles_modal_title')}
         size="sm"
       >
         <form onSubmit={handleCreate} className="space-y-5">
-          <ModalSection title="Identité du rôle">
+          <ModalSection title={t('roles_modal_title')}>
             <FieldGrid columns={1}>
               <TextInput
-                label="Code (identifiant technique, sans espaces)"
+                label={t('roles_code_label')}
                 value={form.code}
                 onChange={(v) => setForm((f) => ({ ...f, code: v.toLowerCase().replace(/\s+/g, '_') }))}
                 isRequired
@@ -179,7 +188,7 @@ export default function RolesPage() {
                 placeholder="chef_boulanger"
               />
               <TextInput
-                label="Nom affiché"
+                label={t('roles_label_label')}
                 value={form.label}
                 onChange={(v) => setForm((f) => ({ ...f, label: v }))}
                 isRequired
@@ -197,7 +206,7 @@ export default function RolesPage() {
               className="flex-1"
             />
             <Button
-              label={saving ? t('saving') : t('add')}
+              label={saving ? t('loading') : t('add')}
               variant="primary"
               type="submit"
               isLoading={saving}
@@ -206,6 +215,6 @@ export default function RolesPage() {
           </div>
         </form>
       </Modal>
-    </div>
+    </>
   )
 }
