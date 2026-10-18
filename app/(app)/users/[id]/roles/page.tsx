@@ -8,6 +8,7 @@ import { Modal, ModalSection, FieldGrid } from '@/components/ui/modal'
 import { TextInput } from '@astryxdesign/core'
 import { DataTable, type Column } from '@/components/ui/data-table'
 import { EmptyState } from '@/components/ui/empty-state'
+import { PageHeader } from '@/components/layout/page-header'
 import { InlineError } from '@/components/ui/inline-error'
 import { Spinner } from '@/components/ui/spinner'
 import { ConfirmDialog } from '@/components/composite/confirm-dialog'
@@ -179,16 +180,19 @@ export default function UserRolesPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex justify-end">
-        <Button
-          variant="primary"
-          size="sm"
-          icon={<Plus size={14} />}
-          label="Assigner un rôle"
-          onClick={() => setShowAdd(true)}
-          isDisabled={availableTenants.length === 0}
-        />
-      </div>
+      <PageHeader
+        title={t('user_roles', 'Rôles utilisateur')}
+        action={
+          <Button
+            variant="primary"
+            size="sm"
+            icon={<Plus size={14} />}
+            label={t('assign_role', 'Assigner un rôle')}
+            onClick={() => setShowAdd(true)}
+            isDisabled={availableTenants.length === 0}
+          />
+        }
+      />
 
       {fetchError && <InlineError message={fetchError} />}
 

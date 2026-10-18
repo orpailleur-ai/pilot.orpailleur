@@ -10,6 +10,7 @@ import { useI18n } from '@/lib/i18n'
 import { DataTable, type Column } from '@/components/ui/data-table'
 import { EmptyState } from '@/components/ui/empty-state'
 import { InlineError } from '@/components/ui/inline-error'
+import { PageHeader } from '@/components/layout/page-header'
 import { Spinner } from '@/components/ui/spinner'
 import { Modal } from '@/components/ui/modal'
 
@@ -233,6 +234,11 @@ export default function TenantInvoicesPage() {
 
   return (
     <div className="flex flex-col gap-4">
+      <PageHeader
+        title={t('tenant_invoices', 'Factures')}
+        icon={<FileText size={20} style={{ color: 'var(--color-text-primary)' }} />}
+      />
+
       {fetchError ? (
         <InlineError message={fetchError} />
       ) : list.length === 0 ? (

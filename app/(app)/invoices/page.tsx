@@ -8,6 +8,7 @@ import { useI18n } from '@/lib/i18n'
 import { Spinner } from '@/components/ui/spinner'
 import { InlineError } from '@/components/ui/inline-error'
 import { EmptyState } from '@/components/ui/empty-state'
+import { PageHeader } from '@/components/layout/page-header'
 import { Modal, ModalSection } from '@/components/ui/modal'
 
 function formatPrice(cents: number) {
@@ -138,6 +139,12 @@ export default function InvoicesPage() {
 
   return (
     <div className="flex flex-col gap-5">
+      <PageHeader
+        title={t('invoices', 'Factures')}
+        subtitle={`${filtered.length} facture${filtered.length !== 1 ? 's' : ''}`}
+        icon={<FileText size={20} style={{ color: 'var(--color-text-primary)' }} />}
+      />
+
       {/* Header + filters */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">

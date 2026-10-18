@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, Check } from 'lucide-react'
+import { Plus, Check, CreditCard } from 'lucide-react'
 import { Button, useToast } from '@astryxdesign/core'
 import { Spinner } from '@/components/ui/spinner'
 import { InlineError } from '@/components/ui/inline-error'
 import { EmptyState } from '@/components/ui/empty-state'
+import { PageHeader } from '@/components/layout/page-header'
 import { PermissionGate } from '@/components/composite/permission-gate'
 import { plans, type Plan } from '@/lib/api-client'
 import { useI18n } from '@/lib/i18n'
@@ -41,21 +42,25 @@ export default function PlansPage() {
     )
   }
 
+  const action = (
+    <PermissionGate permission="BILLING_WRITE">
+      <Button
+        variant="primary"
+        icon={<Plus size={14} />}
+        label={t('plans_new', 'Nouveau plan')}
+        onClick={() => router.push('/plans/new')}
+      />
+    </PermissionGate>
+  )
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-          {planList.length} plan(s) disponible(s)
-        </p>
-        <PermissionGate permission="BILLING_WRITE">
-          <Button
-            variant="primary"
-            icon={<Plus size={14} />}
-            label="Nouveau plan"
-            onClick={() => router.push('/plans/new')}
-          />
-        </PermissionGate>
-      </div>
+      <PageHeader
+        title={t('plans_title', 'Plans')}
+        subtitle={`${planList.length} plan(s) disponible(s)`}
+        icon={<CreditCard size={20} style={{ color: 'var(--color-text-primary)' }} />}
+        action={action}
+      />
 
       {fetchError && <InlineError message={fetchError} />}
 

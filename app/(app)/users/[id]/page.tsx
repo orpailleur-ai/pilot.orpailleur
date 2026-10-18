@@ -7,6 +7,7 @@ import { TextInput } from '@astryxdesign/core'
 import { Button } from '@astryxdesign/core'
 import { FieldGrid } from '@/components/ui/modal'
 import { Spinner } from '@/components/ui/spinner'
+import { PageHeader } from '@/components/layout/page-header'
 import { ShieldCheck } from 'lucide-react'
 import { adminUsers, roles, type AdminUser, type Role, type Permission } from '@/lib/api-client'
 import { useI18n } from '@/lib/i18n'
@@ -109,6 +110,11 @@ export default function UserProfilePage() {
 
   return (
     <form onSubmit={handleSave} className="flex flex-col gap-5">
+      <PageHeader
+        title={user ? `${user.prenom} ${user.nom}` : t('user_profile', 'Profil')}
+        icon={<ShieldCheck size={20} style={{ color: 'var(--color-text-primary)' }} />}
+      />
+
       {/* ── Avatar : centré en haut du formulaire ── */}
       <div
         className="rounded-lg border p-5 flex flex-col items-center gap-3"

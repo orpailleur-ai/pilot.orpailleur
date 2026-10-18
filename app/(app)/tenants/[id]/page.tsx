@@ -4,7 +4,9 @@ import { Building2, Users, Globe, ShoppingCart, Clock } from 'lucide-react'
 import { useTenantDetail } from '@/components/composite/tenant-detail-context'
 import { KpiCard } from '@/components/composite/kpi-card'
 import { InlineError } from '@/components/ui/inline-error'
+import { EmptyState } from '@/components/ui/empty-state'
 import { Spinner } from '@/components/ui/spinner'
+import { PageHeader } from '@/components/layout/page-header'
 import { DataTable, type Column } from '@/components/ui/data-table'
 import { useI18n } from '@/lib/i18n'
 
@@ -37,6 +39,11 @@ export default function TenantOverviewPage() {
 
   return (
     <div className="flex flex-col gap-6">
+      <PageHeader
+        title={tenant.nom}
+        icon={<Building2 size={20} style={{ color: 'var(--color-text-primary)' }} />}
+      />
+
       {/* KPI strip */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <KpiCard
@@ -147,9 +154,9 @@ export default function TenantOverviewPage() {
         </h2>
 
         {stats.recent_activity.length === 0 ? (
-          <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-            Aucune activité récente.
-          </p>
+          <EmptyState
+            title={t('no_activity', 'Aucune activité récente')}
+          />
         ) : (
           <DataTable
             columns={activityColumns(t)}

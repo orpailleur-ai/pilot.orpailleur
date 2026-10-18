@@ -8,6 +8,7 @@ import { Modal, ModalSection, FieldGrid } from '@/components/ui/modal'
 import { DataTable, type Column } from '@/components/ui/data-table'
 import { EmptyState } from '@/components/ui/empty-state'
 import { InlineError } from '@/components/ui/inline-error'
+import { PageHeader } from '@/components/layout/page-header'
 import { Spinner } from '@/components/ui/spinner'
 import { ConfirmDialog } from '@/components/composite/confirm-dialog'
 import {
@@ -178,16 +179,19 @@ export default function UserSitesPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex justify-end">
-        <Button
-          variant="primary"
-          size="sm"
-          icon={<Plus size={14} />}
-          label="Assigner un site"
-          onClick={() => setShowAdd(true)}
-          isDisabled={availableSites.length === 0}
-        />
-      </div>
+      <PageHeader
+        title={t('user_sites', 'Sites utilisateur')}
+        action={
+          <Button
+            variant="primary"
+            size="sm"
+            icon={<Plus size={14} />}
+            label={t('assign_site', 'Assigner un site')}
+            onClick={() => setShowAdd(true)}
+            isDisabled={availableSites.length === 0}
+          />
+        }
+      />
 
       {fetchError && <InlineError message={fetchError} />}
 

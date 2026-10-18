@@ -8,6 +8,7 @@ import { Modal, ModalSection, FieldGrid } from '@/components/ui/modal'
 import { DataTable, type Column } from '@/components/ui/data-table'
 import { EmptyState } from '@/components/ui/empty-state'
 import { InlineError } from '@/components/ui/inline-error'
+import { PageHeader } from '@/components/layout/page-header'
 import { Spinner } from '@/components/ui/spinner'
 import { StatusPill } from '@/components/composite/status-pill'
 import { ConfirmDialog } from '@/components/composite/confirm-dialog'
@@ -163,14 +164,17 @@ export default function TenantSubscriptionPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex justify-end">
-        <Button
-          variant="primary"
-          size="sm"
-          label="Changer de plan"
-          onClick={() => setShowUpgrade(true)}
-        />
-      </div>
+      <PageHeader
+        title={t('tenant_subscription', 'Abonnement')}
+        action={
+          <Button
+            variant="primary"
+            size="sm"
+            label={t('change_plan', 'Changer de plan')}
+            onClick={() => setShowUpgrade(true)}
+          />
+        }
+      />
 
       {fetchError && <InlineError message={fetchError} />}
 

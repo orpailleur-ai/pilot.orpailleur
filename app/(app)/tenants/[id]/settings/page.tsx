@@ -3,7 +3,9 @@
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useTenantDetail } from '@/components/composite/tenant-detail-context'
+import { Settings } from 'lucide-react'
 import { InlineError } from '@/components/ui/inline-error'
+import { PageHeader } from '@/components/layout/page-header'
 import { Spinner } from '@/components/ui/spinner'
 import { TextInput } from '@astryxdesign/core'
 import { Button, useToast } from '@astryxdesign/core'
@@ -97,6 +99,11 @@ export default function TenantSettingsPage() {
 
   return (
     <form onSubmit={handleSave} className="flex flex-col gap-6">
+      <PageHeader
+        title={t('settings', 'Paramètres')}
+        icon={<Settings size={20} style={{ color: 'var(--color-text-primary)' }} />}
+      />
+
       {/* Identity */}
       <div
         className="rounded-lg border p-5 space-y-4"

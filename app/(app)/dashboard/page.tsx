@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Building2, Users, Globe, TrendingUp, AlertTriangle, Clock } from 'lucide-react'
 import { Spinner } from '@/components/ui/spinner'
+import { PageHeader } from '@/components/layout/page-header'
 import { InlineError } from '@/components/ui/inline-error'
 import { KpiCard } from '@/components/composite/kpi-card'
 import { adminTenants, type DashboardStats } from '@/lib/api-client'
@@ -37,6 +38,11 @@ export default function DashboardPage() {
 
   return (
     <div className="flex flex-col gap-6">
+      <PageHeader
+        title={t('dashboard', 'Tableau de bord')}
+        icon={<TrendingUp size={20} style={{ color: 'var(--color-text-primary)' }} />}
+      />
+
       {/* Alerts banner */}
       {(stats.alerts?.tenant_inactive ?? 0) > 0 && (
         <div

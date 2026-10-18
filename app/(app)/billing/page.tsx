@@ -27,6 +27,7 @@ import {
 import { useI18n } from '@/lib/i18n'
 import { Spinner } from '@/components/ui/spinner'
 import { InlineError } from '@/components/ui/inline-error'
+import { PageHeader } from '@/components/layout/page-header'
 import { KpiCard } from '@/components/composite/kpi-card'
 import { DataTable, type Column } from '@/components/ui/data-table'
 import { useRouter } from 'next/navigation'
@@ -165,17 +166,11 @@ export default function BillingPage() {
   return (
     <div className="flex flex-col gap-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-            {t('billing', 'Facturation')}
-          </h1>
-          <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-            {t('billing_subtitle', 'MRR, santé des abonnements et facturation')}
-          </p>
-        </div>
-        <CreditCard size={22} style={{ color: 'var(--color-accent)' }} />
-      </div>
+      <PageHeader
+        title={t('billing', 'Facturation')}
+        subtitle={t('billing_subtitle', 'MRR, santé des abonnements et facturation')}
+        icon={<CreditCard size={20} style={{ color: 'var(--color-text-primary)' }} />}
+      />
 
       {/* MRR hero */}
       <div

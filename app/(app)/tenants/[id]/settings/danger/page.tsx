@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { AlertTriangle } from 'lucide-react'
+import { PageHeader } from '@/components/layout/page-header'
 import { useTenantDetail } from '@/components/composite/tenant-detail-context'
 import { ConfirmDialog } from '@/components/composite/confirm-dialog'
 import { PermissionGate } from '@/components/composite/permission-gate'
@@ -49,6 +50,12 @@ export default function TenantDangerPage() {
   if (!tenant) return null
 
   return (
+    <div className="flex flex-col gap-4">
+      <PageHeader
+        title={t('danger_zone', 'Zone danger')}
+        icon={<AlertTriangle size={20} style={{ color: 'var(--color-danger)' }} />}
+      />
+
     <div
       className="rounded-lg border p-6 flex flex-col gap-5"
       style={{
@@ -136,6 +143,7 @@ export default function TenantDangerPage() {
         onConfirm={handleDelete}
         isLoading={deleting}
       />
+    </div>
     </div>
   )
 }

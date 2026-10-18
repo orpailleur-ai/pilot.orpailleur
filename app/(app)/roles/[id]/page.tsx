@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation'
 import { Lock } from 'lucide-react'
 import { Button, useToast } from '@astryxdesign/core'
 import { Spinner } from '@/components/ui/spinner'
+import { PageHeader } from '@/components/layout/page-header'
 import { InlineError } from '@/components/ui/inline-error'
 import { roles, type Role, type Permission } from '@/lib/api-client'
 import { useI18n } from '@/lib/i18n'
@@ -106,6 +107,11 @@ export default function RolePermissionsPage() {
 
   return (
     <div className="flex flex-col gap-5">
+      <PageHeader
+        title={role.label}
+        icon={<Lock size={20} style={{ color: 'var(--color-text-primary)' }} />}
+      />
+
       {role.isSystem && (
         <div
           className="flex items-center gap-3 rounded-lg border p-4 text-sm"
