@@ -66,8 +66,8 @@ export default function PlansPage() {
 
       {planList.length === 0 ? (
         <EmptyState
-          title="Aucun plan"
-          description="Créez un plan pour commencer."
+          title={t('plans_empty', 'Aucun plan')}
+          description={t('plans_empty_hint', 'Créez un plan pour commencer.')}
         />
       ) : (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">

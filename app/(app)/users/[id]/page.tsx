@@ -54,7 +54,7 @@ export default function UserProfilePage() {
       const updated = await adminUsers.update(userId, update as any)
       setUser(updated)
       setForm((f) => ({ ...f, password: '' }))
-      toast({ body: t('tenant_updated'), type: 'info' })
+      toast({ body: t('user_updated'), type: 'info' })
     } catch (err) {
       toast({ body: err instanceof Error ? err.message : t('error'), type: 'error' })
     } finally {
