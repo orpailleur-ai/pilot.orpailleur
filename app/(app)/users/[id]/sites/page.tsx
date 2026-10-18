@@ -9,6 +9,7 @@ import { DataTable, type Column } from '@/components/ui/data-table'
 import { EmptyState } from '@/components/ui/empty-state'
 import { InlineError } from '@/components/ui/inline-error'
 import { Spinner } from '@/components/ui/spinner'
+import { ConfirmDialog } from '@/components/composite/confirm-dialog'
 import {
   adminUsers,
   adminTenants,
@@ -32,6 +33,7 @@ export default function UserSitesPage() {
   const [showAdd, setShowAdd] = useState(false)
   const [saving, setSaving] = useState(false)
   const [removing, setRemoving] = useState<string | null>(null)
+  const [removeTarget, setRemoveTarget] = useState<string | null>(null)
 
   const [form, setForm] = useState({ siteId: '' })
 
@@ -78,13 +80,15 @@ export default function UserSitesPage() {
     }
   }
 
-  async function handleRemoveSite(siteId: string) {
-    setRemoving(siteId)
+  async function handleRemoveSite() {
+    if (!removeTarget) return
+    setRemoving(removeTarget)
     try {
-      const remaining = user!.sites.filter((sid) => sid !== siteId)
+      const remaining = user!.sites.filter((sid) => sid !== removeTarget)
       await apiClient.put(`/admin/users/${userId}/sites`, {
         site_ids: remaining,
       })
+      setRemoveTarget(null)
       load()
       toast({ body: t('site_removed'), type: 'info' })
     } catch (err) {
@@ -162,7 +166,7 @@ export default function UserSitesPage() {
           label="Retirer"
           icon={<Trash2 size={13} />}
           isDisabled={removing === row.id}
-          onClick={() => handleRemoveSite(row.id)}
+          onClick={() => setRemoveTarget(row.id)}
         />
       ),
     },
@@ -255,6 +259,17 @@ export default function UserSitesPage() {
           </div>
         </form>
       </Modal>
+
+      <ConfirmDialog
+        isOpen={removeTarget !== null}
+        onOpenChange={(open) => { if (!open) setRemoveTarget(null) }}
+        title={t('user_site_remove_confirm')}
+        description={t('user_site_remove_description')}
+        confirmLabel={t('delete')}
+        confirmVariant="destructive"
+        onConfirm={handleRemoveSite}
+        isLoading={removing !== null}
+      />
     </div>
   )
 }

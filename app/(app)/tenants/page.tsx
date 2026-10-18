@@ -17,6 +17,7 @@ import { EmptyState } from '@/components/ui/empty-state'
 import { InlineError } from '@/components/ui/inline-error'
 import { Spinner } from '@/components/ui/spinner'
 import { Modal, ModalSection, FieldGrid } from '@/components/ui/modal'
+import { ConfirmDialog } from '@/components/composite/confirm-dialog'
 import { useAuth } from '@/components/providers/auth-context'
 
 const PLAN_LABELS: Record<string, string> = {
@@ -64,6 +65,7 @@ export default function TenantsPage() {
   const [showCreate, setShowCreate] = useState(false)
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState<string | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; nom: string } | null>(null)
   const [fetchError, setFetchError] = useState<string | null>(null)
 
   const [form, setForm] = useState<CreateTenantDto>({
@@ -116,11 +118,12 @@ export default function TenantsPage() {
     }
   }
 
-  async function handleDelete(id: string, nom: string) {
-    if (!confirm(t('delete_tenant_hint', { nom }))) return
-    setDeleting(id)
+  async function handleDelete() {
+    if (!deleteTarget) return
+    setDeleting(deleteTarget.id)
     try {
-      await adminTenants.delete(id)
+      await adminTenants.delete(deleteTarget.id)
+      setDeleteTarget(null)
       fetchTenants()
       toast({ body: t('tenant_deleted'), type: 'info' })
     } catch (err) {
@@ -232,7 +235,7 @@ export default function TenantsPage() {
             isIconOnly
             icon={<Trash2 size={14} />}
             isDisabled={deleting === row.id}
-            onClick={() => handleDelete(row.id, row.nom)}
+            onClick={() => setDeleteTarget({ id: row.id, nom: row.nom })}
           />
         </div>
       ),
@@ -392,6 +395,17 @@ export default function TenantsPage() {
           </div>
         </form>
       </Modal>
+
+      <ConfirmDialog
+        isOpen={deleteTarget !== null}
+        onOpenChange={(open) => { if (!open) setDeleteTarget(null) }}
+        title={t('delete_tenant')}
+        description={deleteTarget ? t('delete_tenant_hint', { nom: deleteTarget.nom }) : ''}
+        confirmLabel={t('delete')}
+        confirmVariant="destructive"
+        onConfirm={handleDelete}
+        isLoading={deleting !== null}
+      />
     </div>
   )
 }

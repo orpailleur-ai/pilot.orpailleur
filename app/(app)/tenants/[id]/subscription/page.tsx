@@ -10,6 +10,7 @@ import { EmptyState } from '@/components/ui/empty-state'
 import { InlineError } from '@/components/ui/inline-error'
 import { Spinner } from '@/components/ui/spinner'
 import { StatusPill } from '@/components/composite/status-pill'
+import { ConfirmDialog } from '@/components/composite/confirm-dialog'
 import { useTenantDetail } from '@/components/composite/tenant-detail-context'
 import {
   subscriptions,
@@ -35,6 +36,7 @@ export default function TenantSubscriptionPage() {
   const [fetchError, setFetchError] = useState<string | null>(null)
   const [showUpgrade, setShowUpgrade] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [cancelTarget, setCancelTarget] = useState<string | null>(null)
   const [form, setForm] = useState({ planId: '', periode: 'monthly' as 'monthly' | 'yearly' })
 
   useEffect(() => {
@@ -79,9 +81,11 @@ export default function TenantSubscriptionPage() {
     }
   }
 
-  async function handleCancel(subId: string) {
+  async function handleCancel() {
+    if (!cancelTarget) return
     try {
-      await subscriptions.cancel(subId)
+      await subscriptions.cancel(cancelTarget)
+      setCancelTarget(null)
       load()
       toast({ body: t('subscription_canceled'), type: 'info' })
     } catch (err) {
@@ -149,7 +153,7 @@ export default function TenantSubscriptionPage() {
             variant="ghost"
             size="sm"
             label="Annuler"
-            onClick={() => handleCancel(row.id)}
+            onClick={() => setCancelTarget(row.id)}
           />
         ) : null,
     },
@@ -237,6 +241,17 @@ export default function TenantSubscriptionPage() {
           </div>
         </form>
       </Modal>
+
+      <ConfirmDialog
+        isOpen={cancelTarget !== null}
+        onOpenChange={(open) => { if (!open) setCancelTarget(null) }}
+        title={t('subscription_cancel_confirm')}
+        description={t('subscription_cancel_description')}
+        confirmLabel={t('delete')}
+        confirmVariant="destructive"
+        onConfirm={handleCancel}
+        isLoading={false}
+      />
     </div>
   )
 }

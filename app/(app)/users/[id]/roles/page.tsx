@@ -35,6 +35,7 @@ export default function UserRolesPage() {
   const [showAdd, setShowAdd] = useState(false)
   const [saving, setSaving] = useState(false)
   const [removing, setRemoving] = useState<string | null>(null)
+  const [removeTarget, setRemoveTarget] = useState<string | null>(null)
 
   const [form, setForm] = useState({ tenantId: '', roleId: '' })
 
@@ -83,15 +84,17 @@ export default function UserRolesPage() {
     }
   }
 
-  async function handleRemoveAssignment(tenantId: string) {
-    setRemoving(tenantId)
+  async function handleRemoveAssignment() {
+    if (!removeTarget) return
+    setRemoving(removeTarget)
     try {
       const remaining = user!.tenants
-        .filter((t) => t.tenant_id !== tenantId)
+        .filter((t) => t.tenant_id !== removeTarget)
         .map((t) => ({ tenant_id: t.tenant_id, role_id: t.role_id }))
       await apiClient.post(`/admin/users/${userId}/roles`, {
         assignments: remaining,
       })
+      setRemoveTarget(null)
       load()
       toast({ body: t('user_role_removed'), type: 'info' })
     } catch (err) {
@@ -164,7 +167,7 @@ export default function UserRolesPage() {
           label="Retirer"
           icon={<Trash2 size={13} />}
           isDisabled={removing === row.tenant_id}
-          onClick={() => handleRemoveAssignment(row.tenant_id)}
+          onClick={() => setRemoveTarget(row.tenant_id)}
         />
       ),
     },
@@ -277,6 +280,17 @@ export default function UserRolesPage() {
           </div>
         </form>
       </Modal>
+
+      <ConfirmDialog
+        isOpen={removeTarget !== null}
+        onOpenChange={(open) => { if (!open) setRemoveTarget(null) }}
+        title={t('user_role_remove_confirm')}
+        description={t('user_role_remove_description')}
+        confirmLabel={t('delete')}
+        confirmVariant="destructive"
+        onConfirm={handleRemoveAssignment}
+        isLoading={removing !== null}
+      />
     </div>
   )
 }

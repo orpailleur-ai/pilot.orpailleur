@@ -27,6 +27,7 @@ export default function TenantSitesPage() {
   const [editingSite, setEditingSite] = useState<Site | null>(null)
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState<string | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; nom: string } | null>(null)
 
   const [form, setForm] = useState<CreateSiteDto>({
     nom: '',
@@ -89,10 +90,12 @@ export default function TenantSitesPage() {
     }
   }
 
-  async function handleDelete(id: string) {
-    setDeleting(id)
+  async function handleDelete() {
+    if (!deleteTarget) return
+    setDeleting(deleteTarget.id)
     try {
-      await sites.delete(id)
+      await sites.delete(deleteTarget.id)
+      setDeleteTarget(null)
       fetchSites()
       toast({ body: t('site_deleted'), type: 'info' })
     } catch (err) {
@@ -181,7 +184,7 @@ export default function TenantSitesPage() {
             label="Supprimer"
             icon={<Trash2 size={13} />}
             isDisabled={deleting === row.id}
-            onClick={() => handleDelete(row.id)}
+            onClick={() => setDeleteTarget({ id: row.id, nom: row.nom })}
           />
         </div>
       ),
@@ -388,6 +391,17 @@ export default function TenantSitesPage() {
           </div>
         </form>
       </Modal>
+
+      <ConfirmDialog
+        isOpen={deleteTarget !== null}
+        onOpenChange={(open) => { if (!open) setDeleteTarget(null) }}
+        title={t('site_delete_confirm')}
+        description={deleteTarget ? t('site_delete_description') : ''}
+        confirmLabel={t('delete')}
+        confirmVariant="destructive"
+        onConfirm={handleDelete}
+        isLoading={deleting !== null}
+      />
     </div>
   )
 }
