@@ -1,15 +1,18 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { Dialog, DialogHeader } from '@astryxdesign/core/Dialog'
-import { Layout, LayoutContent, LayoutFooter } from '@astryxdesign/core/Layout'
-import { FileText, Globe, Loader2, Pencil, Trash2, Eye } from 'lucide-react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { Badge, Button, TextInput, TextArea, useToast } from '@astryxdesign/core'
+import { CheckboxInput } from '@astryxdesign/core/CheckboxInput'
+import { FileText, Globe, Plus, Pencil, Trash2, Eye, Search, X } from 'lucide-react'
 import { ConfirmDialog } from '@/components/composite/confirm-dialog'
 import { PageHeader } from '@/components/layout/page-header'
+import { DataTable, type Column } from '@/components/ui/data-table'
+import { EmptyState } from '@/components/ui/empty-state'
 import { InlineError } from '@/components/ui/inline-error'
-import { TableSkeleton } from '@/components/ui/table-skeleton'
+import { Spinner } from '@/components/ui/spinner'
+import { Modal, ModalSection, FieldGrid } from '@/components/ui/modal'
 import { useI18n } from '@/lib/i18n'
-import { useToast } from '@astryxdesign/core'
 import {
   listScopesAdmin,
   listInstancesAdmin,
@@ -28,13 +31,24 @@ const SCOPE_LABELS: Record<string, string> = {
   inventaire: 'pdf_templates_scope_inventaire',
 }
 
+const STATUS_BADGE: Record<string, 'success' | 'neutral' | 'error' | 'warning' | 'info'> = {
+  true: 'success',
+  false: 'neutral',
+}
+
 export default function PdfTemplatesPage() {
+  const router = useRouter()
   const { t } = useI18n()
   const toast = useToast()
-  const [scopes, setScopes] = useState<PdfScope[]>([])
+
   const [instances, setInstances] = useState<PdfTemplateInstance[]>([])
-  const [chargement, setChargement] = useState(true)
-  const [erreur, setErreur] = useState('')
+  const [scopes, setScopes] = useState<PdfScope[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+
+  const [search, setSearch] = useState('')
+  const [previewLoading, setPreviewLoading] = useState(false)
+  const [preview, setPreview] = useState<{ url: string; key: string } | null>(null)
 
   const [modal, setModal] = useState<{
     mode: 'create' | 'edit'
@@ -45,20 +59,17 @@ export default function PdfTemplatesPage() {
   const [deleteTarget, setDeleteTarget] = useState<PdfTemplateInstance | null>(null)
   const [deleting, setDeleting] = useState(false)
 
-  const [preview, setPreview] = useState<{ url: string; key: string } | null>(null)
-  const [previewLoading, setPreviewLoading] = useState(false)
-
   const charger = useCallback(async () => {
-    setChargement(true)
-    setErreur('')
+    setLoading(true)
+    setError('')
     try {
       const [s, i] = await Promise.all([listScopesAdmin(), listInstancesAdmin()])
       setScopes(s)
       setInstances(i)
     } catch (e: unknown) {
-      setErreur(e instanceof Error ? e.message : t('error'))
+      setError(e instanceof Error ? e.message : t('error'))
     } finally {
-      setChargement(false)
+      setLoading(false)
     }
   }, [t])
 
@@ -110,95 +121,196 @@ export default function PdfTemplatesPage() {
     }
   }
 
+  // Filter
+  const filtered = useMemo(() => {
+    if (!search.trim()) return instances
+    const q = search.toLowerCase()
+    return instances.filter(
+      (i) =>
+        i.name.toLowerCase().includes(q) ||
+        i.scope.toLowerCase().includes(q) ||
+        (i.tenant?.nom ?? '').toLowerCase().includes(q),
+    )
+  }, [instances, search])
+
+  // Columns
+  const columns: Column<PdfTemplateInstance>[] = [
+    {
+      key: 'name',
+      header: t('pdf_templates_form_name'),
+      mobile: 'primary',
+      render: (row) => (
+        <span className="flex items-center gap-1.5 min-w-0">
+          {row.tenantId === null && (
+            <Globe size={13} style={{ color: 'var(--color-text-secondary)', flexShrink: 0 }} />
+          )}
+          <span className="truncate font-medium" style={{ color: 'var(--color-text-primary)' }}>
+            {row.name}
+          </span>
+        </span>
+      ),
+    },
+    {
+      key: 'scope',
+      header: t('pdf_templates_form_scope'),
+      render: (row) => (
+        <Badge
+          label={t(SCOPE_LABELS[row.scope] ?? row.scope)}
+          variant="neutral"
+        />
+      ),
+    },
+    {
+      key: 'tenant',
+      header: t('pdf_templates_tenant'),
+      mobile: 'inline',
+      render: (row) => {
+        if (row.tenantId === null) {
+          return (
+            <Badge
+              label={t('pdf_templates_global')}
+              variant="info"
+            />
+          )
+        }
+        return (
+          <span style={{ color: 'var(--color-text-secondary)', fontSize: 13 }}>
+            {row.tenant?.nom ?? row.tenantId}
+          </span>
+        )
+      },
+    },
+    {
+      key: 'actif',
+      header: t('pdf_templates_active'),
+      align: 'end',
+      render: (row) => (
+        <Badge
+          label={row.actif ? t('pdf_templates_active') : t('pdf_templates_inactive')}
+          variant={STATUS_BADGE[String(row.actif)] ?? 'neutral'}
+        />
+      ),
+    },
+    {
+      key: 'updatedAt',
+      header: t('date'),
+      mobile: 'hidden',
+      align: 'end',
+      render: (row) => (
+        <span style={{ color: 'var(--color-text-secondary)', fontSize: 13 }}>
+          {new Date(row.updatedAt).toLocaleDateString('fr-FR')}
+        </span>
+      ),
+    },
+    {
+      key: 'actions',
+      header: '',
+      align: 'end',
+      mobile: 'hidden',
+      noRowClick: true,
+      render: (row) => (
+        <div className="flex items-center gap-1">
+          <Button
+            label={t('pdf_templates_preview')}
+            variant="ghost"
+            size="sm"
+            isIconOnly
+            icon={<Eye size={14} />}
+            onClick={() => handlePreview(row)}
+            isLoading={previewLoading}
+          />
+          {row.tenantId === null ? (
+            <>
+              <Button
+                label={t('edit')}
+                variant="ghost"
+                size="sm"
+                isIconOnly
+                icon={<Pencil size={14} />}
+                onClick={() => setModal({ mode: 'edit', instance: row })}
+              />
+              <Button
+                label={t('delete')}
+                variant="ghost"
+                size="sm"
+                isIconOnly
+                icon={<Trash2 size={14} />}
+                onClick={() => setDeleteTarget(row)}
+              />
+            </>
+          ) : null}
+        </div>
+      ),
+    },
+  ]
+
+  const action = (
+    <Button
+      label={t('pdf_templates_new')}
+      variant="primary"
+      icon={<Plus size={15} />}
+      onClick={() => setModal({ mode: 'create' })}
+    />
+  )
+
+  if (loading) {
+    return (
+      <div className="flex justify-center py-16">
+        <Spinner size={8} />
+      </div>
+    )
+  }
+
   return (
     <>
-      <PageHeader title={t('pdf_templates_title')} />
+      <PageHeader
+        title={t('pdf_templates_title')}
+        icon={<FileText size={20} style={{ color: 'var(--color-text-primary)' }} />}
+        action={action}
+      />
 
-      {erreur && <InlineError message={erreur} />}
+      {error && <InlineError message={error} />}
 
+      {/* Search */}
       <div className="mb-4">
-        <button
-          type="button"
-          onClick={() => setModal({ mode: 'create' })}
-          className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium"
-          style={{ backgroundColor: 'var(--color-accent)', color: 'var(--color-on-accent)' }}
-        >
-          <FileText size={15} />
-          {t('pdf_templates_new')}
-        </button>
+        <TextInput
+          label={t('search')}
+          placeholder={t('search')}
+          value={search}
+          onChange={setSearch}
+          startIcon={<Search size={15} />}
+          width="100%"
+        />
       </div>
 
-      {chargement ? (
-        <TableSkeleton rows={4} />
+      {filtered.length === 0 ? (
+        <EmptyState
+          icon={<FileText size={24} />}
+          title={search ? t('noResults') : t('pdf_templates_empty')}
+          description={
+            !search ? t('pdf_templates_empty_description') : undefined
+          }
+          action={
+            !search ? (
+              <Button
+                label={t('pdf_templates_new')}
+                variant="primary"
+                icon={<Plus size={15} />}
+                onClick={() => setModal({ mode: 'create' })}
+              />
+            ) : undefined
+          }
+        />
       ) : (
-        <div className="flex flex-col gap-6">
-          {scopes.map((scope) => {
-            const scopeInstances = instances.filter((i) => i.scope === scope.scope)
-            const globalInstance = scopeInstances.find((i) => i.tenantId === null)
-            const tenantInstances = scopeInstances.filter((i) => i.tenantId !== null)
-
-            return (
-              <section key={scope.scope}>
-                <div className="mb-2 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-                  <h2
-                    className="text-sm font-semibold"
-                    style={{ color: 'var(--color-text-primary)' }}
-                  >
-                    {t(SCOPE_LABELS[scope.scope] ?? scope.scope)}
-                  </h2>
-                  <code
-                    className="rounded px-1 py-0.5 text-[11px]"
-                    style={{
-                      backgroundColor: 'var(--color-background-muted)',
-                      color: 'var(--color-text-secondary)',
-                      fontFamily: 'ui-monospace, monospace',
-                    }}
-                  >
-                    {scope.scope}
-                  </code>
-                </div>
-
-                {globalInstance ? (
-                  <TemplateRow
-                    instance={globalInstance}
-                    onEdit={() => setModal({ mode: 'edit', instance: globalInstance })}
-                    onDelete={() => setDeleteTarget(globalInstance)}
-                    onPreview={() => handlePreview(globalInstance)}
-                    previewLoading={previewLoading}
-                  />
-                ) : (
-                  <p
-                    className="rounded-lg border px-3 py-2 text-xs italic"
-                    style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-secondary)' }}
-                  >
-                    {t('pdf_templates_empty')}
-                  </p>
-                )}
-
-                {tenantInstances.length > 0 && (
-                  <div className="mt-2 flex flex-col gap-1.5">
-                    <p
-                      className="text-[11px] font-medium uppercase tracking-wide"
-                      style={{ color: 'var(--color-text-secondary)' }}
-                    >
-                      {t('pdf_templates_tenant')}
-                    </p>
-                    {tenantInstances.map((inst) => (
-                      <TemplateRow
-                        key={inst.id}
-                        instance={inst}
-                        readOnly
-                        previewLoading={previewLoading}
-                      />
-                    ))}
-                  </div>
-                )}
-              </section>
-            )
-          })}
-        </div>
+        <DataTable
+          columns={columns}
+          rows={filtered}
+          rowKey={(row) => row.id}
+          onRowClick={(row) => router.push(`/parametrage/pdf-templates/${row.id}`)}
+        />
       )}
 
+      {/* Create / Edit modal */}
       {modal && (
         <EditModal
           mode={modal.mode}
@@ -210,6 +322,7 @@ export default function PdfTemplatesPage() {
         />
       )}
 
+      {/* Delete confirmation */}
       <ConfirmDialog
         isOpen={deleteTarget !== null}
         onOpenChange={(open) => { if (!open) setDeleteTarget(null) }}
@@ -221,164 +334,44 @@ export default function PdfTemplatesPage() {
         isLoading={deleting}
       />
 
+      {/* Preview modal */}
       {preview && (
-        <Dialog
+        <Modal
           isOpen={true}
           onOpenChange={(open) => { if (!open) setPreview(null) }}
+          title={t('pdf_templates_preview')}
+          size="full"
         >
-          <Layout
-            header={
-              <DialogHeader
-                title={t('pdf_templates_preview')}
-                onOpenChange={(open) => { if (!open) setPreview(null) }}
-              />
-            }
-            content={
-              <LayoutContent padding={0}>
-                <iframe
-                  src={preview.url}
-                  style={{ width: '100%', height: '80vh', border: 'none', display: 'block' }}
-                  title={t('pdf_templates_preview')}
-                />
-              </LayoutContent>
-            }
+          <iframe
+            src={preview.url}
+            style={{ width: '100%', height: '80vh', border: 'none', display: 'block' }}
+            title={t('pdf_templates_preview')}
           />
-        </Dialog>
+        </Modal>
       )}
     </>
   )
 }
 
-function TemplateRow({
-  instance,
-  readOnly = false,
-  previewLoading = false,
-  onEdit,
-  onDelete,
-  onPreview,
-}: {
-  instance: PdfTemplateInstance
-  readOnly?: boolean
-  previewLoading?: boolean
-  onEdit?: () => void
-  onDelete?: () => void
-  onPreview?: () => void
-}) {
-  const { t } = useI18n()
-  return (
-    <div
-      className="flex flex-wrap items-center gap-2 rounded-lg border px-3 py-2.5 text-sm"
-      style={{
-        borderColor: instance.actif
-          ? 'color-mix(in srgb, var(--color-success) 45%, transparent)'
-          : 'var(--color-border)',
-        backgroundColor: instance.actif
-          ? 'color-mix(in srgb, var(--color-success) 6%, transparent)'
-          : 'var(--color-card)',
-      }}
-    >
-      <span
-        className="flex items-center gap-1.5 font-medium"
-        style={{ color: 'var(--color-text-primary)' }}
-      >
-        {instance.tenantId === null ? <Globe size={13} /> : null}
-        {instance.name}
-      </span>
+// ── Edit Modal ─────────────────────────────────────────────────────────────────
 
-      {instance.tenantId === null && (
-        <span
-          className="rounded px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide"
-          style={{
-            backgroundColor: 'color-mix(in srgb, var(--color-accent) 15%, transparent)',
-            color: 'var(--color-accent)',
-          }}
-        >
-          {t('pdf_templates_global')}
-        </span>
-      )}
-
-      <span
-        className="ml-auto rounded px-1.5 py-0.5 text-[10px] font-medium"
-        style={{
-          backgroundColor: instance.actif
-            ? 'color-mix(in srgb, var(--color-success) 15%, transparent)'
-            : 'var(--color-background-muted)',
-          color: instance.actif ? 'var(--color-success)' : 'var(--color-text-secondary)',
-        }}
-      >
-        {instance.actif ? t('pdf_templates_active') : t('pdf_templates_inactive')}
-      </span>
-
-      {!readOnly && instance.tenantId === null && (
-        <span className="flex items-center gap-1">
-          {onPreview && (
-            <button
-              type="button"
-              onClick={onPreview}
-              disabled={previewLoading}
-              className="rounded p-1 transition-colors hover:bg-[var(--color-background-muted)]"
-              style={{ color: 'var(--color-text-secondary)' }}
-              title={t('pdf_templates_preview')}
-            >
-              {previewLoading ? <Loader2 size={14} className="animate-spin" /> : <Eye size={14} />}
-            </button>
-          )}
-          {onEdit && (
-            <button
-              type="button"
-              onClick={onEdit}
-              className="rounded p-1 transition-colors hover:bg-[var(--color-background-muted)]"
-              style={{ color: 'var(--color-text-secondary)' }}
-              title={t('pdf_templates_edit')}
-            >
-              <Pencil size={14} />
-            </button>
-          )}
-          {onDelete && (
-            <button
-              type="button"
-              onClick={onDelete}
-              className="rounded p-1 transition-colors hover:bg-[var(--color-background-muted)]"
-              style={{ color: 'var(--color-danger)' }}
-              title={t('pdf_templates_delete')}
-            >
-              <Trash2 size={14} />
-            </button>
-          )}
-        </span>
-      )}
-    </div>
-  )
-}
-
-function EditModal({
-  mode,
-  instance,
-  scopes,
-  saving,
-  onSave,
-  onClose,
-}: {
+interface EditModalProps {
   mode: 'create' | 'edit'
   instance?: PdfTemplateInstance
   scopes: PdfScope[]
   saving: boolean
   onSave: (v: { name: string; scope: string; body: string; actif: boolean }) => void
   onClose: () => void
-}) {
+}
+
+function EditModal({ mode, instance, scopes, saving, onSave, onClose }: EditModalProps) {
   const { t } = useI18n()
-  const formRef = useRef<HTMLFormElement>(null)
   const [name, setName] = useState(instance?.name ?? '')
   const [scope, setScope] = useState(instance?.scope ?? scopes[0]?.scope ?? 'commande')
   const [body, setBody] = useState(instance?.body ?? '')
   const [actif, setActif] = useState(instance?.actif ?? false)
 
-  useEffect(() => {
-    setName(instance?.name ?? '')
-    setScope(instance?.scope ?? scopes[0]?.scope ?? 'commande')
-    setBody(instance?.body ?? '')
-    setActif(instance?.actif ?? false)
-  }, [instance, scopes])
+  const title = mode === 'create' ? t('pdf_templates_new') : t('pdf_templates_edit')
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -386,113 +379,89 @@ function EditModal({
   }
 
   return (
-    <Dialog isOpen={true} onOpenChange={(open) => { if (!open) onClose() }}>
-      <Layout
-        header={
-          <DialogHeader
-            title={mode === 'create' ? t('pdf_templates_new') : t('pdf_templates_edit')}
-            onOpenChange={(open) => { if (!open) onClose() }}
+    <Modal
+      isOpen={true}
+      onOpenChange={(open) => { if (!open) onClose() }}
+      title={title}
+      size="2xl"
+    >
+      <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+        <ModalSection title={t('pdf_templates_form_name')}>
+          <FieldGrid columns={1}>
+            <TextInput
+              label={t('pdf_templates_form_name')}
+              value={name}
+              onChange={setName}
+              isRequired
+              width="100%"
+            />
+          </FieldGrid>
+        </ModalSection>
+
+        <ModalSection title={t('pdf_templates_form_scope')}>
+          <FieldGrid columns={1}>
+            <TextInput
+              label={t('pdf_templates_form_scope')}
+              value={t(SCOPE_LABELS[scope] ?? scope)}
+              onChange={() => {}}
+              isReadOnly
+              width="100%"
+            />
+          </FieldGrid>
+          {mode === 'create' && (
+            <p style={{ color: 'var(--color-text-secondary)', fontSize: 12 }}>
+              {t('pdf_templates_form_scope_hint')}
+            </p>
+          )}
+          <div style={{ display: 'none' }}>
+            {/* Hidden select for form submission - scope is set at creation */}
+            <select value={scope} onChange={(e) => setScope(e.target.value)}>
+              {scopes.map((s) => (
+                <option key={s.scope} value={s.scope}>
+                  {t(SCOPE_LABELS[s.scope] ?? s.scope)}
+                </option>
+              ))}
+            </select>
+          </div>
+        </ModalSection>
+
+        <ModalSection title={t('pdf_templates_form_body')}>
+          <FieldGrid columns={1}>
+            <TextArea
+              label={t('pdf_templates_form_body')}
+              value={body}
+              onChange={setBody}
+              rows={16}
+              style={{ fontFamily: 'Menlo, ui-monospace, monospace', fontSize: 13 }}
+            />
+          </FieldGrid>
+        </ModalSection>
+
+        <ModalSection title={t('pdf_templates_form_active')}>
+          <CheckboxInput
+            label={t('pdf_templates_form_active')}
+            value={actif}
+            onChange={(checked) => setActif(checked)}
           />
-        }
-        content={
-          <LayoutContent>
-            <form
-              ref={formRef}
-              id="edit-form"
-              className="flex flex-col gap-4"
-              onSubmit={handleSubmit}
-            >
-              <label className="flex flex-col gap-1">
-                <span className="text-xs font-medium" style={{ color: 'var(--color-text-secondary)' }}>
-                  {t('pdf_templates_form_name')}
-                </span>
-                <input
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                  className="rounded border px-3 py-2 text-sm"
-                  style={inputStyle()}
-                />
-              </label>
+        </ModalSection>
 
-              <label className="flex flex-col gap-1">
-                <span className="text-xs font-medium" style={{ color: 'var(--color-text-secondary)' }}>
-                  {t('pdf_templates_form_scope')}
-                </span>
-                <select
-                  value={scope}
-                  onChange={(e) => setScope(e.target.value)}
-                  disabled={mode === 'edit'}
-                  className="rounded border px-3 py-2 text-sm"
-                  style={inputStyle()}
-                >
-                  {scopes.map((s) => (
-                    <option key={s.scope} value={s.scope}>
-                      {t(SCOPE_LABELS[s.scope] ?? s.scope)} ({s.scope})
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              <label className="flex flex-col gap-1">
-                <span className="text-xs font-medium" style={{ color: 'var(--color-text-secondary)' }}>
-                  {t('pdf_templates_form_body')}
-                </span>
-                <textarea
-                  value={body}
-                  onChange={(e) => setBody(e.target.value)}
-                  rows={10}
-                  className="rounded border px-3 py-2 text-sm font-mono"
-                  style={{ ...inputStyle(), resize: 'vertical' }}
-                />
-              </label>
-
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={actif}
-                  onChange={(e) => setActif(e.target.checked)}
-                  className="h-4 w-4 rounded"
-                />
-                <span className="text-sm" style={{ color: 'var(--color-text-primary)' }}>
-                  {t('pdf_templates_form_active')}
-                </span>
-              </label>
-            </form>
-          </LayoutContent>
-        }
-        footer={
-          <LayoutFooter hasDivider>
-            <div className="flex justify-end gap-2">
-              <button
-                type="button"
-                onClick={onClose}
-                className="rounded-lg border px-3 py-1.5 text-sm"
-                style={inputStyle()}
-              >
-                {t('cancel')}
-              </button>
-              <button
-                type="submit"
-                form="edit-form"
-                disabled={saving}
-                className="rounded-lg px-3 py-1.5 text-sm font-medium"
-                style={{ backgroundColor: 'var(--color-accent)', color: 'var(--color-on-accent)' }}
-              >
-                {saving ? <Loader2 size={14} className="animate-spin" /> : t('save')}
-              </button>
-            </div>
-          </LayoutFooter>
-        }
-      />
-    </Dialog>
+        <div
+          className="flex gap-3 pt-3 border-t"
+          style={{ borderColor: 'var(--color-border)', justifyContent: 'flex-end' }}
+        >
+          <Button
+            label={t('cancel')}
+            variant="secondary"
+            onClick={onClose}
+          />
+          <Button
+            label={saving ? t('loading') : t('save')}
+            variant="primary"
+            type="submit"
+            isLoading={saving}
+          />
+        </div>
+      </form>
+    </Modal>
   )
-}
-
-function inputStyle() {
-  return {
-    backgroundColor: 'var(--color-card)',
-    border: '1px solid var(--color-border)',
-    color: 'var(--color-text-primary)',
-  } as React.CSSProperties
 }
