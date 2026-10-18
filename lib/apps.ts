@@ -60,6 +60,7 @@ export const APPS: AppDefinition[] = [
       // l'administrateur de la plateforme et non de l'exploitant d'une
       // boulangerie.
       { href: '/parametrage/modeles', labelKey: 'ai_models_nav', icon: Cpu },
+      { href: '/parametrage/pdf-templates', labelKey: 'pdf_templates_nav', icon: FileText },
     ],
   },
   {
