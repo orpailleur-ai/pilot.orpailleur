@@ -49,9 +49,9 @@ function formatDate(iso: string): string {
 }
 
 const STATUT_LABELS: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
-  active: { label: 'Actif', color: 'var(--color-success, #22c55e)', icon: <CheckCircle2 size={14} /> },
-  past_due: { label: 'En retard', color: 'var(--color-warning, #f59e0b)', icon: <AlertTriangle size={14} /> },
-  canceled: { label: 'Annulé', color: 'var(--color-destructive, #ef4444)', icon: <XCircle size={14} /> },
+  active: { label: 'Actif', color: 'var(--color-success)', icon: <CheckCircle2 size={14} /> },
+  past_due: { label: 'En retard', color: 'var(--color-warning)', icon: <AlertTriangle size={14} /> },
+  canceled: { label: 'Annulé', color: 'var(--color-danger)', icon: <XCircle size={14} /> },
   expired: { label: 'Expiré', color: 'var(--color-text-secondary)', icon: <Clock size={14} /> },
 }
 
@@ -206,10 +206,10 @@ export default function BillingPage() {
               const pct = totalMRR > 0 ? Math.round((amount / totalMRR) * 100) : 0
               const color =
                 planId === plans.find((p) => p.code === 'starter')?.id
-                  ? 'var(--color-accent)'
+                  ? 'var(--color-plan-starter)'
                   : planId === plans.find((p) => p.code === 'pro')?.id
-                  ? '#6366f1'
-                  : '#ec4899'
+                  ? 'var(--color-plan-pro)'
+                  : 'var(--color-plan-scale)'
               return (
                 <div key={planId} className="flex items-center gap-3">
                   <div className="min-w-[100px] text-sm" style={{ color: 'var(--color-text-secondary)' }}>
@@ -244,19 +244,19 @@ export default function BillingPage() {
           label={t('subs_active', 'Abonnements actifs')}
           value={String(subStats.active)}
           deltaLabel={t('subs_active_hint', 'Aucun problème de paiement')}
-          icon={<CheckCircle2 size={16} style={{ color: '#22c55e' }} />}
+          icon={<CheckCircle2 size={16} style={{ color: 'var(--color-success)' }} />}
         />
         <KpiCard
           label={t('subs_past_due', 'En retard de paiement')}
           value={String(subStats.past_due)}
           deltaLabel={t('subs_past_due_hint', 'À relancer')}
-          icon={<AlertTriangle size={16} style={{ color: '#f59e0b' }} />}
+          icon={<AlertTriangle size={16} style={{ color: 'var(--color-warning)' }} />}
         />
         <KpiCard
           label={t('subs_canceled', 'Annulés')}
           value={String(subStats.canceled)}
           deltaLabel={t('subs_canceled_hint', 'Surveillance')}
-          icon={<XCircle size={16} style={{ color: '#ef4444' }} />}
+          icon={<XCircle size={16} style={{ color: 'var(--color-danger)' }} />}
         />
         <KpiCard
           label={t('subs_expired', 'Expirés')}
@@ -278,7 +278,7 @@ export default function BillingPage() {
             {overdueTotal > 0 && (
               <span
                 className="text-sm font-medium"
-                style={{ color: 'var(--color-destructive, #ef4444)' }}
+                style={{ color: 'var(--color-danger)' }}
               >
                 {formatEUR(overdueTotal)}
               </span>
@@ -312,7 +312,7 @@ export default function BillingPage() {
                   <div className="flex items-center gap-2 flex-shrink-0">
                     <span
                       className="text-sm font-semibold"
-                      style={{ color: 'var(--color-destructive, #ef4444)' }}
+                      style={{ color: 'var(--color-danger)' }}
                     >
                       {formatEUR(inv.montantCents)}
                     </span>
@@ -364,8 +364,8 @@ export default function BillingPage() {
             <span
               className="flex items-center gap-1 text-xs rounded px-2 py-1"
               style={{
-                backgroundColor: 'color-mix(in srgb, var(--color-destructive, #ef4444) 10%, transparent)',
-                color: 'var(--color-destructive, #ef4444)',
+                backgroundColor: 'color-mix(in srgb, var(--color-danger) 10%, transparent)',
+                color: 'var(--color-danger)',
               }}
             >
               <AlertTriangle size={11} />
@@ -375,7 +375,7 @@ export default function BillingPage() {
 
           {churnRiskSubs.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-6 gap-2">
-              <CheckCircle2 size={24} style={{ color: '#22c55e' }} />
+              <CheckCircle2 size={24} style={{ color: 'var(--color-success)' }} />
               <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
                 {t('no_churn_risk', 'Aucun risque détecté')}
               </p>
@@ -410,9 +410,9 @@ export default function BillingPage() {
                     </div>
                     <div className="flex items-center gap-1 flex-shrink-0 ms-2">
                       {s.statut === 'past_due' ? (
-                        <ArrowDownRight size={14} style={{ color: '#f59e0b' }} />
+                        <ArrowDownRight size={14} style={{ color: 'var(--color-warning)' }} />
                       ) : (
-                        <ArrowUpRight size={14} style={{ color: '#ef4444' }} />
+                        <ArrowUpRight size={14} style={{ color: 'var(--color-danger)' }} />
                       )}
                     </div>
                   </div>

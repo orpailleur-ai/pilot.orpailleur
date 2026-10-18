@@ -217,6 +217,11 @@ html:root {
      explicitement, pas une correction à glisser dans un changement de
      palette. Il est consigné ici pour qu'on ne le.redécouvre pas. */
   --color-danger: var(--color-error);
+
+  /* Couleurs de plan — uniquement visuelles (charts), pas sémantiques */
+  --color-plan-starter: var(--color-accent);
+  --color-plan-pro: #6366f1;
+  --color-plan-scale: #ec4899;
 }
 
 /* ============================================================

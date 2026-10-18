@@ -144,9 +144,9 @@ function PlanDistribution({ data }: { data: Record<string, number> }) {
   }
 
   const PLAN_COLORS: Record<string, string> = {
-    starter: 'var(--color-accent)',
-    pro: '#6366f1',
-    scale: '#ec4899',
+    starter: 'var(--color-plan-starter)',
+    pro: 'var(--color-plan-pro)',
+    scale: 'var(--color-plan-scale)',
   }
 
   return (
