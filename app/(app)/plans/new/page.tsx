@@ -2,10 +2,10 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft } from 'lucide-react'
 import { Button, useToast } from '@astryxdesign/core'
 import { TextInput } from '@astryxdesign/core'
-import { ModalSection, FieldGrid } from '@/components/ui/modal'
+import { FieldGrid } from '@/components/ui/modal'
+import { PageHeader } from '@/components/layout/page-header'
 import { plans, type Plan } from '@/lib/api-client'
 import { useI18n } from '@/lib/i18n'
 
@@ -53,19 +53,7 @@ export default function PlanNewPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center gap-3">
-        <Button
-          variant="ghost"
-          size="sm"
-          isIconOnly
-          label="Retour"
-          icon={<ArrowLeft size={16} />}
-          onClick={() => router.push('/plans')}
-        />
-        <h1 className="text-lg font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-          Nouveau plan
-        </h1>
-      </div>
+      <PageHeader title={t('plan_new')} backHref="/plans" />
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-5 max-w-lg">
         <div

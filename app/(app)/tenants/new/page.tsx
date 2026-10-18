@@ -44,12 +44,7 @@ interface UserStep {
   roleId: string
 }
 
-const STEPS: WizardStep[] = [
-  { id: 'identity', label: 'Identité' },
-  { id: 'plan', label: 'Plan' },
-  { id: 'user', label: 'Admin initial' },
-  { id: 'summary', label: 'Récapitulatif' },
-]
+const STEP_IDS = ['identity', 'plan', 'user', 'summary'] as const
 
 const DEFAULT_IDENTITY: IdentityStep = {
   nom: '',
@@ -151,11 +146,11 @@ function IdentityStepForm({
     <div className="space-y-4">
       <div>
         <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--color-text-primary)' }}>
-          Informations du tenant
+          {t('tenant_info')}
         </h3>
         <FieldGrid columns={2}>
           <TextInput
-            label="Nom de la boulangerie *"
+            label={t('bakery_name')}
             value={data.nom}
             onChange={(v) => onChange({ ...data, nom: v })}
             placeholder="La Mie Câline — Toulouse"
@@ -163,14 +158,14 @@ function IdentityStepForm({
             isRequired
           />
           <TextInput
-            label="SIRET"
+            label={t('tenant_siret')}
             value={data.siret}
             onChange={(v) => onChange({ ...data, siret: v })}
             placeholder="123 456 789 00012"
             width="100%"
           />
           <TextInput
-            label="Email contact"
+            label={t('contact_email')}
             type="email"
             value={data.email}
             onChange={(v) => onChange({ ...data, email: v })}
@@ -178,21 +173,21 @@ function IdentityStepForm({
             width="100%"
           />
           <TextInput
-            label="Ville"
+            label={t('city')}
             value={data.ville}
             onChange={(v) => onChange({ ...data, ville: v })}
             placeholder="Toulouse"
             width="100%"
           />
           <TextInput
-            label="Code postal"
+            label={t('postal_code')}
             value={data.code_postal}
             onChange={(v) => onChange({ ...data, code_postal: v })}
             placeholder="31000"
             width="100%"
           />
           <TextInput
-            label="Adresse"
+            label={t('address')}
             value={data.adresse}
             onChange={(v) => onChange({ ...data, adresse: v })}
             placeholder="12 rue du Pain"
@@ -229,7 +224,7 @@ function PlanStepForm({
     <div className="space-y-6">
       <div>
         <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--color-text-primary)' }}>
-          Sélection du plan
+          {t('plan_selection')}
         </h3>
         <div className="space-y-3">
           {plans.map((plan) => {
@@ -237,6 +232,7 @@ function PlanStepForm({
               ? plan.prixMensuelCents
               : plan.prixAnnuelCents
             const isSelected = data.planId === plan.id
+            const periodLabel = data.periode === 'monthly' ? t('per_month') : t('per_year')
             return (
               <button
                 key={plan.id}
@@ -274,7 +270,7 @@ function PlanStepForm({
                       className="text-sm font-bold flex-shrink-0"
                       style={{ color: 'var(--color-accent)' }}
                     >
-                      {formatPrice(price)}/{data.periode === 'monthly' ? 'mois' : 'an'}
+                      {formatPrice(price)}{periodLabel}
                     </span>
                   </div>
                   {plan.description && (
@@ -286,9 +282,9 @@ function PlanStepForm({
                     </p>
                   )}
                   <div className="flex gap-3 mt-2 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
-                    <span>{plan.nbSitesMax} sites</span>
+                    <span>{t('sites_count', { n: plan.nbSitesMax })}</span>
                     <span>·</span>
-                    <span>{plan.nbUsersMax} utilisateurs</span>
+                    <span>{t('users_count', { n: plan.nbUsersMax })}</span>
                   </div>
                 </div>
               </button>
@@ -299,7 +295,7 @@ function PlanStepForm({
 
       <div>
         <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--color-text-primary)' }}>
-          Période de facturation
+          {t('billing_period')}
         </h3>
         <div className="flex gap-3">
           {(['monthly', 'yearly'] as const).map((p) => (
@@ -316,7 +312,7 @@ function PlanStepForm({
                 color: data.periode === p ? 'var(--color-accent)' : 'var(--color-text-secondary)',
               }}
             >
-              {p === 'monthly' ? 'Mensuel' : 'Annuel'}
+              {p === 'monthly' ? t('monthly') : t('yearly')}
             </button>
           ))}
         </div>
@@ -336,22 +332,23 @@ function UserStepForm({
   roles: Role[]
   loading: boolean
 }) {
+  const { t } = useI18n()
   return (
     <div className="space-y-4">
       <div>
         <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--color-text-primary)' }}>
-          Administrateur initial du tenant
+          {t('admin_initial_title')}
         </h3>
         <FieldGrid columns={2}>
           <TextInput
-            label="Nom complet"
+            label={t('full_name')}
             value={data.nom}
             onChange={(v) => onChange({ ...data, nom: v })}
             placeholder="Marie Dupont"
             width="100%"
           />
           <TextInput
-            label="Email *"
+            label={t('email_required')}
             type="email"
             value={data.email}
             onChange={(v) => onChange({ ...data, email: v })}
@@ -360,11 +357,11 @@ function UserStepForm({
             isRequired
           />
           <TextInput
-            label="Mot de passe *"
+            label={t('password_required')}
             type="password"
             value={data.password}
             onChange={(v) => onChange({ ...data, password: v })}
-            placeholder="Minimum 8 caractères"
+            placeholder={t('password_min')}
             width="100%"
             isRequired
           />
@@ -372,7 +369,7 @@ function UserStepForm({
             <div className="col-span-2 flex items-center gap-2 py-2">
               <Spinner size={4} />
               <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-                Chargement des rôles…
+                {t('roles_loading')}
               </span>
             </div>
           ) : (
@@ -381,7 +378,7 @@ function UserStepForm({
                 className="block text-xs font-medium mb-1.5"
                 style={{ color: 'var(--color-text-secondary)' }}
               >
-                Rôle
+                {t('role_label')}
               </label>
               <select
                 value={data.roleId}
@@ -393,7 +390,7 @@ function UserStepForm({
                   color: 'var(--color-text-primary)',
                 }}
               >
-                <option value="">— Choisir un rôle —</option>
+                <option value="">{t('role_select')}</option>
                 {roles.map((r) => (
                   <option key={r.id} value={r.id}>
                     {r.label ?? r.code}
@@ -413,7 +410,7 @@ function UserStepForm({
           color: 'var(--color-text-secondary)',
         }}
       >
-        Ce compte aura accès complet à la console de gestion boulangerie. Choisissez un mot de passe robuste.
+        {t('admin_warning')}
       </div>
     </div>
   )
@@ -430,32 +427,34 @@ function SummaryStep({
   user: UserStep
   plans: Plan[]
 }) {
+  const { t } = useI18n()
   const selectedPlan = plans.find((p) => p.id === plan.planId)
   const price = selectedPlan
     ? plan.periode === 'monthly'
       ? selectedPlan.prixMensuelCents
       : selectedPlan.prixAnnuelCents
     : 0
+  const periodLabel = plan.periode === 'monthly' ? t('per_month') : t('per_year')
 
   return (
     <div className="space-y-4">
       <div>
         <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--color-text-primary)' }}>
-          Récapitulatif de l&apos;onboarding
+          {t('onboarding_summary')}
         </h3>
         <div className="space-y-3">
-          <SummaryRow icon={<Building2 size={14} />} label="Tenant" value={identity.nom || '—'} />
-          {identity.siret && <SummaryRow icon={<Building2 size={14} />} label="SIRET" value={identity.siret} />}
-          {identity.ville && <SummaryRow icon={<Building2 size={14} />} label="Ville" value={identity.ville} />}
+          <SummaryRow icon={<Building2 size={14} />} label={t('bakery_name').replace(' *', '')} value={identity.nom || '—'} />
+          {identity.siret && <SummaryRow icon={<Building2 size={14} />} label={t('tenant_siret')} value={identity.siret} />}
+          {identity.ville && <SummaryRow icon={<Building2 size={14} />} label={t('city')} value={identity.ville} />}
           <div className="border-t" style={{ borderColor: 'var(--color-border)' }} />
           <SummaryRow
             icon={<CreditCard size={14} />}
-            label="Plan"
-            value={selectedPlan ? `${selectedPlan.nom} — ${formatPrice(price)}/${plan.periode === 'monthly' ? 'mois' : 'an'}` : '—'}
+            label={t('plan')}
+            value={selectedPlan ? `${selectedPlan.nom} — ${formatPrice(price)}${periodLabel}` : '—'}
           />
           <div className="border-t" style={{ borderColor: 'var(--color-border)' }} />
-          <SummaryRow icon={<Users size={14} />} label="Admin initial" value={user.nom || user.email} />
-          <SummaryRow icon={<Users size={14} />} label="Email" value={user.email} />
+          <SummaryRow icon={<Users size={14} />} label={t('admin_initial')} value={user.nom || user.email} />
+          <SummaryRow icon={<Users size={14} />} label={t('contact_email')} value={user.email} />
         </div>
       </div>
 
@@ -466,7 +465,7 @@ function SummaryStep({
           color: 'var(--color-text-secondary)',
         }}
       >
-        <p>La création est irréversible pour le tenant et la subscription. L&apos;utilisateur peut être supprimé séparément.</p>
+        <p>{t('tenant_irreversible')}</p>
       </div>
     </div>
   )
@@ -492,6 +491,13 @@ export default function NewTenantPage() {
   const router = useRouter()
   const toast = useToast()
   const { t } = useI18n()
+
+  const steps: WizardStep[] = [
+    { id: 'identity', label: t('identity') },
+    { id: 'plan',     label: t('plan') },
+    { id: 'user',     label: t('admin_initial') },
+    { id: 'summary',  label: t('summary') },
+  ]
 
   const [currentStep, setCurrentStep] = useState(0)
   const [identity, setIdentity] = useState<IdentityStep>(DEFAULT_IDENTITY)
@@ -551,15 +557,15 @@ export default function NewTenantPage() {
   return (
     <div className="max-w-xl mx-auto">
       <ModalWizard
-        steps={STEPS}
+        steps={steps}
         currentStep={currentStep}
         onStepChange={setCurrentStep}
         onFinish={handleFinish}
         isLoading={submitting}
         canAdvance={canAdvance}
-        finishLabel="Créer le tenant"
-        nextLabel="Suivant"
-        backLabel="Retour"
+        finishLabel={t('create_tenant')}
+        nextLabel={t('next')}
+        backLabel={t('back')}
       >
         {currentStep === 0 && (
           <IdentityStepForm data={identity} onChange={setIdentity} />

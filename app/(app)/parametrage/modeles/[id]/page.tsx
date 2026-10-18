@@ -2,13 +2,14 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { ArrowLeft, Check, History, TrendingUp } from 'lucide-react'
+import { Check, History, TrendingUp } from 'lucide-react'
 import { Button, Spinner, useToast } from '@astryxdesign/core'
 import { apiClient } from '@/lib/api-client'
 import { useI18n } from '@/lib/i18n'
-import { libelleDetail, libelleScope } from '@/lib/i18n/scopes'
+import { libelleDetail } from '@/lib/i18n/scopes'
 import { InlineError } from '@/components/ui/inline-error'
 import { CopyButton } from '@/components/ui/copy-button'
+import { PageHeader } from '@/components/layout/page-header'
 
 /** Résultat d'un test de clé. Même forme que sur la page liste. */
 interface EtatTest {
@@ -143,40 +144,16 @@ export default function ModeleDetailPage() {
     }
   }, [modele, t, toast])
 
-  // En-tête commun : retour + libellé du périmètre.
-  const entete = (
-    <div className="flex items-center gap-3">
-      <Button
-        variant="ghost"
-        size="sm"
-        isIconOnly
-        label={t('back')}
-        icon={<ArrowLeft size={16} />}
-        onClick={() => router.push('/parametrage/modeles')}
-      />
-      <div className="flex items-center gap-2">
-        <h1 className="text-lg font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-          {modele ? libelleScope(modele.scope, t) : t('ai_models_detail')}
-        </h1>
-        {modele && (
-          <span
-            className="font-mono text-xs rounded px-1.5 py-0.5"
-            style={{
-              backgroundColor: 'color-mix(in srgb, var(--color-accent) 8%, transparent)',
-              color: 'var(--color-accent)',
-            }}
-          >
-            {modele.scope}
-          </span>
-        )}
-      </div>
-    </div>
-  )
+  const scopeBadge = modele ? (
+    <span className="font-mono text-xs rounded px-1.5 py-0.5" style={{ backgroundColor: 'color-mix(in srgb, var(--color-accent) 8%, transparent)', color: 'var(--color-accent)' }}>
+      {modele.scope}
+    </span>
+  ) : undefined
 
   if (chargement) {
     return (
       <div className="flex flex-col gap-5">
-        {entete}
+        <PageHeader title={t('ai_models_detail')} backHref="/parametrage/modeles" />
         <div className="flex justify-center py-12">
           <Spinner size="md" aria-label={t('loading')} />
         </div>
@@ -187,15 +164,17 @@ export default function ModeleDetailPage() {
   if (!modele) {
     return (
       <div className="flex flex-col gap-5">
-        {entete}
+        <PageHeader title={t('ai_models_detail')} backHref="/parametrage/modeles" />
         <InlineError message={erreur || t('ai_models_detail_notfound')} />
       </div>
     )
   }
 
+  const title = libelleDetail(modele.scope, t)
+
   return (
     <div className="flex flex-col gap-5">
-      {entete}
+      <PageHeader title={title} backHref="/parametrage/modeles" badge={scopeBadge} />
 
       {/* ── Identité ── */}
       <section

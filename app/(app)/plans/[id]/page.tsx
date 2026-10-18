@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { ArrowLeft, Check } from 'lucide-react'
+import { Check } from 'lucide-react'
 import { Button, useToast } from '@astryxdesign/core'
 import { TextInput } from '@astryxdesign/core'
 import { FieldGrid } from '@/components/ui/modal'
@@ -11,6 +11,7 @@ import { InlineError } from '@/components/ui/inline-error'
 import { ConfirmDialog } from '@/components/composite/confirm-dialog'
 import { plans, type Plan } from '@/lib/api-client'
 import { useI18n } from '@/lib/i18n'
+import { PageHeader } from '@/components/layout/page-header'
 
 function formatPrice(cents: number) {
   return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(cents / 100)
@@ -94,17 +95,17 @@ export default function PlanDetailPage() {
   }
 
   if (loading) return <div className="flex justify-center py-16"><Spinner size={8} /></div>
-  if (fetchError || !plan) return <InlineError message={fetchError ?? 'Plan introuvable'} />
+  if (fetchError || !plan) return <InlineError message={fetchError ?? t('plan_not_found')} />
+
+  const codeBadge = (
+    <span className="font-mono text-xs rounded px-1.5 py-0.5" style={{ backgroundColor: 'color-mix(in srgb, var(--color-accent) 8%, transparent)', color: 'var(--color-accent)' }}>
+      {plan.code}
+    </span>
+  )
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center gap-3">
-        <Button variant="ghost" size="sm" isIconOnly label="Retour" icon={<ArrowLeft size={16} />} onClick={() => router.push('/plans')} />
-        <div className="flex items-center gap-2">
-          <h1 className="text-lg font-semibold" style={{ color: 'var(--color-text-primary)' }}>{plan.nom}</h1>
-          <span className="font-mono text-xs rounded px-1.5 py-0.5" style={{ backgroundColor: 'color-mix(in srgb, var(--color-accent) 8%, transparent)', color: 'var(--color-accent)' }}>{plan.code}</span>
-        </div>
-      </div>
+      <PageHeader title={plan.nom} backHref="/plans" badge={codeBadge} />
 
       <form onSubmit={handleSave} className="flex flex-col gap-5 max-w-lg">
         <div className="rounded-lg border p-5 space-y-4" style={{ backgroundColor: 'var(--color-background-surface)', borderColor: 'var(--color-border)' }}>
