@@ -3,7 +3,9 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button, useToast } from '@astryxdesign/core'
-import { TextInput } from '@astryxdesign/core'
+import { TextInput, TextArea } from '@astryxdesign/core'
+import { FieldError } from '@/components/ui/form-field'
+import { useFormErrors } from '@/components/ui/form-field'
 import { FieldGrid } from '@/components/ui/modal'
 import { PageHeader } from '@/components/layout/page-header'
 import { PermissionGate } from '@/components/composite/permission-gate'
@@ -14,6 +16,7 @@ export default function PlanNewPage() {
   const router = useRouter()
   const toast = useToast()
   const { t } = useI18n()
+  const formErrors = useFormErrors()
   const [saving, setSaving] = useState(false)
   const [form, setForm] = useState({
     code: '',
@@ -28,7 +31,12 @@ export default function PlanNewPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!form.code.trim() || !form.nom.trim()) return
+    let hasError = false
+    if (!form.code.trim()) { formErrors.setError('code', t('required')); hasError = true }
+    else formErrors.clearError('code')
+    if (!form.nom.trim()) { formErrors.setError('nom', t('required')); hasError = true }
+    else formErrors.clearError('nom')
+    if (hasError) return
     setSaving(true)
     try {
       const dto: Omit<Plan, 'id' | 'createdAt' | 'updatedAt'> = {
@@ -67,22 +75,28 @@ export default function PlanNewPage() {
               {t('plan_identity')}
             </h2>
             <FieldGrid columns={2}>
-              <TextInput
-                label={t('plan_code')}
-                value={form.code}
-                onChange={(v) => setForm((f) => ({ ...f, code: v }))}
-                isRequired
-                width="100%"
-                placeholder={t('plan_code_hint')}
-              />
-              <TextInput
-                label={t('plan_name')}
-                value={form.nom}
-                onChange={(v) => setForm((f) => ({ ...f, nom: v }))}
-                isRequired
-                width="100%"
-                placeholder={t('plan_name_hint')}
-              />
+              <div className="flex flex-col gap-1">
+                <TextInput
+                  label={t('plan_code')}
+                  value={form.code}
+                  onChange={(v) => { setForm((f) => ({ ...f, code: v })); formErrors.clearError('code') }}
+                  isRequired
+                  width="100%"
+                  placeholder={t('plan_code_hint')}
+                />
+                <FieldError message={formErrors.errors.code} />
+              </div>
+              <div className="flex flex-col gap-1">
+                <TextInput
+                  label={t('plan_name')}
+                  value={form.nom}
+                  onChange={(v) => { setForm((f) => ({ ...f, nom: v })); formErrors.clearError('nom') }}
+                  isRequired
+                  width="100%"
+                  placeholder={t('plan_name_hint')}
+                />
+                <FieldError message={formErrors.errors.nom} />
+              </div>
             </FieldGrid>
             <TextInput
               label={t('plan_description')}
@@ -158,16 +172,12 @@ export default function PlanNewPage() {
             <h2 className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
               {t('plan_features')}
             </h2>
-            <textarea
-              className="w-full rounded-md border px-3 py-2 text-sm"
-              style={{
-                borderColor: 'var(--color-border)',
-                backgroundColor: 'var(--color-background-surface)',
-                color: 'var(--color-text-primary)',
-              }}
-              rows={5}
+            <TextArea
+              label={t('plan_features')}
               value={form.features}
-              onChange={(e) => setForm((f) => ({ ...f, features: e.target.value }))}
+              onChange={(v) => setForm((f) => ({ ...f, features: v }))}
+              rows={5}
+              width="100%"
               placeholder={t('plan_features_placeholder')}
             />
           </div>

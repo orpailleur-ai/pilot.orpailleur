@@ -9,6 +9,8 @@ import { TextInput } from '@astryxdesign/core'
 import { DataTable, type Column } from '@/components/ui/data-table'
 import { EmptyState } from '@/components/ui/empty-state'
 import { InlineError } from '@/components/ui/inline-error'
+import { FieldError } from '@/components/ui/form-field'
+import { useFormErrors } from '@/components/ui/form-field'
 import { Spinner } from '@/components/ui/spinner'
 import { PageHeader } from '@/components/layout/page-header'
 import { roles, type Role } from '@/lib/api-client'
@@ -18,6 +20,7 @@ export default function RolesPage() {
   const router = useRouter()
   const { t } = useI18n()
   const toast = useToast()
+  const formErrors = useFormErrors()
   const [roleList, setRoleList] = useState<Role[]>([])
   const [loading, setLoading] = useState(true)
   const [fetchError, setFetchError] = useState<string | null>(null)
@@ -44,7 +47,12 @@ export default function RolesPage() {
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault()
-    if (!form.code.trim() || !form.label.trim()) return
+    let hasError = false
+    if (!form.code.trim()) { formErrors.setError('code', t('required')); hasError = true }
+    else formErrors.clearError('code')
+    if (!form.label.trim()) { formErrors.setError('label', t('required')); hasError = true }
+    else formErrors.clearError('label')
+    if (hasError) return
     setSaving(true)
     try {
       const created = await roles.create({ code: form.code, label: form.label })
@@ -172,29 +180,35 @@ export default function RolesPage() {
       {/* Create modal */}
       <Modal
         isOpen={showCreate}
-        onOpenChange={(open) => { if (!open) setShowCreate(false) }}
+        onOpenChange={(open) => { if (!open) { setShowCreate(false); formErrors.clearAll() } }}
         title={t('roles_modal_title')}
         size="sm"
       >
         <form onSubmit={handleCreate} className="space-y-5">
           <ModalSection title={t('roles_modal_title')}>
             <FieldGrid columns={1}>
-              <TextInput
-                label={t('roles_code_label')}
-                value={form.code}
-                onChange={(v) => setForm((f) => ({ ...f, code: v.toLowerCase().replace(/\s+/g, '_') }))}
-                isRequired
-                width="100%"
-                placeholder="chef_boulanger"
-              />
-              <TextInput
-                label={t('roles_label_label')}
-                value={form.label}
-                onChange={(v) => setForm((f) => ({ ...f, label: v }))}
-                isRequired
-                width="100%"
-                placeholder="Chef boulanger"
-              />
+              <div className="flex flex-col gap-1">
+                <TextInput
+                  label={t('roles_code_label')}
+                  value={form.code}
+                  onChange={(v) => { setForm((f) => ({ ...f, code: v.toLowerCase().replace(/\s+/g, '_') })); formErrors.clearError('code') }}
+                  isRequired
+                  width="100%"
+                  placeholder="chef_boulanger"
+                />
+                <FieldError message={formErrors.errors.code} />
+              </div>
+              <div className="flex flex-col gap-1">
+                <TextInput
+                  label={t('roles_label_label')}
+                  value={form.label}
+                  onChange={(v) => { setForm((f) => ({ ...f, label: v })); formErrors.clearError('label') }}
+                  isRequired
+                  width="100%"
+                  placeholder="Chef boulanger"
+                />
+                <FieldError message={formErrors.errors.label} />
+              </div>
             </FieldGrid>
           </ModalSection>
 

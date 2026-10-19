@@ -8,6 +8,9 @@ import { Modal, ModalSection, FieldGrid } from '@/components/ui/modal'
 import { DataTable, type Column } from '@/components/ui/data-table'
 import { EmptyState } from '@/components/ui/empty-state'
 import { InlineError } from '@/components/ui/inline-error'
+import { FieldError } from '@/components/ui/form-field'
+import { useFormErrors } from '@/components/ui/form-field'
+import { SelectField } from '@/components/ui/select-field'
 import { PageHeader } from '@/components/layout/page-header'
 import { Spinner } from '@/components/ui/spinner'
 import { ConfirmDialog } from '@/components/composite/confirm-dialog'
@@ -27,6 +30,7 @@ export default function UserSitesPage() {
   const userId = params.id as string
   const { t } = useI18n()
   const toast = useToast()
+  const formErrors = useFormErrors()
   const [user, setUser] = useState<AdminUser | null>(null)
   const [tenants, setTenants] = useState<Tenant[]>([])
   const [allSites, setAllSites] = useState<Site[]>([])
@@ -64,7 +68,11 @@ export default function UserSitesPage() {
 
   async function handleAddSite(e: React.FormEvent) {
     e.preventDefault()
-    if (!form.siteId) return
+    if (!form.siteId) {
+      formErrors.setError('siteId', t('required'))
+      return
+    }
+    formErrors.clearError('siteId')
     setSaving(true)
     try {
       const currentSiteIds = user!.sites
@@ -212,42 +220,27 @@ export default function UserSitesPage() {
 
       <Modal
         isOpen={showAdd}
-        onOpenChange={(open) => { if (!open) setShowAdd(false) }}
+        onOpenChange={(open) => { if (!open) { setShowAdd(false); formErrors.clearAll() } }}
         title={t('user_sites_assign')}
         size="sm"
       >
         <form onSubmit={handleAddSite} className="space-y-5">
           <ModalSection title={t('user_sites_assign')}>
             <FieldGrid columns={1}>
-              <div>
-                <label
-                  className="mb-1 block text-xs font-medium"
-                  style={{ color: 'var(--color-text-secondary)' }}
-                >
-                  {t('user_site_column', 'Site')}
-                </label>
-                <select
-                  className="h-9 w-full rounded-md border px-2 text-sm"
-                  style={{
-                    borderColor: 'var(--color-border)',
-                    backgroundColor: 'var(--color-background-surface)',
-                    color: 'var(--color-text-primary)',
-                  }}
-                  value={form.siteId}
-                  onChange={(e) => setForm((f) => ({ ...f, siteId: e.target.value }))}
-                  required
-                >
-                  <option value="">{t('user_site_select')}</option>
-                  {availableSites.map((s) => {
+              <SelectField
+                label={t('user_site_column', 'Site')}
+                value={form.siteId}
+                onChange={(v) => { setForm((f) => ({ ...f, siteId: v })); formErrors.clearError('siteId') }}
+                options={[
+                  { value: '', label: t('user_site_select') },
+                  ...availableSites.map((s) => {
                     const tenant = tenants.find((ten) => ten.id === s.tenant_id)
-                    return (
-                      <option key={s.id} value={s.id}>
-                        {s.nom} — {tenant?.nom ?? s.tenant_id.slice(0, 8)}
-                      </option>
-                    )
-                  })}
-                </select>
-              </div>
+                    return { value: s.id, label: `${s.nom} — ${tenant?.nom ?? s.tenant_id.slice(0, 8)}` }
+                  }),
+                ]}
+                placeholder={t('user_site_select')}
+              />
+              <FieldError message={formErrors.errors.siteId} />
             </FieldGrid>
           </ModalSection>
 

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { Check } from 'lucide-react'
 import { Button, useToast } from '@astryxdesign/core'
-import { TextInput } from '@astryxdesign/core'
+import { TextInput, TextArea } from '@astryxdesign/core'
 import { FieldGrid } from '@/components/ui/modal'
 import { Spinner } from '@/components/ui/spinner'
 import { InlineError } from '@/components/ui/inline-error'
@@ -194,12 +194,12 @@ export default function PlanDetailPage() {
           <h2 className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
             {t('plan_features')}
           </h2>
-          <textarea
-            className="w-full rounded-md border px-3 py-2 text-sm"
-            style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-background-surface)', color: 'var(--color-text-primary)' }}
-            rows={5}
+          <TextArea
+            label={t('plan_features')}
             value={form.features}
-            onChange={(e) => setForm((f) => ({ ...f, features: e.target.value }))}
+            onChange={(v) => setForm((f) => ({ ...f, features: v }))}
+            rows={5}
+            width="100%"
           />
         </div>
 

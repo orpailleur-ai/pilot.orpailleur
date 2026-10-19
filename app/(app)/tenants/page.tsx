@@ -15,6 +15,8 @@ import { PageHeader } from '@/components/layout/page-header'
 import { DataTable, type Column } from '@/components/ui/data-table'
 import { EmptyState } from '@/components/ui/empty-state'
 import { InlineError } from '@/components/ui/inline-error'
+import { FieldError } from '@/components/ui/form-field'
+import { useFormErrors } from '@/components/ui/form-field'
 import { Spinner } from '@/components/ui/spinner'
 import { Modal, ModalSection, FieldGrid } from '@/components/ui/modal'
 import { ConfirmDialog } from '@/components/composite/confirm-dialog'
@@ -67,6 +69,7 @@ export default function TenantsPage() {
   const [deleting, setDeleting] = useState<string | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; nom: string } | null>(null)
   const [fetchError, setFetchError] = useState<string | null>(null)
+  const formErrors = useFormErrors()
 
   const [form, setForm] = useState<CreateTenantDto>({
     nom: '',
@@ -103,7 +106,8 @@ export default function TenantsPage() {
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault()
-    if (!form.nom.trim()) return
+    if (!form.nom.trim()) { formErrors.setError('nom', t('required')); return }
+    formErrors.clearError('nom')
     setSaving(true)
     try {
       await adminTenants.create(form)
@@ -308,21 +312,24 @@ export default function TenantsPage() {
       {/* Create modal */}
       <Modal
         isOpen={showCreate}
-        onOpenChange={(open) => { if (!open) setShowCreate(false) }}
+        onOpenChange={(open) => { if (!open) { setShowCreate(false); formErrors.clearAll() } }}
         title={t('new_tenant')}
         size="md"
       >
         <form onSubmit={handleCreate} className="space-y-5">
           <ModalSection title={t('name')}>
             <FieldGrid columns={1}>
-              <TextInput
-                label={t('name')}
-                value={form.nom}
-                onChange={(v) => setForm((f) => ({ ...f, nom: v }))}
-                isRequired
-                width="100%"
-                placeholder="La Mie Câline — Toulouse"
-              />
+              <div className="flex flex-col gap-1">
+                <TextInput
+                  label={t('name')}
+                  value={form.nom}
+                  onChange={(v) => { setForm((f) => ({ ...f, nom: v })); formErrors.clearError('nom') }}
+                  isRequired
+                  width="100%"
+                  placeholder="La Mie Câline — Toulouse"
+                />
+                <FieldError message={formErrors.errors.nom} />
+              </div>
             </FieldGrid>
           </ModalSection>
 

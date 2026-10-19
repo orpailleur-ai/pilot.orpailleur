@@ -9,6 +9,8 @@ import { Modal, ModalSection, FieldGrid } from '@/components/ui/modal'
 import { DataTable, type Column } from '@/components/ui/data-table'
 import { EmptyState } from '@/components/ui/empty-state'
 import { InlineError } from '@/components/ui/inline-error'
+import { FieldError } from '@/components/ui/form-field'
+import { useFormErrors } from '@/components/ui/form-field'
 import { PageHeader } from '@/components/layout/page-header'
 import { Spinner } from '@/components/ui/spinner'
 import { PermissionGate } from '@/components/composite/permission-gate'
@@ -27,6 +29,7 @@ export default function TenantUsersPage() {
   const tenantId = params.id as string
   const { t } = useI18n()
   const toast = useToast()
+  const formErrors = useFormErrors()
   const [tenantUsers, setTenantUsers] = useState<AdminUser[]>([])
   const [roleList, setRoleList] = useState<Role[]>([])
   const [loading, setLoading] = useState(true)
@@ -64,7 +67,12 @@ export default function TenantUsersPage() {
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault()
-    if (!form.email.trim() || !form.password.trim()) return
+    let hasError = false
+    if (!form.email.trim()) { formErrors.setError('email', t('required')); hasError = true }
+    else formErrors.clearError('email')
+    if (!form.password.trim()) { formErrors.setError('password', t('required')); hasError = true }
+    else formErrors.clearError('password')
+    if (hasError) return
     setSaving(true)
     try {
       const newUser = await adminUsers.create({
@@ -185,31 +193,37 @@ export default function TenantUsersPage() {
       {/* Create user modal */}
       <Modal
         isOpen={showCreate}
-        onOpenChange={(open) => { if (!open) setShowCreate(false) }}
+        onOpenChange={(open) => { if (!open) { setShowCreate(false); formErrors.clearAll() } }}
         title={t('user_create')}
         size="md"
       >
         <form onSubmit={handleCreate} className="space-y-5">
           <ModalSection title="Compte">
             <FieldGrid columns={1}>
-              <TextInput
-                label="Email"
-                type="email"
-                value={form.email}
-                onChange={(v) => setForm((f) => ({ ...f, email: v }))}
-                isRequired
-                width="100%"
-                placeholder="paul.dupont@example.fr"
-              />
-              <TextInput
-                label="Mot de passe"
-                type="password"
-                value={form.password}
-                onChange={(v) => setForm((f) => ({ ...f, password: v }))}
-                isRequired
-                width="100%"
-                placeholder="Min. 8 caractères"
-              />
+              <div className="flex flex-col gap-1">
+                <TextInput
+                  label="Email"
+                  type="email"
+                  value={form.email}
+                  onChange={(v) => { setForm((f) => ({ ...f, email: v })); formErrors.clearError('email') }}
+                  isRequired
+                  width="100%"
+                  placeholder="paul.dupont@example.fr"
+                />
+                <FieldError message={formErrors.errors.email} />
+              </div>
+              <div className="flex flex-col gap-1">
+                <TextInput
+                  label="Mot de passe"
+                  type="password"
+                  value={form.password}
+                  onChange={(v) => { setForm((f) => ({ ...f, password: v })); formErrors.clearError('password') }}
+                  isRequired
+                  width="100%"
+                  placeholder="Min. 8 caractères"
+                />
+                <FieldError message={formErrors.errors.password} />
+              </div>
             </FieldGrid>
           </ModalSection>
 

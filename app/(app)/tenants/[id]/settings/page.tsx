@@ -5,6 +5,8 @@ import { useParams, useRouter } from 'next/navigation'
 import { useTenantDetail } from '@/components/composite/tenant-detail-context'
 import { Settings } from 'lucide-react'
 import { InlineError } from '@/components/ui/inline-error'
+import { FieldError } from '@/components/ui/form-field'
+import { useFormErrors } from '@/components/ui/form-field'
 import { PageHeader } from '@/components/layout/page-header'
 import { Spinner } from '@/components/ui/spinner'
 import { TextInput } from '@astryxdesign/core'
@@ -22,6 +24,7 @@ export default function TenantSettingsPage() {
   const { tenant, isLoading, error, refresh } = useTenantDetail()
   const { t } = useI18n()
   const toast = useToast()
+  const formErrors = useFormErrors()
 
   const [form, setForm] = useState<Partial<CreateTenantDto> & { telephone?: string }>({})
   const [saving, setSaving] = useState(false)
@@ -45,7 +48,8 @@ export default function TenantSettingsPage() {
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault()
-    if (!form.nom?.trim()) return
+    if (!form.nom?.trim()) { formErrors.setError('nom', t('required')); return }
+    formErrors.clearError('nom')
     setSaving(true)
     try {
       await adminTenants.update(tenantId, form)
@@ -114,13 +118,16 @@ export default function TenantSettingsPage() {
           {t('tenant_settings_identity', 'Identité')}
         </h2>
         <FieldGrid columns={2}>
-          <TextInput
-            label={t('name', 'Nom du tenant')}
-            value={form.nom ?? ''}
-            onChange={(v) => setForm((f) => ({ ...f, nom: v }))}
-            isRequired
-            width="100%"
-          />
+          <div className="flex flex-col gap-1">
+            <TextInput
+              label={t('name', 'Nom du tenant')}
+              value={form.nom ?? ''}
+              onChange={(v) => { setForm((f) => ({ ...f, nom: v })); formErrors.clearError('nom') }}
+              isRequired
+              width="100%"
+            />
+            <FieldError message={formErrors.errors.nom} />
+          </div>
           <TextInput
             label={t('tenant_settings_siret', 'SIRET')}
             value={form.siret ?? ''}

@@ -9,6 +9,9 @@ import { DataTable, type Column } from '@/components/ui/data-table'
 import { EmptyState } from '@/components/ui/empty-state'
 import { PageHeader } from '@/components/layout/page-header'
 import { InlineError } from '@/components/ui/inline-error'
+import { FieldError } from '@/components/ui/form-field'
+import { useFormErrors } from '@/components/ui/form-field'
+import { SelectField } from '@/components/ui/select-field'
 import { Spinner } from '@/components/ui/spinner'
 import { ConfirmDialog } from '@/components/composite/confirm-dialog'
 import { PermissionGate } from '@/components/composite/permission-gate'
@@ -28,6 +31,7 @@ export default function UserRolesPage() {
   const userId = params.id as string
   const { t } = useI18n()
   const toast = useToast()
+  const formErrors = useFormErrors()
   const [user, setUser] = useState<AdminUser | null>(null)
   const [tenants, setTenants] = useState<Tenant[]>([])
   const [allRoles, setAllRoles] = useState<Role[]>([])
@@ -65,7 +69,12 @@ export default function UserRolesPage() {
 
   async function handleAddAssignment(e: React.FormEvent) {
     e.preventDefault()
-    if (!form.tenantId || !form.roleId) return
+    let hasError = false
+    if (!form.tenantId) { formErrors.setError('tenantId', t('required')); hasError = true }
+    else formErrors.clearError('tenantId')
+    if (!form.roleId) { formErrors.setError('roleId', t('required')); hasError = true }
+    else formErrors.clearError('roleId')
+    if (hasError) return
     setSaving(true)
     try {
       await apiClient.post(`/admin/users/${userId}/roles`, {
@@ -213,61 +222,29 @@ export default function UserRolesPage() {
       {/* Add assignment modal */}
       <Modal
         isOpen={showAdd}
-        onOpenChange={(open) => { if (!open) setShowAdd(false) }}
+        onOpenChange={(open) => { if (!open) { setShowAdd(false); formErrors.clearAll() } }}
         title={t('user_roles_assign')}
         size="sm"
       >
         <form onSubmit={handleAddAssignment} className="space-y-5">
           <ModalSection title={t('user_roles_assign', 'Sélection')}>
             <FieldGrid columns={1}>
-              <div>
-                <label
-                  className="mb-1 block text-xs font-medium"
-                  style={{ color: 'var(--color-text-secondary)' }}
-                >
-                  {t('tenants')}
-                </label>
-                <select
-                  className="h-9 w-full rounded-md border px-2 text-sm"
-                  style={{
-                    borderColor: 'var(--color-border)',
-                    backgroundColor: 'var(--color-background-surface)',
-                    color: 'var(--color-text-primary)',
-                  }}
-                  value={form.tenantId}
-                  onChange={(e) => setForm((f) => ({ ...f, tenantId: e.target.value }))}
-                  required
-                >
-                  <option value="">{t('user_select_tenant')}</option>
-                  {availableTenants.map((ten) => (
-                    <option key={ten.id} value={ten.id}>{ten.nom}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label
-                  className="mb-1 block text-xs font-medium"
-                  style={{ color: 'var(--color-text-secondary)' }}
-                >
-                  {t('user_role_column', 'Rôle')}
-                </label>
-                <select
-                  className="h-9 w-full rounded-md border px-2 text-sm"
-                  style={{
-                    borderColor: 'var(--color-border)',
-                    backgroundColor: 'var(--color-background-surface)',
-                    color: 'var(--color-text-primary)',
-                  }}
-                  value={form.roleId}
-                  onChange={(e) => setForm((f) => ({ ...f, roleId: e.target.value }))}
-                  required
-                >
-                  <option value="">{t('user_role_select')}</option>
-                  {allRoles.map((r) => (
-                    <option key={r.id} value={r.id}>{r.label}</option>
-                  ))}
-                </select>
-              </div>
+              <SelectField
+                label={t('tenants')}
+                value={form.tenantId}
+                onChange={(v) => { setForm((f) => ({ ...f, tenantId: v })); formErrors.clearError('tenantId') }}
+                options={[{ value: '', label: t('user_select_tenant') }, ...availableTenants.map((t) => ({ value: t.id, label: t.nom }))]}
+                placeholder={t('user_select_tenant')}
+              />
+              <FieldError message={formErrors.errors.tenantId} />
+              <SelectField
+                label={t('user_role_column', 'Rôle')}
+                value={form.roleId}
+                onChange={(v) => { setForm((f) => ({ ...f, roleId: v })); formErrors.clearError('roleId') }}
+                options={[{ value: '', label: t('user_role_select') }, ...allRoles.map((r) => ({ value: r.id, label: r.label }))]}
+                placeholder={t('user_role_select')}
+              />
+              <FieldError message={formErrors.errors.roleId} />
             </FieldGrid>
           </ModalSection>
 

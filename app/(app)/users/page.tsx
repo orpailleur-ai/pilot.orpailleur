@@ -9,6 +9,10 @@ import { Modal, ModalSection, FieldGrid } from '@/components/ui/modal'
 import { DataTable, type Column } from '@/components/ui/data-table'
 import { EmptyState } from '@/components/ui/empty-state'
 import { InlineError } from '@/components/ui/inline-error'
+import { FieldError } from '@/components/ui/form-field'
+import { useFormErrors } from '@/components/ui/form-field'
+import { SelectField } from '@/components/ui/select-field'
+import { StatusPill } from '@/components/composite/status-pill'
 import { Spinner } from '@/components/ui/spinner'
 import { PageHeader } from '@/components/layout/page-header'
 import {
@@ -25,6 +29,7 @@ export default function UsersPage() {
   const router = useRouter()
   const { t } = useI18n()
   const toast = useToast()
+  const formErrors = useFormErrors()
   const [users, setUsers] = useState<AdminUser[]>([])
   const [tenants, setTenants] = useState<Tenant[]>([])
   const [allRoles, setAllRoles] = useState<Role[]>([])
@@ -68,7 +73,12 @@ export default function UsersPage() {
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault()
-    if (!form.email.trim() || !form.password.trim()) return
+    let hasError = false
+    if (!form.email.trim()) { formErrors.setError('email', t('required')); hasError = true }
+    else formErrors.clearError('email')
+    if (!form.password.trim()) { formErrors.setError('password', t('required')); hasError = true }
+    else formErrors.clearError('password')
+    if (hasError) return
     setSaving(true)
     try {
       const newUser = await adminUsers.create({
@@ -79,6 +89,7 @@ export default function UsersPage() {
       })
       setShowCreate(false)
       setForm({ email: '', password: '', prenom: '', nom: '' })
+      formErrors.clearAll()
       load()
       toast({ body: t('user_created'), type: 'info' })
       router.push(`/users/${newUser.id}`)
@@ -177,12 +188,7 @@ export default function UsersPage() {
       key: 'actif',
       header: t('status'),
       mobile: 'inline',
-      render: (row) =>
-        row.actif ? (
-          <span style={{ color: 'var(--color-success)' }}>{t('users_filter_active')}</span>
-        ) : (
-          <span style={{ color: 'var(--color-danger)' }}>{t('users_filter_inactive')}</span>
-        ),
+      render: (row) => <StatusPill status={row.actif ? 'active' : 'inactive'} size="sm" />,
     },
   ]
 
@@ -210,7 +216,7 @@ export default function UsersPage() {
       {fetchError && <InlineError message={fetchError} />}
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-wrap items-end gap-3">
         <TextInput
           label={t('users_search')}
           value={search}
@@ -219,35 +225,22 @@ export default function UsersPage() {
           startIcon={<Search size={14} />}
           width="220px"
         />
-        <select
-          className="h-8 rounded-md border px-2 text-sm"
-          style={{
-            borderColor: 'var(--color-border)',
-            backgroundColor: 'var(--color-background-surface)',
-            color: 'var(--color-text-primary)',
-          }}
+        <SelectField
+          label={t('users_filter_tenant')}
           value={filterTenant}
-          onChange={(e) => setFilterTenant(e.target.value)}
-        >
-          <option value="">{t('users_filter_tenant')}</option>
-          {tenants.map((ten) => (
-            <option key={ten.id} value={ten.id}>{ten.nom}</option>
-          ))}
-        </select>
-        <select
-          className="h-8 rounded-md border px-2 text-sm"
-          style={{
-            borderColor: 'var(--color-border)',
-            backgroundColor: 'var(--color-background-surface)',
-            color: 'var(--color-text-primary)',
-          }}
+          onChange={(v) => setFilterTenant(v)}
+          options={[{ value: '', label: t('all_tenants', 'Tous les tenants') }, ...tenants.map((t) => ({ value: t.id, label: t.nom }))]}
+        />
+        <SelectField
+          label={t('users_filter_status')}
           value={filterStatus}
-          onChange={(e) => setFilterStatus(e.target.value)}
-        >
-          <option value="">{t('users_filter_status')}</option>
-          <option value="active">{t('users_filter_active')}</option>
-          <option value="inactive">{t('users_filter_inactive')}</option>
-        </select>
+          onChange={(v) => setFilterStatus(v)}
+          options={[
+            { value: '', label: t('all_statuses', 'Tous') },
+            { value: 'active', label: t('users_filter_active') },
+            { value: 'inactive', label: t('users_filter_inactive') },
+          ]}
+        />
       </div>
 
       {filtered.length === 0 ? (
@@ -268,31 +261,37 @@ export default function UsersPage() {
       {/* Create modal */}
       <Modal
         isOpen={showCreate}
-        onOpenChange={(open) => { if (!open) setShowCreate(false) }}
+        onOpenChange={(open) => { if (!open) { setShowCreate(false); formErrors.clearAll() } }}
         title={t('user_create')}
         size="md"
       >
         <form onSubmit={handleCreate} className="space-y-5">
           <ModalSection title={t('users_account')}>
             <FieldGrid columns={1}>
-              <TextInput
-                label={t('users_email')}
-                type="email"
-                value={form.email}
-                onChange={(v) => setForm((f) => ({ ...f, email: v }))}
-                isRequired
-                width="100%"
-                placeholder="paul.dupont@example.fr"
-              />
-              <TextInput
-                label={t('users_password')}
-                type="password"
-                value={form.password}
-                onChange={(v) => setForm((f) => ({ ...f, password: v }))}
-                isRequired
-                width="100%"
-                placeholder="Min. 8 caractères"
-              />
+              <div className="flex flex-col gap-1">
+                <TextInput
+                  label={t('users_email')}
+                  type="email"
+                  value={form.email}
+                  onChange={(v) => { setForm((f) => ({ ...f, email: v })); formErrors.clearError('email') }}
+                  isRequired
+                  width="100%"
+                  placeholder="paul.dupont@example.fr"
+                />
+                <FieldError message={formErrors.errors.email} />
+              </div>
+              <div className="flex flex-col gap-1">
+                <TextInput
+                  label={t('users_password')}
+                  type="password"
+                  value={form.password}
+                  onChange={(v) => { setForm((f) => ({ ...f, password: v })); formErrors.clearError('password') }}
+                  isRequired
+                  width="100%"
+                  placeholder="Min. 8 caractères"
+                />
+                <FieldError message={formErrors.errors.password} />
+              </div>
             </FieldGrid>
           </ModalSection>
 
