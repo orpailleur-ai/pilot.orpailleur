@@ -424,6 +424,7 @@ export const roles = {
     request<Role>("POST", "/admin/roles", dto),
   update: (id: string, dto: { label?: string; permission_ids?: string[] }) =>
     request<Role>("PATCH", `/admin/roles/${id}`, dto),
+  delete: (id: string) => request<void>("DELETE", `/admin/roles/${id}`),
 }
 
 // ── Plans ─────────────────────────────────────────────────────────────────────
@@ -483,6 +484,10 @@ export const subscriptions = {
     request<Subscription>("POST", "/admin/subscriptions", dto),
   cancel: (id: string) =>
     request<Subscription>("POST", `/admin/subscriptions/${id}/cancel`),
+  update: (
+    id: string,
+    dto: { planId?: string; periode?: SubscriptionPeriode; renouvelleAuto?: boolean },
+  ) => request<Subscription>("PATCH", `/admin/subscriptions/${id}`, dto),
 }
 
 // ── Invoices ───────────────────────────────────────────────────────────────

@@ -20,6 +20,8 @@ export default function TenantDangerPage() {
   const [deleting, setDeleting] = useState(false)
   const [showDeactivate, setShowDeactivate] = useState(false)
   const [deactivating, setDeactivating] = useState(false)
+  const [showReactivate, setShowReactivate] = useState(false)
+  const [reactivating, setReactivating] = useState(false)
 
   async function handleDeactivate() {
     setDeactivating(true)
@@ -31,6 +33,19 @@ export default function TenantDangerPage() {
       toast({ body: err instanceof Error ? err.message : t('error'), type: 'error' })
     } finally {
       setDeactivating(false)
+    }
+  }
+
+  async function handleReactivate() {
+    setReactivating(true)
+    try {
+      await adminTenants.update(tenant!.id, { actif: true } as any)
+      refresh()
+      toast({ body: t('tenant_reactivated'), type: 'info' })
+    } catch (err) {
+      toast({ body: err instanceof Error ? err.message : t('error'), type: 'error' })
+    } finally {
+      setReactivating(false)
     }
   }
 
@@ -56,69 +71,92 @@ export default function TenantDangerPage() {
         icon={<AlertTriangle size={20} style={{ color: 'var(--color-danger)' }} />}
       />
 
-    <div
-      className="rounded-lg border p-6 flex flex-col gap-5"
-      style={{
-        backgroundColor: 'var(--color-background-surface)',
-        borderColor: 'color-mix(in srgb, var(--color-danger) 30%, var(--color-border))',
-      }}
-    >
-      <div className="flex items-start gap-4">
-        <div
-          className="flex items-center justify-center rounded-full flex-shrink-0"
-          style={{
-            backgroundColor: 'color-mix(in srgb, var(--color-danger) 10%, transparent)',
-            width: 44,
-            height: 44,
-          }}
-        >
-          <AlertTriangle size={20} style={{ color: 'var(--color-danger)' }} />
-        </div>
-        <div className="flex flex-col gap-1">
-          <h2 className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-            Zone danger
-          </h2>
-          <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-            Ces actions sont irréversibles. Assurez-vous d{'’'}avoir une sauvegarde des données.
-          </p>
-        </div>
-      </div>
-
-      <div className="flex flex-col gap-3 border-t pt-4" style={{ borderColor: 'var(--color-border)' }}>
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="font-medium text-sm" style={{ color: 'var(--color-text-primary)' }}>
-              Désactiver le tenant
-            </p>
-            <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
-              Le tenant ne pourra plus se connecter, mais les données seront conservées.
+      <div
+        className="rounded-lg border p-6 flex flex-col gap-5"
+        style={{
+          backgroundColor: 'var(--color-background-surface)',
+          borderColor: 'color-mix(in srgb, var(--color-danger) 30%, var(--color-border))',
+        }}
+      >
+        <div className="flex items-start gap-4">
+          <div
+            className="flex items-center justify-center rounded-full flex-shrink-0"
+            style={{
+              backgroundColor: 'color-mix(in srgb, var(--color-danger) 10%, transparent)',
+              width: 44,
+              height: 44,
+            }}
+          >
+            <AlertTriangle size={20} style={{ color: 'var(--color-danger)' }} />
+          </div>
+          <div className="flex flex-col gap-1">
+            <h2 className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+              {t('danger_zone', 'Zone danger')}
+            </h2>
+            <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+              {t('danger_zone_hint', 'Ces actions sont irréversibles. Assurez-vous dʼavoir une sauvegarde des données.')}
             </p>
           </div>
-          <PermissionGate permission="TENANT_WRITE">
-            <Button
-              variant="secondary"
-              label={t('deactivate')}
-              onClick={() => setShowDeactivate(true)}
-            />
-          </PermissionGate>
         </div>
 
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="font-medium text-sm" style={{ color: 'var(--color-text-primary)' }}>
-              Supprimer le tenant
-            </p>
-            <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
-              Suppression définitive : toutes les données seront perdues.
-            </p>
+        <div className="flex flex-col gap-3 border-t pt-4" style={{ borderColor: 'var(--color-border)' }}>
+          {tenant.actif && (
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium text-sm" style={{ color: 'var(--color-text-primary)' }}>
+                  {t('tenant_deactivate_label', 'Désactiver le tenant')}
+                </p>
+                <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                  {t('tenant_deactivate_hint', 'Le tenant ne pourra plus se connecter, mais les données seront conservées.')}
+                </p>
+              </div>
+              <PermissionGate permission="TENANT_WRITE">
+                <Button
+                  variant="secondary"
+                  label={t('deactivate')}
+                  onClick={() => setShowDeactivate(true)}
+                />
+              </PermissionGate>
+            </div>
+          )}
+
+          {!tenant.actif && (
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium text-sm" style={{ color: 'var(--color-text-primary)' }}>
+                  {t('tenant_reactivate', 'Réactiver le tenant')}
+                </p>
+                <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                  {t('tenant_activate_description', 'Le tenant pourra à nouveau se connecter.')}
+                </p>
+              </div>
+              <PermissionGate permission="TENANT_WRITE">
+                <Button
+                  variant="primary"
+                  label={t('tenant_reactivate')}
+                  onClick={() => setShowReactivate(true)}
+                />
+              </PermissionGate>
+            </div>
+          )}
+
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="font-medium text-sm" style={{ color: 'var(--color-text-primary)' }}>
+                {t('tenant_delete_label', 'Supprimer le tenant')}
+              </p>
+              <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                {t('tenant_delete_hint', 'Suppression définitive : toutes les données seront perdues.')}
+              </p>
+            </div>
+            <PermissionGate permission="TENANT_WRITE">
+              <Button
+                variant="destructive"
+                label={t('delete')}
+                onClick={() => setShowDelete(true)}
+              />
+            </PermissionGate>
           </div>
-          <PermissionGate permission="TENANT_WRITE">
-            <Button
-              variant="destructive"
-              label={t('delete')}
-              onClick={() => setShowDelete(true)}
-            />
-          </PermissionGate>
         </div>
       </div>
 
@@ -126,11 +164,22 @@ export default function TenantDangerPage() {
         isOpen={showDeactivate}
         onOpenChange={setShowDeactivate}
         title={t('tenant_deactivate_confirm')}
-        description={`Désactiver ${tenant.nom} ? Il ne pourra plus se connecter.`}
+        description={`${tenant.nom} ? ${t('tenant_deactivate_hint', 'Il ne pourra plus se connecter.')}`}
         confirmLabel={t('deactivate')}
         confirmVariant="primary"
         onConfirm={handleDeactivate}
         isLoading={deactivating}
+      />
+
+      <ConfirmDialog
+        isOpen={showReactivate}
+        onOpenChange={setShowReactivate}
+        title={t('tenant_activate_confirm')}
+        description={t('tenant_activate_description')}
+        confirmLabel={t('tenant_reactivate')}
+        confirmVariant="primary"
+        onConfirm={handleReactivate}
+        isLoading={reactivating}
       />
 
       <ConfirmDialog
@@ -143,7 +192,6 @@ export default function TenantDangerPage() {
         onConfirm={handleDelete}
         isLoading={deleting}
       />
-    </div>
     </div>
   )
 }

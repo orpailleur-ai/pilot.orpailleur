@@ -13,18 +13,10 @@ import { InlineError } from '@/components/ui/inline-error'
 import { PageHeader } from '@/components/layout/page-header'
 import { Spinner } from '@/components/ui/spinner'
 import { Modal } from '@/components/ui/modal'
+import { PermissionGate } from '@/components/composite/permission-gate'
 
 function formatPrice(cents: number) {
   return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(cents / 100)
-}
-
-const STATUT_LABELS: Record<InvoiceStatut, string> = {
-  draft: 'Brouillon',
-  open: 'Ouverte',
-  paid: 'Payée',
-  past_due: 'En retard',
-  void: 'Annulée',
-  uncollectible: 'Impayée',
 }
 
 export default function TenantInvoicesPage() {
@@ -62,7 +54,7 @@ export default function TenantInvoicesPage() {
       link.click()
       document.body.removeChild(link)
     } catch (err) {
-      toast({ body: err instanceof Error ? err.message : 'Erreur de téléchargement', type: 'error' })
+      toast({ body: t('invoice_download_error'), type: 'error' })
     }
   }
 
@@ -76,7 +68,7 @@ export default function TenantInvoicesPage() {
         setList(updated)
       }, 3000)
     } catch (err) {
-      toast({ body: err instanceof Error ? err.message : 'Erreur de génération', type: 'error' })
+      toast({ body: err instanceof Error ? err.message : t('invoice_generate_error'), type: 'error' })
     } finally {
       setGeneratingId(null)
     }
@@ -94,7 +86,7 @@ export default function TenantInvoicesPage() {
       const updated = await invoices.updateStatus(selectedInvoice.id, 'paid', paymentDate)
       setList((prev) => prev.map((inv) => (inv.id === updated.id ? updated : inv)))
       setSelectedInvoice(null)
-      toast({ body: `Facture ${updated.numero} marquée payée`, type: 'info' })
+      toast({ body: t('invoice_paid_toast', { numero: updated.numero }), type: 'info' })
     } catch (err) {
       toast({ body: err instanceof Error ? err.message : t('error'), type: 'error' })
     } finally {
@@ -105,7 +97,7 @@ export default function TenantInvoicesPage() {
   const columns: Column<Invoice>[] = [
     {
       key: 'numero',
-      header: 'Numéro',
+      header: t('invoice_number', 'Numéro'),
       mobile: 'primary',
       render: (row) => (
         <div className="flex items-center gap-2">
@@ -118,7 +110,7 @@ export default function TenantInvoicesPage() {
     },
     {
       key: 'montant',
-      header: 'Montant',
+      header: t('invoice_amount', 'Montant'),
       mobile: 'hidden',
       align: 'end',
       render: (row) => (
@@ -131,27 +123,28 @@ export default function TenantInvoicesPage() {
       key: 'statut',
       header: t('status'),
       mobile: 'inline',
-      render: (row) => (
-        <span
-          className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
-          style={{
-            backgroundColor:
-              row.statut === 'paid' ? 'color-mix(in srgb, var(--color-success) 12%, transparent)' :
-              row.statut === 'past_due' ? 'color-mix(in srgb, var(--color-danger) 12%, transparent)' :
-              'color-mix(in srgb, var(--color-accent) 12%, transparent)',
-            color:
-              row.statut === 'paid' ? 'var(--color-success)' :
-              row.statut === 'past_due' ? 'var(--color-danger)' :
-              'var(--color-accent)',
-          }}
-        >
-          {STATUT_LABELS[row.statut]}
-        </span>
-      ),
+      render: (row) => {
+        const badgeClass =
+          row.statut === 'paid' ? 'var(--color-success)' :
+          row.statut === 'past_due' ? 'var(--color-danger)' :
+          'var(--color-accent)'
+        const bgClass =
+          row.statut === 'paid' ? 'color-mix(in srgb, var(--color-success) 12%, transparent)' :
+          row.statut === 'past_due' ? 'color-mix(in srgb, var(--color-danger) 12%, transparent)' :
+          'color-mix(in srgb, var(--color-accent) 12%, transparent)'
+        return (
+          <span
+            className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
+            style={{ backgroundColor: bgClass, color: badgeClass }}
+          >
+            {t(`invoice_statut_${row.statut}` as any, row.statut)}
+          </span>
+        )
+      },
     },
     {
       key: 'dateEmission',
-      header: 'Émise le',
+      header: t('invoice_issued', 'Émise le'),
       mobile: 'hidden',
       render: (row) => (
         <span style={{ color: 'var(--color-text-secondary)' }}>
@@ -161,7 +154,7 @@ export default function TenantInvoicesPage() {
     },
     {
       key: 'dateEcheance',
-      header: 'Échéance',
+      header: t('invoice_due', 'Échéance'),
       mobile: 'hidden',
       align: 'end',
       render: (row) => (
@@ -176,7 +169,7 @@ export default function TenantInvoicesPage() {
     },
     {
       key: 'datePaiement',
-      header: 'Payée le',
+      header: t('invoice_paid_date', 'Payée le'),
       mobile: 'hidden',
       align: 'end',
       render: (row) => (
@@ -201,7 +194,7 @@ export default function TenantInvoicesPage() {
               variant="ghost"
               isIconOnly
               icon={<Download size={14} />}
-              label="Télécharger PDF"
+              label={t('invoice_download_pdf')}
               onClick={() => handleViewPdf(row)}
             />
           ) : (
@@ -210,21 +203,23 @@ export default function TenantInvoicesPage() {
               variant="secondary"
               isIconOnly
               icon={generatingId === row.id ? <Loader2 size={14} className="animate-spin" /> : <FileText size={14} />}
-              label="Générer PDF"
+              label={t('invoice_generate_pdf')}
               onClick={() => handleGeneratePdf(row)}
               isLoading={generatingId === row.id}
             />
           )}
-          {row.statut !== 'paid' && (
-            <Button
-              size="sm"
-              variant="ghost"
-              isIconOnly
-              icon={<CheckCircle size={14} />}
-              label="Marquer payée"
-              onClick={() => handleMarkPaid(row)}
-            />
-          )}
+          <PermissionGate permission="BILLING_WRITE">
+            {row.statut !== 'paid' && (
+              <Button
+                size="sm"
+                variant="ghost"
+                isIconOnly
+                icon={<CheckCircle size={14} />}
+                label={t('invoice_mark_paid')}
+                onClick={() => handleMarkPaid(row)}
+              />
+            )}
+          </PermissionGate>
         </div>
       ),
     },
@@ -244,8 +239,8 @@ export default function TenantInvoicesPage() {
       ) : list.length === 0 ? (
         <EmptyState
           icon={<FileText size={24} />}
-          title="Aucune facture"
-          description={`Aucune facture pour ${tenant?.nom ?? 'ce tenant'}.`}
+          title={t('invoice_no_invoices', 'Aucune facture')}
+          description={t('invoice_no_invoices_hint', { nom: tenant?.nom ?? 'ce tenant' })}
         />
       ) : (
         <DataTable columns={columns} rows={list} rowKey={(row) => row.id} />
@@ -255,18 +250,18 @@ export default function TenantInvoicesPage() {
       <Modal
         isOpen={!!selectedInvoice}
         onOpenChange={(open) => { if (!open) setSelectedInvoice(null) }}
-        title="Marquer comme payée"
+        title={t('invoice_mark_paid')}
         size="sm"
       >
         {selectedInvoice && (
           <div className="flex flex-col gap-4">
             <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-              Facture <strong>{selectedInvoice.numero}</strong> —{' '}
+              {t('invoice_number', 'Facture')} <strong>{selectedInvoice.numero}</strong> —{' '}
               <strong>{formatPrice(selectedInvoice.montantCents)}</strong>
             </p>
             <div className="flex flex-col gap-1">
               <label className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
-                Date de paiement
+                {t('invoice_payment_date', 'Date de paiement')}
               </label>
               <input
                 type="date"
@@ -278,13 +273,13 @@ export default function TenantInvoicesPage() {
             </div>
             <div className="flex gap-3 border-t pt-4" style={{ borderColor: 'var(--color-border)' }}>
               <Button
-                label="Annuler"
+                label={t('cancel')}
                 variant="secondary"
                 onClick={() => setSelectedInvoice(null)}
                 className="flex-1"
               />
               <Button
-                label="Confirmer"
+                label={t('confirm')}
                 variant="primary"
                 onClick={confirmMarkPaid}
                 isLoading={paying}

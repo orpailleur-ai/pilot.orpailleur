@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import { Plus, Globe, Trash2, Edit2, CheckCircle, XCircle } from 'lucide-react'
 import { Button, useToast } from '@astryxdesign/core'
 import { TextInput } from '@astryxdesign/core'
@@ -18,6 +18,7 @@ import { useI18n } from '@/lib/i18n'
 
 export default function TenantSitesPage() {
   const params = useParams()
+  const router = useRouter()
   const tenantId = params.id as string
   const { t } = useI18n()
   const toast = useToast()
@@ -127,7 +128,7 @@ export default function TenantSitesPage() {
   const columns: Column<Site>[] = [
     {
       key: 'nom',
-      header: 'Nom',
+      header: t('site_name', 'Nom'),
       mobile: 'primary',
       render: (row) => (
         <div className="flex items-center gap-2">
@@ -138,13 +139,13 @@ export default function TenantSitesPage() {
     },
     {
       key: 'adresse',
-      header: 'Adresse',
+      header: t('site_address', 'Adresse'),
       mobile: 'inline',
       render: (row) => row.adresse ?? '—',
     },
     {
       key: 'ville',
-      header: 'Ville',
+      header: t('site_city', 'Ville'),
       mobile: 'hidden',
       render: (row) => [row.code_postal, row.ville].filter(Boolean).join(' ') || '—',
     },
@@ -226,7 +227,12 @@ export default function TenantSitesPage() {
           description={t('no_sites_hint')}
         />
       ) : (
-        <DataTable columns={columns} rows={sitesList} rowKey={(row) => row.id} />
+        <DataTable
+          columns={columns}
+          rows={sitesList}
+          rowKey={(row) => row.id}
+          onRowClick={(row) => router.push(`/tenants/${tenantId}/sites/${row.id}`)}
+        />
       )}
 
       {/* Create modal */}
@@ -237,10 +243,10 @@ export default function TenantSitesPage() {
         size="md"
       >
         <form onSubmit={handleCreate} className="space-y-5">
-          <ModalSection title="Informations">
+          <ModalSection title={t('site_info')}>
             <FieldGrid columns={1}>
               <TextInput
-                label="Nom du site"
+                label={t('site_name')}
                 value={form.nom}
                 onChange={(v) => setForm((f) => ({ ...f, nom: v }))}
                 isRequired
@@ -248,7 +254,7 @@ export default function TenantSitesPage() {
                 placeholder="Toulouse Centre"
               />
               <TextInput
-                label="Adresse"
+                label={t('site_address')}
                 value={form.adresse ?? ''}
                 onChange={(v) => setForm((f) => ({ ...f, adresse: v }))}
                 width="100%"
@@ -257,14 +263,14 @@ export default function TenantSitesPage() {
             </FieldGrid>
             <FieldGrid columns={2}>
               <TextInput
-                label="Code postal"
+                label={t('site_postal')}
                 value={form.code_postal ?? ''}
                 onChange={(v) => setForm((f) => ({ ...f, code_postal: v }))}
                 width="100%"
                 placeholder="31000"
               />
               <TextInput
-                label="Ville"
+                label={t('site_city')}
                 value={form.ville ?? ''}
                 onChange={(v) => setForm((f) => ({ ...f, ville: v }))}
                 width="100%"
@@ -272,7 +278,7 @@ export default function TenantSitesPage() {
               />
             </FieldGrid>
             <TextInput
-              label="Téléphone"
+              label={t('site_phone')}
               value={form.telephone ?? ''}
               onChange={(v) => setForm((f) => ({ ...f, telephone: v }))}
               width="100%"
@@ -280,16 +286,16 @@ export default function TenantSitesPage() {
             />
           </ModalSection>
 
-          <ModalSection title="Horaires">
+          <ModalSection title={t('site_hours')}>
             <FieldGrid columns={2}>
               <TextInput
-                label="Jour d'ouverture (1=lun, 7=dim)"
+                label={t('site_open_day')}
                 value={String(form.jour_ouverture)}
                 onChange={(v) => setForm((f) => ({ ...f, jour_ouverture: parseInt(v) || 1 }))}
                 width="100%"
               />
               <TextInput
-                label="Jour de fermeture"
+                label={t('site_close_day')}
                 value={String(form.jour_fermeture)}
                 onChange={(v) => setForm((f) => ({ ...f, jour_fermeture: parseInt(v) || 19 }))}
                 width="100%"
@@ -323,17 +329,17 @@ export default function TenantSitesPage() {
         size="md"
       >
         <form onSubmit={handleUpdate} className="space-y-5">
-          <ModalSection title="Informations">
+          <ModalSection title={t('site_info')}>
             <FieldGrid columns={1}>
               <TextInput
-                label="Nom du site"
+                label={t('site_name')}
                 value={form.nom}
                 onChange={(v) => setForm((f) => ({ ...f, nom: v }))}
                 isRequired
                 width="100%"
               />
               <TextInput
-                label="Adresse"
+                label={t('site_address')}
                 value={form.adresse ?? ''}
                 onChange={(v) => setForm((f) => ({ ...f, adresse: v }))}
                 width="100%"
@@ -341,36 +347,36 @@ export default function TenantSitesPage() {
             </FieldGrid>
             <FieldGrid columns={2}>
               <TextInput
-                label="Code postal"
+                label={t('site_postal')}
                 value={form.code_postal ?? ''}
                 onChange={(v) => setForm((f) => ({ ...f, code_postal: v }))}
                 width="100%"
               />
               <TextInput
-                label="Ville"
+                label={t('site_city')}
                 value={form.ville ?? ''}
                 onChange={(v) => setForm((f) => ({ ...f, ville: v }))}
                 width="100%"
               />
             </FieldGrid>
             <TextInput
-              label="Téléphone"
+              label={t('site_phone')}
               value={form.telephone ?? ''}
               onChange={(v) => setForm((f) => ({ ...f, telephone: v }))}
               width="100%"
             />
           </ModalSection>
 
-          <ModalSection title="Horaires">
+          <ModalSection title={t('site_hours')}>
             <FieldGrid columns={2}>
               <TextInput
-                label="Jour d'ouverture"
+                label={t('site_open_day')}
                 value={String(form.jour_ouverture)}
                 onChange={(v) => setForm((f) => ({ ...f, jour_ouverture: parseInt(v) || 1 }))}
                 width="100%"
               />
               <TextInput
-                label="Jour de fermeture"
+                label={t('site_close_day')}
                 value={String(form.jour_fermeture)}
                 onChange={(v) => setForm((f) => ({ ...f, jour_fermeture: parseInt(v) || 19 }))}
                 width="100%"

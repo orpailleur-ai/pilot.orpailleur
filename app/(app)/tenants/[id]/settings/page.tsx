@@ -11,6 +11,7 @@ import { TextInput } from '@astryxdesign/core'
 import { Button, useToast } from '@astryxdesign/core'
 import { ModalSection, FieldGrid } from '@/components/ui/modal'
 import { ConfirmDialog } from '@/components/composite/confirm-dialog'
+import { PermissionGate } from '@/components/composite/permission-gate'
 import { adminTenants, type CreateTenantDto } from '@/lib/api-client'
 import { useI18n } from '@/lib/i18n'
 
@@ -100,7 +101,7 @@ export default function TenantSettingsPage() {
   return (
     <form onSubmit={handleSave} className="flex flex-col gap-6">
       <PageHeader
-        title={t('settings', 'Paramètres')}
+        title={t('tenant_settings', 'Paramètres du tenant')}
         icon={<Settings size={20} style={{ color: 'var(--color-text-primary)' }} />}
       />
 
@@ -110,24 +111,24 @@ export default function TenantSettingsPage() {
         style={{ backgroundColor: 'var(--color-background-surface)', borderColor: 'var(--color-border)' }}
       >
         <h2 className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-          Identité
+          {t('tenant_settings_identity', 'Identité')}
         </h2>
         <FieldGrid columns={2}>
           <TextInput
-            label="Nom du tenant"
+            label={t('name', 'Nom du tenant')}
             value={form.nom ?? ''}
             onChange={(v) => setForm((f) => ({ ...f, nom: v }))}
             isRequired
             width="100%"
           />
           <TextInput
-            label="SIRET"
+            label={t('tenant_settings_siret', 'SIRET')}
             value={form.siret ?? ''}
             onChange={(v) => setForm((f) => ({ ...f, siret: v }))}
             width="100%"
           />
           <TextInput
-            label="SIREN"
+            label={t('tenant_settings_siren', 'SIREN')}
             value={form.siren ?? ''}
             onChange={(v) => setForm((f) => ({ ...f, siren: v }))}
             width="100%"
@@ -141,36 +142,36 @@ export default function TenantSettingsPage() {
         style={{ backgroundColor: 'var(--color-background-surface)', borderColor: 'var(--color-border)' }}
       >
         <h2 className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-          Contact
+          {t('tenant_settings_contact', 'Contact')}
         </h2>
         <FieldGrid columns={2}>
           <TextInput
-            label="Email"
+            label={t('tenant_settings_email', 'Email')}
             type="email"
             value={form.email ?? ''}
             onChange={(v) => setForm((f) => ({ ...f, email: v }))}
             width="100%"
           />
           <TextInput
-            label="Téléphone"
+            label={t('tenant_settings_phone', 'Téléphone')}
             value={form.telephone ?? ''}
             onChange={(v) => setForm((f) => ({ ...f, telephone: v }))}
             width="100%"
           />
           <TextInput
-            label="Adresse"
+            label={t('tenant_settings_address', 'Adresse')}
             value={form.adresse ?? ''}
             onChange={(v) => setForm((f) => ({ ...f, adresse: v }))}
             width="100%"
           />
           <TextInput
-            label="Code postal"
+            label={t('tenant_settings_postal', 'Code postal')}
             value={form.code_postal ?? ''}
             onChange={(v) => setForm((f) => ({ ...f, code_postal: v }))}
             width="100%"
           />
           <TextInput
-            label="Ville"
+            label={t('tenant_settings_city', 'Ville')}
             value={form.ville ?? ''}
             onChange={(v) => setForm((f) => ({ ...f, ville: v }))}
             width="100%"
@@ -181,25 +182,31 @@ export default function TenantSettingsPage() {
       {/* Actions */}
       <div className="flex items-center justify-between">
         <div className="flex gap-3">
-          <Button
-            variant="secondary"
-            label={tenant.actif ? t('deactivate') : t('activate')}
-            onClick={handleDeactivate}
-            isLoading={saving}
-          />
+          <PermissionGate permission="TENANT_WRITE">
+            <Button
+              variant="secondary"
+              label={tenant.actif ? t('deactivate') : t('tenant_reactivate')}
+              onClick={handleDeactivate}
+              isLoading={saving}
+            />
+          </PermissionGate>
         </div>
         <div className="flex gap-3">
-          <Button
-            variant="destructive"
-            label={t('delete')}
-            onClick={() => setShowDelete(true)}
-          />
-          <Button
-            variant="primary"
-            label={t('save')}
-            type="submit"
-            isLoading={saving}
-          />
+          <PermissionGate permission="TENANT_WRITE">
+            <Button
+              variant="destructive"
+              label={t('delete')}
+              onClick={() => setShowDelete(true)}
+            />
+          </PermissionGate>
+          <PermissionGate permission="TENANT_WRITE">
+            <Button
+              variant="primary"
+              label={t('save')}
+              type="submit"
+              isLoading={saving}
+            />
+          </PermissionGate>
         </div>
       </div>
 

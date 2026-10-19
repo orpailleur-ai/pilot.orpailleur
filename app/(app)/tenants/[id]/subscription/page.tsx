@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
-import { Check } from 'lucide-react'
 import { Button, useToast } from '@astryxdesign/core'
 import { Modal, ModalSection, FieldGrid } from '@/components/ui/modal'
 import { DataTable, type Column } from '@/components/ui/data-table'
@@ -12,6 +11,7 @@ import { PageHeader } from '@/components/layout/page-header'
 import { Spinner } from '@/components/ui/spinner'
 import { StatusPill } from '@/components/composite/status-pill'
 import { ConfirmDialog } from '@/components/composite/confirm-dialog'
+import { PermissionGate } from '@/components/composite/permission-gate'
 import { useTenantDetail } from '@/components/composite/tenant-detail-context'
 import {
   subscriptions,
@@ -35,7 +35,8 @@ export default function TenantSubscriptionPage() {
   const [planList, setPlanList] = useState<Plan[]>([])
   const [loading, setLoading] = useState(true)
   const [fetchError, setFetchError] = useState<string | null>(null)
-  const [showUpgrade, setShowUpgrade] = useState(false)
+  const [editingSub, setEditingSub] = useState<Subscription | null>(null)
+  const [showModal, setShowModal] = useState(false)
   const [saving, setSaving] = useState(false)
   const [cancelTarget, setCancelTarget] = useState<string | null>(null)
   const [form, setForm] = useState({ planId: '', periode: 'monthly' as 'monthly' | 'yearly' })
@@ -61,20 +62,39 @@ export default function TenantSubscriptionPage() {
     }
   }
 
-  async function handleSubscribe(e: React.FormEvent) {
+  function openNew() {
+    setEditingSub(null)
+    setForm({ planId: '', periode: 'monthly' })
+    setShowModal(true)
+  }
+
+  function openEdit(sub: Subscription) {
+    setEditingSub(sub)
+    setForm({ planId: sub.plan_id, periode: sub.periode })
+    setShowModal(true)
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!form.planId) return
     setSaving(true)
     try {
-      await subscriptions.create({
-        tenantId,
-        planId: form.planId,
-        periode: form.periode,
-      })
-      setShowUpgrade(false)
-      setForm({ planId: '', periode: 'monthly' })
+      if (editingSub) {
+        await subscriptions.update(editingSub.id, {
+          planId: form.planId,
+          periode: form.periode,
+        })
+        toast({ body: t('subscription_updated'), type: 'info' })
+      } else {
+        await subscriptions.create({
+          tenantId,
+          planId: form.planId,
+          periode: form.periode,
+        })
+        toast({ body: t('subscription_updated'), type: 'info' })
+      }
+      setShowModal(false)
       load()
-      toast({ body: t('subscription_updated'), type: 'info' })
     } catch (err) {
       toast({ body: err instanceof Error ? err.message : t('error'), type: 'error' })
     } finally {
@@ -97,7 +117,7 @@ export default function TenantSubscriptionPage() {
   const columns: Column<Subscription>[] = [
     {
       key: 'plan',
-      header: 'Plan',
+      header: t('subscriptions_plan', 'Plan'),
       mobile: 'primary',
       render: (row) => (
         <div className="flex flex-col gap-0.5">
@@ -105,14 +125,14 @@ export default function TenantSubscriptionPage() {
             {row.plan?.nom ?? planList.find((p) => p.id === row.plan_id)?.nom ?? '—'}
           </span>
           <span className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
-            {row.periode === 'yearly' ? 'Annuel' : 'Mensuel'}
+            {row.periode === 'yearly' ? t('subscriptions_annuel') : t('subscriptions_mensuel')}
           </span>
         </div>
       ),
     },
     {
       key: 'prix',
-      header: 'Prix',
+      header: t('subscriptions_prix', 'Prix'),
       mobile: 'hidden',
       align: 'end',
       render: (row) => (
@@ -134,7 +154,7 @@ export default function TenantSubscriptionPage() {
     },
     {
       key: 'dateFin',
-      header: "Échéance",
+      header: t('subscriptions_date_fin', 'Échéance'),
       mobile: 'hidden',
       align: 'end',
       render: (row) => (
@@ -150,12 +170,20 @@ export default function TenantSubscriptionPage() {
       mobile: 'hidden',
       render: (row) =>
         row.statut === 'active' ? (
-          <Button
-            variant="ghost"
-            size="sm"
-            label="Annuler"
-            onClick={() => setCancelTarget(row.id)}
-          />
+          <div className="flex gap-2 justify-end">
+            <Button
+              variant="ghost"
+              size="sm"
+              label={t('edit')}
+              onClick={() => openEdit(row)}
+            />
+            <Button
+              variant="ghost"
+              size="sm"
+              label={t('deactivate')}
+              onClick={() => setCancelTarget(row.id)}
+            />
+          </div>
         ) : null,
     },
   ]
@@ -165,14 +193,16 @@ export default function TenantSubscriptionPage() {
   return (
     <div className="flex flex-col gap-4">
       <PageHeader
-        title={t('tenant_subscription', 'Abonnement')}
+        title={t('subscription_tab', 'Abonnement')}
         action={
-          <Button
-            variant="primary"
-            size="sm"
-            label={t('change_plan', 'Changer de plan')}
-            onClick={() => setShowUpgrade(true)}
-          />
+          <PermissionGate permission="BILLING_WRITE">
+            <Button
+              variant="primary"
+              size="sm"
+              label={t('subscription_change_plan')}
+              onClick={openNew}
+            />
+          </PermissionGate>
         }
       />
 
@@ -180,41 +210,45 @@ export default function TenantSubscriptionPage() {
 
       {subs.length === 0 ? (
         <EmptyState
-          title="Aucun abonnement"
-          description={`Aucun abonnement actif pour ${tenant?.nom}. Souscrivez à un plan.`}
+          title={t('subscription_tenant_empty', 'Aucun abonnement')}
+          description={t('subscription_tenant_empty_hint', `Aucun abonnement actif pour ${tenant?.nom ?? 'ce tenant'}. Souscrivez à un plan.`)}
         />
       ) : (
         <DataTable columns={columns} rows={subs} rowKey={(row) => row.id} />
       )}
 
-      {/* Upgrade/subscribe modal */}
+      {/* Subscribe / change plan modal */}
       <Modal
-        isOpen={showUpgrade}
-        onOpenChange={(open) => { if (!open) setShowUpgrade(false) }}
-        title="Changer de plan"
+        isOpen={showModal}
+        onOpenChange={(open) => { if (!open) setShowModal(false) }}
+        title={editingSub ? t('subscription_change_plan') : t('subscription_change_plan')}
         size="sm"
       >
-        <form onSubmit={handleSubscribe} className="space-y-5">
-          <ModalSection title="Sélection du plan">
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <ModalSection title={t('subscriptions_plan', 'Plan')}>
             <FieldGrid columns={1}>
               <div>
                 <label
                   className="mb-1 block text-xs font-medium"
                   style={{ color: 'var(--color-text-secondary)' }}
                 >
-                  Plan
+                  {t('subscriptions_plan', 'Plan')}
                 </label>
                 <select
                   className="h-9 w-full rounded-md border px-2 text-sm"
-                  style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-background-surface)', color: 'var(--color-text-primary)' }}
+                  style={{
+                    borderColor: 'var(--color-border)',
+                    backgroundColor: 'var(--color-background-surface)',
+                    color: 'var(--color-text-primary)',
+                  }}
                   value={form.planId}
                   onChange={(e) => setForm((f) => ({ ...f, planId: e.target.value }))}
                   required
                 >
-                  <option value="">Sélectionner un plan…</option>
+                  <option value="">{t('subscription_select_plan')}</option>
                   {planList.map((p) => (
                     <option key={p.id} value={p.id}>
-                      {p.nom} — {formatPrice(p.prixMensuelCents)}/mois
+                      {p.nom} — {formatPrice(p.prixMensuelCents)}{t('per_month')}
                     </option>
                   ))}
                 </select>
@@ -224,24 +258,39 @@ export default function TenantSubscriptionPage() {
                   className="mb-1 block text-xs font-medium"
                   style={{ color: 'var(--color-text-secondary)' }}
                 >
-                  Période
+                  {t('subscription_period', 'Période')}
                 </label>
                 <select
                   className="h-9 w-full rounded-md border px-2 text-sm"
-                  style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-background-surface)', color: 'var(--color-text-primary)' }}
+                  style={{
+                    borderColor: 'var(--color-border)',
+                    backgroundColor: 'var(--color-background-surface)',
+                    color: 'var(--color-text-primary)',
+                  }}
                   value={form.periode}
                   onChange={(e) => setForm((f) => ({ ...f, periode: e.target.value as 'monthly' | 'yearly' }))}
                 >
-                  <option value="monthly">Mensuel</option>
-                  <option value="yearly">Annuel</option>
+                  <option value="monthly">{t('subscriptions_mensuel')}</option>
+                  <option value="yearly">{t('subscriptions_annuel')}</option>
                 </select>
               </div>
             </FieldGrid>
           </ModalSection>
 
           <div className="flex gap-3 pt-2 border-t" style={{ borderColor: 'var(--color-border)' }}>
-            <Button label="Annuler" variant="secondary" onClick={() => setShowUpgrade(false)} className="flex-1" />
-            <Button label={saving ? t('saving') : 'Souscrire'} variant="primary" type="submit" isLoading={saving} className="flex-1" />
+            <Button
+              label={t('cancel')}
+              variant="secondary"
+              onClick={() => setShowModal(false)}
+              className="flex-1"
+            />
+            <Button
+              label={saving ? t('saving') : (editingSub ? t('save') : t('subscription_subscribe'))}
+              variant="primary"
+              type="submit"
+              isLoading={saving}
+              className="flex-1"
+            />
           </div>
         </form>
       </Modal>
@@ -251,7 +300,7 @@ export default function TenantSubscriptionPage() {
         onOpenChange={(open) => { if (!open) setCancelTarget(null) }}
         title={t('subscription_cancel_confirm')}
         description={t('subscription_cancel_description')}
-        confirmLabel={t('delete')}
+        confirmLabel={t('deactivate')}
         confirmVariant="destructive"
         onConfirm={handleCancel}
         isLoading={false}
