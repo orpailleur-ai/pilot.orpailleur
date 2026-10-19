@@ -9,6 +9,7 @@ import { EmptyState } from '@/components/ui/empty-state'
 import { InlineError } from '@/components/ui/inline-error'
 import { FieldError } from '@/components/ui/form-field'
 import { useFormErrors } from '@/components/ui/form-field'
+import { SelectField } from '@/components/ui/select-field'
 import { PageHeader } from '@/components/layout/page-header'
 import { Spinner } from '@/components/ui/spinner'
 import { StatusPill } from '@/components/composite/status-pill'
@@ -241,26 +242,18 @@ export default function TenantSubscriptionPage() {
                 >
                   {t('subscriptions_plan', 'Plan')}
                 </label>
-                <select
-                  className="h-9 w-full rounded-md border px-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2"
-                  style={{
-                    borderColor: 'var(--color-border)',
-                    backgroundColor: 'var(--color-background-surface)',
-                    color: 'var(--color-text-primary)',
-                    outline: 'none',
-                  }}
+                <SelectField
                   value={form.planId}
-                  onChange={(e) => { setForm((f) => ({ ...f, planId: e.target.value })); formErrors.clearError('planId') }}
-                  required
-                >
-                  <option value="">{t('subscription_select_plan')}</option>
-                  {planList.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.nom} — {formatPrice(p.prixMensuelCents)}{t('per_month')}
-                    </option>
-                  ))}
-                </select>
-                <FieldError message={formErrors.errors.planId} />
+                  onChange={(val) => { setForm((f) => ({ ...f, planId: val })); formErrors.clearError('planId') }}
+                  options={[
+                    { value: '', label: t('subscription_select_plan') },
+                    ...planList.map((p) => ({
+                      value: p.id,
+                      label: `${p.nom} — ${formatPrice(p.prixMensuelCents)}${t('per_month')}`,
+                    })),
+                  ]}
+                  error={formErrors.errors.planId}
+                />
               </div>
               <div>
                 <label
@@ -269,19 +262,14 @@ export default function TenantSubscriptionPage() {
                 >
                   {t('subscription_period', 'Période')}
                 </label>
-                <select
-                  className="h-9 w-full rounded-md border px-2 text-sm"
-                  style={{
-                    borderColor: 'var(--color-border)',
-                    backgroundColor: 'var(--color-background-surface)',
-                    color: 'var(--color-text-primary)',
-                  }}
+                <SelectField
                   value={form.periode}
-                  onChange={(e) => setForm((f) => ({ ...f, periode: e.target.value as 'monthly' | 'yearly' }))}
-                >
-                  <option value="monthly">{t('subscriptions_mensuel')}</option>
-                  <option value="yearly">{t('subscriptions_annuel')}</option>
-                </select>
+                  onChange={(val) => setForm((f) => ({ ...f, periode: val as 'monthly' | 'yearly' }))}
+                  options={[
+                    { value: 'monthly', label: t('subscriptions_mensuel') },
+                    { value: 'yearly', label: t('subscriptions_annuel') },
+                  ]}
+                />
               </div>
             </FieldGrid>
           </ModalSection>

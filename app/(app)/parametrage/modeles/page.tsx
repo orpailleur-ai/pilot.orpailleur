@@ -10,6 +10,7 @@ import { libelleDetail, libelleScope } from '@/lib/i18n/scopes'
 import { PageHeader } from '@/components/layout/page-header'
 import { InlineError } from '@/components/ui/inline-error'
 import { TableSkeleton } from '@/components/ui/table-skeleton'
+import { SelectField } from '@/components/ui/select-field'
 
 /**
  * Configuration des modèles IA.
@@ -541,36 +542,20 @@ function Formulaire({
       }}
     >
       <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-        <Champ label={t('ai_models_scope')}>
-          <select
-            value={String(v['scope'])}
-            disabled={Boolean(initial.id)}
-            onChange={(e) => set('scope', e.target.value)}
-            className="w-full rounded border px-2 py-1.5 text-sm"
-            style={champStyle()}
-          >
-            {scopes.map((s) => (
-              <option key={s.code} value={s.code}>
-                {libelleScope(s.code, t)} ({s.code})
-              </option>
-            ))}
-          </select>
-        </Champ>
+        <SelectField
+          label={t('ai_models_scope')}
+          value={String(v['scope'])}
+          onChange={(val) => set('scope', val)}
+          isDisabled={Boolean(initial.id)}
+          options={scopes.map((s) => ({ value: s.code, label: `${libelleScope(s.code, t)} (${s.code})` }))}
+        />
 
-        <Champ label={t('ai_models_provider')}>
-          <select
-            value={String(v['provider'])}
-            onChange={(e) => set('provider', e.target.value)}
-            className="w-full rounded border px-2 py-1.5 text-sm"
-            style={champStyle()}
-          >
-            {FOURNISSEURS.map((p) => (
-              <option key={p} value={p}>
-                {p}
-              </option>
-            ))}
-          </select>
-        </Champ>
+        <SelectField
+          label={t('ai_models_provider')}
+          value={String(v['provider'])}
+          onChange={(val) => set('provider', val)}
+          options={FOURNISSEURS.map((p) => ({ value: p, label: p }))}
+        />
 
         <Champ label={t('ai_models_model')}>
           <input

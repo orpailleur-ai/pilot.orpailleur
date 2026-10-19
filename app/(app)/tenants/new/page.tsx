@@ -20,6 +20,7 @@ import {
 import { useI18n } from '@/lib/i18n'
 import { Spinner } from '@/components/ui/spinner'
 import { InlineError } from '@/components/ui/inline-error'
+import { SelectField } from '@/components/ui/select-field'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -380,23 +381,15 @@ function UserStepForm({
               >
                 {t('role_label')}
               </label>
-              <select
+              <SelectField
+                label=""
                 value={data.roleId}
-                onChange={(e) => onChange({ ...data, roleId: e.target.value })}
-                className="w-full rounded-lg border px-3 py-2 text-sm"
-                style={{
-                  backgroundColor: 'var(--color-background-surface)',
-                  borderColor: 'var(--color-border)',
-                  color: 'var(--color-text-primary)',
-                }}
-              >
-                <option value="">{t('role_select')}</option>
-                {roles.map((r) => (
-                  <option key={r.id} value={r.id}>
-                    {r.label ?? r.code}
-                  </option>
-                ))}
-              </select>
+                onChange={(val) => onChange({ ...data, roleId: val })}
+                options={[
+                  { value: '', label: t('role_select') },
+                  ...roles.map((r) => ({ value: r.id, label: r.label ?? r.code })),
+                ]}
+              />
             </div>
           )}
         </FieldGrid>

@@ -10,6 +10,7 @@ import { DataTable, type Column } from '@/components/ui/data-table'
 import { EmptyState } from '@/components/ui/empty-state'
 import { InlineError } from '@/components/ui/inline-error'
 import { Spinner } from '@/components/ui/spinner'
+import { SelectField } from '@/components/ui/select-field'
 import { useAuth } from '@/components/providers/auth-context'
 
 const ACTION_LABELS: Record<string, string> = {
@@ -205,23 +206,16 @@ export default function AuditPage() {
         </div>
 
         {/* Action filter */}
-        <select
+        <SelectField
+          label=""
           value={actionFilter}
-          onChange={(e) => setActionFilter(e.target.value)}
-          className="rounded-lg border px-3 py-1.5 text-sm"
-          style={{
-            backgroundColor: 'var(--color-background-surface)',
-            borderColor: 'var(--color-border)',
-            color: 'var(--color-text-primary)',
-          }}
-        >
-          <option value="">{t('all_actions')}</option>
-          {KNOWN_ACTIONS.map((a) => (
-            <option key={a} value={a}>
-              {ACTION_LABELS[a]}
-            </option>
-          ))}
-        </select>
+          onChange={setActionFilter}
+          options={[
+            { value: '', label: t('all_actions') },
+            ...KNOWN_ACTIONS.map((a) => ({ value: a, label: ACTION_LABELS[a] })),
+          ]}
+          width="auto"
+        />
 
         {/* User ID filter */}
         <input
