@@ -240,8 +240,8 @@ export default function ModelesPage() {
         <button
           type="button"
           onClick={() => setEdition({ provider: 'mistral' })}
-          className="mb-4 inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium"
-          style={{ backgroundColor: 'var(--color-accent)', color: 'var(--color-on-accent)' }}
+          className="mb-4 inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2"
+          style={{ backgroundColor: 'var(--color-accent)', color: 'var(--color-on-accent)', outline: 'none' }}
         >
           <Plus size={15} />
           {t('ai_models_add')}
@@ -409,11 +409,13 @@ function Ligne({
           type="button"
           onClick={onTester}
           disabled={test?.enCours === true}
-          className="inline-flex items-center gap-1 rounded px-2 py-1 text-xs font-medium disabled:opacity-60"
+          aria-label={t('ai_models_test_hint')}
+          className="inline-flex items-center gap-1 rounded px-2 py-1 text-xs font-medium disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2"
           style={{
-            color: test?.resultat?.ok ? 'var(--color-success)'
-              : test?.resultat ? 'var(--color-danger)' : 'var(--color-text-secondary)',
+            color: test?.resultat?.ok ? 'var(--color-success-text)'
+              : test?.resultat ? 'var(--color-danger-text)' : 'var(--color-text-secondary)',
             border: '1px solid var(--color-border)',
+            outline: 'none',
           }}
           title={test?.resultat?.message ?? t('ai_models_test_hint')}
         >
@@ -435,10 +437,12 @@ function Ligne({
         <button
           type="button"
           onClick={onBasculer}
-          className="rounded px-2 py-1 text-xs font-medium"
+          aria-label={m.actif ? t('ai_models_active') : t('ai_models_activate')}
+          className="rounded px-2 py-1 text-xs font-medium focus-visible:outline-2 focus-visible:outline-offset-2"
           style={{
-            color: m.actif ? 'var(--color-success)' : 'var(--color-text-secondary)',
+            color: m.actif ? 'var(--color-success-text)' : 'var(--color-text-secondary)',
             border: '1px solid var(--color-border)',
+            outline: 'none',
           }}
         >
           {m.actif ? (
@@ -462,8 +466,8 @@ function Ligne({
           type="button"
           onClick={onEditer}
           aria-label={t('edit')}
-          className="rounded p-1"
-          style={{ color: 'var(--color-text-secondary)' }}
+          className="rounded p-1 focus-visible:outline-2 focus-visible:outline-offset-2"
+          style={{ color: 'var(--color-text-secondary)', outline: 'none' }}
         >
           <Pencil size={14} />
         </button>
@@ -471,8 +475,8 @@ function Ligne({
           type="button"
           onClick={onSupprimer}
           aria-label={t('delete')}
-          className="rounded p-1"
-          style={{ color: 'var(--color-text-secondary)' }}
+          className="rounded p-1 focus-visible:outline-2 focus-visible:outline-offset-2"
+          style={{ color: 'var(--color-text-secondary)', outline: 'none' }}
         >
           <Trash2 size={14} />
         </button>
@@ -657,16 +661,16 @@ function Formulaire({
         <button
           type="button"
           onClick={onCancel}
-          className="rounded-lg border px-3 py-1.5 text-sm"
-          style={champStyle()}
+          className="rounded-lg border px-3 py-1.5 text-sm focus-visible:outline-2 focus-visible:outline-offset-2"
+          style={{ ...champStyle(), outline: 'none' }}
         >
           {t('cancel')}
         </button>
         <button
           type="submit"
           disabled={enregistrement}
-          className="rounded-lg px-3 py-1.5 text-sm font-medium"
-          style={{ backgroundColor: 'var(--color-accent)', color: 'var(--color-on-accent)' }}
+          className="rounded-lg px-3 py-1.5 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2"
+          style={{ backgroundColor: 'var(--color-accent)', color: 'var(--color-on-accent)', outline: 'none' }}
         >
           {enregistrement ? t('loading') : t('save')}
         </button>
