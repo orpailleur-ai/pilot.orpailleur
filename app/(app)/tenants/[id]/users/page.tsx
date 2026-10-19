@@ -162,7 +162,7 @@ export default function TenantUsersPage() {
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <>
       <PageHeader
         title={t('tenant_users', 'Utilisateurs')}
         action={
@@ -261,6 +261,6 @@ export default function TenantUsersPage() {
           </div>
         </form>
       </Modal>
-    </div>
+    </>
   )
 }

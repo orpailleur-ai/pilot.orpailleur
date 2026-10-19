@@ -125,13 +125,13 @@ export default function PdfTemplateDetailPage() {
 
   if (dataError || !instance) {
     return (
-      <div className="flex flex-col gap-4">
+      <>
         <PageHeader
           title={t('pdf_templates_title')}
           backHref="/parametrage/pdf-templates"
         />
         <InlineError message={dataError || t('error')} />
-      </div>
+      </>
     )
   }
 

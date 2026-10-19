@@ -65,7 +65,7 @@ export default function PlanNewPage() {
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <>
       <PageHeader title={t('plan_new')} backHref="/plans" />
 
       <PermissionGate permission="BILLING_WRITE">
@@ -196,6 +196,6 @@ export default function PlanNewPage() {
           </div>
         </form>
       </PermissionGate>
-    </div>
+    </>
   )
 }

@@ -130,7 +130,7 @@ export default function InvoicesPage() {
   if (loading) return <div className="flex justify-center py-16"><Spinner size={8} /></div>
 
   return (
-    <div className="flex flex-col gap-5">
+    <>
       <PageHeader
         title={t('invoices', 'Factures')}
         subtitle={`${filtered.length} facture${filtered.length !== 1 ? 's' : ''}`}
@@ -307,6 +307,6 @@ export default function InvoicesPage() {
           </div>
         )}
       </Modal>
-    </div>
+    </>
   )
 }

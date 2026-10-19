@@ -65,7 +65,7 @@ export default function TenantDangerPage() {
   if (!tenant) return null
 
   return (
-    <div className="flex flex-col gap-4">
+    <>
       <PageHeader
         title={t('danger_zone', 'Zone danger')}
         icon={<AlertTriangle size={20} style={{ color: 'var(--color-danger)' }} />}
@@ -192,6 +192,6 @@ export default function TenantDangerPage() {
         onConfirm={handleDelete}
         isLoading={deleting}
       />
-    </div>
+    </>
   )
 }

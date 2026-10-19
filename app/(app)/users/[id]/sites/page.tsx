@@ -189,7 +189,7 @@ export default function UserSitesPage() {
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <>
       <PageHeader
         title={t('user_sites')}
         action={
@@ -272,6 +272,6 @@ export default function UserSitesPage() {
         onConfirm={handleRemoveSite}
         isLoading={removing !== null}
       />
-    </div>
+    </>
   )
 }

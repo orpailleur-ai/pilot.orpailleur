@@ -124,7 +124,7 @@ export default function RolePermissionsPage() {
   }
 
   return (
-    <div className="flex flex-col gap-5">
+    <>
       <PageHeader
         title={role.label}
         icon={<Lock size={20} style={{ color: 'var(--color-text-primary)' }} />}
@@ -261,6 +261,6 @@ export default function RolePermissionsPage() {
         onConfirm={handleDelete}
         isLoading={deleting}
       />
-    </div>
+    </>
   )
 }

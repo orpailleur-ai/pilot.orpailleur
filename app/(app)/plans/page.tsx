@@ -54,7 +54,7 @@ export default function PlansPage() {
   )
 
   return (
-    <div className="space-y-6">
+    <>
       <PageHeader
         title={t('plans_title', 'Plans')}
         subtitle={t('plans_count', { n: planList.length })}
@@ -76,7 +76,7 @@ export default function PlansPage() {
           ))}
         </div>
       )}
-    </div>
+    </>
   )
 }
 

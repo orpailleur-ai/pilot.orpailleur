@@ -199,7 +199,7 @@ export default function TenantSubscriptionPage() {
   if (loading) return <div className="flex justify-center py-16"><Spinner size={8} /></div>
 
   return (
-    <div className="flex flex-col gap-4">
+    <>
       <PageHeader
         title={t('subscription_tab', 'Abonnement')}
         action={
@@ -302,6 +302,6 @@ export default function TenantSubscriptionPage() {
         onConfirm={handleCancel}
         isLoading={false}
       />
-    </div>
+    </>
   )
 }

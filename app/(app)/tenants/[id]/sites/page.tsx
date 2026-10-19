@@ -211,7 +211,7 @@ export default function TenantSitesPage() {
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <>
       <PageHeader
         title={t('tenant_sites', 'Sites')}
         action={
@@ -483,6 +483,6 @@ export default function TenantSitesPage() {
         onConfirm={handleDelete}
         isLoading={deleting !== null}
       />
-    </div>
+    </>
   )
 }

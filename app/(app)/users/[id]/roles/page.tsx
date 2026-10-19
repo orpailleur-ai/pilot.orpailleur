@@ -190,7 +190,7 @@ export default function UserRolesPage() {
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <>
       <PageHeader
         title={t('user_roles')}
         action={
@@ -276,6 +276,6 @@ export default function UserRolesPage() {
         onConfirm={handleRemoveAssignment}
         isLoading={removing !== null}
       />
-    </div>
+    </>
   )
 }

@@ -173,7 +173,7 @@ export default function ModeleDetailPage() {
   const title = libelleDetail(modele.scope, t)
 
   return (
-    <div className="flex flex-col gap-5">
+    <>
       <PageHeader title={title} backHref="/parametrage/modeles" badge={scopeBadge} />
 
       {/* ── Identité ── */}
@@ -338,7 +338,7 @@ export default function ModeleDetailPage() {
           </ol>
         )}
       </section>
-    </div>
+    </>
   )
 }
 

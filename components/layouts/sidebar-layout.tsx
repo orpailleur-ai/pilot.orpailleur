@@ -40,7 +40,7 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
             Le plafond reste, malgre la demande de retrait des marges : sans
             lui, les tableaux deviennent des lignes interminable sur un tres
             large écran. Console porte la meme borne pour la meme raison. */}
-          mx-auto w-full max-w-[1800px] px-4 py-4 sm:px-6 sm:px-5">
+          mx-auto w-full max-w-[1800px] px-4 py-4 sm:px-6 sm:px-5 flex flex-col gap-6">
             {children}
           </div>
         </main>

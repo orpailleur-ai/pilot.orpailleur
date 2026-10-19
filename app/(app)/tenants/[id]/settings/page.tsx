@@ -103,11 +103,13 @@ export default function TenantSettingsPage() {
   if (!tenant) return null
 
   return (
-    <form onSubmit={handleSave} className="flex flex-col gap-6">
+    <>
       <PageHeader
         title={t('tenant_settings', 'Paramètres du tenant')}
         icon={<Settings size={20} style={{ color: 'var(--color-text-primary)' }} />}
       />
+
+      <form onSubmit={handleSave} className="flex flex-col gap-6">
 
       {/* Identity */}
       <div
@@ -228,5 +230,6 @@ export default function TenantSettingsPage() {
         isLoading={deleting}
       />
     </form>
+    </>
   )
 }

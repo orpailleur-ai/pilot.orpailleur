@@ -228,7 +228,7 @@ export default function TenantInvoicesPage() {
   if (loading) return <div className="flex justify-center py-16"><Spinner size={8} /></div>
 
   return (
-    <div className="flex flex-col gap-4">
+    <>
       <PageHeader
         title={t('tenant_invoices', 'Factures')}
         icon={<FileText size={20} style={{ color: 'var(--color-text-primary)' }} />}
@@ -289,6 +289,6 @@ export default function TenantInvoicesPage() {
           </div>
         )}
       </Modal>
-    </div>
+    </>
   )
 }

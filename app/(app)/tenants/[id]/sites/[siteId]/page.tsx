@@ -122,7 +122,7 @@ export default function SiteDetailPage() {
   const closeDay = JOURS[(site.jour_fermeture - 1) % 7] ?? String(site.jour_fermeture)
 
   return (
-    <div className="flex flex-col gap-4">
+    <>
       <PageHeader
         title={site.nom}
         backHref={`/tenants/${tenantId}/sites`}
@@ -336,6 +336,6 @@ export default function SiteDetailPage() {
         onConfirm={handleDelete}
         isLoading={deleting}
       />
-    </div>
+    </>
   )
 }

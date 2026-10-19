@@ -272,7 +272,7 @@ export default function TenantsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <>
       <PageHeader
         title={t('tenants')}
         subtitle={t('audit_log_count', { n: tenants.length })}
@@ -413,6 +413,6 @@ export default function TenantsPage() {
         onConfirm={handleDelete}
         isLoading={deleting !== null}
       />
-    </div>
+    </>
   )
 }

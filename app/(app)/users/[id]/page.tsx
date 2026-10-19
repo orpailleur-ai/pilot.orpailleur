@@ -96,11 +96,13 @@ export default function UserProfilePage() {
   })
 
   return (
-    <form onSubmit={handleSave} className="flex flex-col gap-5">
+    <>
       <PageHeader
         title={user ? `${user.prenom} ${user.nom}` : t('user_profile')}
         icon={<ShieldCheck size={20} style={{ color: 'var(--color-text-primary)' }} />}
       />
+
+      <form onSubmit={handleSave}>
 
       {/* ── Avatar ── */}
       <div
@@ -321,5 +323,6 @@ export default function UserProfilePage() {
         </div>
       </PermissionGate>
     </form>
+    </>
   )
 }

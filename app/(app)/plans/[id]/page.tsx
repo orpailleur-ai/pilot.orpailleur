@@ -109,7 +109,7 @@ export default function PlanDetailPage() {
   )
 
   return (
-    <div className="flex flex-col gap-6">
+    <>
       <PageHeader title={plan.nom} backHref="/plans" badge={codeBadge} />
 
       <form onSubmit={handleSave} className="flex flex-col gap-5 max-w-lg">
@@ -227,6 +227,6 @@ export default function PlanDetailPage() {
         onConfirm={handleDelete}
         isLoading={deleting}
       />
-    </div>
+    </>
   )
 }

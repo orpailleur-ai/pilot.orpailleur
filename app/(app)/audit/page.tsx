@@ -181,7 +181,7 @@ export default function AuditPage() {
   ]
 
   return (
-    <div className="space-y-6">
+    <>
       <PageHeader
         title={t('audit')}
         subtitle={t('audit_log_count', { n: total })}
@@ -290,6 +290,6 @@ export default function AuditPage() {
           )}
         </>
       )}
-    </div>
+    </>
   )
 }

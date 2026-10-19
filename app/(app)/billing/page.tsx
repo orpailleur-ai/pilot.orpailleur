@@ -162,7 +162,7 @@ export default function BillingPage() {
   if (error) return <InlineError message={error} />
 
   return (
-    <div className="flex flex-col gap-6">
+    <>
       {/* Header */}
       <PageHeader
         title={t('billing', 'Facturation')}
@@ -415,6 +415,6 @@ export default function BillingPage() {
           )}
         </div>
       </div>
-    </div>
+    </>
   )
 }

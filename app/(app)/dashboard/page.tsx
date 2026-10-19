@@ -37,7 +37,7 @@ export default function DashboardPage() {
   const arpu = stats.tenants_actifs > 0 ? Math.round(mrr / stats.tenants_actifs) : 0
 
   return (
-    <div className="flex flex-col gap-6">
+    <>
       <PageHeader
         title={t('dashboard', 'Tableau de bord')}
         icon={<TrendingUp size={20} style={{ color: 'var(--color-text-primary)' }} />}
@@ -139,7 +139,7 @@ export default function DashboardPage() {
         </h2>
         <RecentSignups tenants={stats.recent_signups} />
       </div>
-    </div>
+    </>
   )
 }
 
