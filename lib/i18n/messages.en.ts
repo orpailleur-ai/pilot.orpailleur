@@ -332,6 +332,8 @@ export const en = {
 
   // Common fields
   name: 'Name',
+  action_download_pdf: 'Download PDF',
+  action_generate_pdf: 'Generate PDF',
   contact: 'Contact',
   phone: 'Phone',
   status: 'Status',
@@ -370,10 +372,13 @@ export const en = {
   subs_active: 'Active subscriptions',
   subs_active_hint: 'No payment issues',
   subs_past_due: 'Payment overdue',
+  subs_past_due_short: 'Overdue',
   subs_past_due_hint: 'Needs follow-up',
   subs_canceled: 'Canceled',
+  subs_canceled_short: 'Canceled',
   subs_canceled_hint: 'Monitored',
   subs_expired: 'Expired',
+  subs_expired_short: 'Expired',
   no_active_subs: 'No active subscriptions',
   overdue_invoices: 'Overdue invoices',
   no_overdue: 'No overdue invoices',

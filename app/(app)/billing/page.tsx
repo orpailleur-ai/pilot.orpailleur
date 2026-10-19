@@ -8,7 +8,6 @@ import {
   CheckCircle2,
   XCircle,
   Clock,
-  Receipt,
   ArrowUpRight,
   ArrowDownRight,
   Download,
@@ -30,7 +29,6 @@ import { InlineError } from '@/components/ui/inline-error'
 import { PageHeader } from '@/components/layout/page-header'
 import { KpiCard } from '@/components/composite/kpi-card'
 import { DataTable, type Column } from '@/components/ui/data-table'
-import { useRouter } from 'next/navigation'
 import { useToast } from '@astryxdesign/core'
 
 function formatEUR(cents: number): string {
@@ -49,17 +47,17 @@ function formatDate(iso: string): string {
   }).format(new Date(iso))
 }
 
-const STATUT_LABELS: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
-  active: { label: 'Actif', color: 'var(--color-success)', icon: <CheckCircle2 size={14} /> },
-  past_due: { label: 'En retard', color: 'var(--color-warning)', icon: <AlertTriangle size={14} /> },
-  canceled: { label: 'Annulé', color: 'var(--color-danger)', icon: <XCircle size={14} /> },
-  expired: { label: 'Expiré', color: 'var(--color-text-secondary)', icon: <Clock size={14} /> },
-}
-
 export default function BillingPage() {
   const { t } = useI18n()
-  const router = useRouter()
   const toast = useToast()
+
+  const STATUT_LABELS: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
+    active: { label: t('active'), color: 'var(--color-success)', icon: <CheckCircle2 size={14} /> },
+    past_due: { label: t('subs_past_due_short', 'En retard'), color: 'var(--color-warning)', icon: <AlertTriangle size={14} /> },
+    canceled: { label: t('subs_canceled_short', 'Annulé'), color: 'var(--color-danger)', icon: <XCircle size={14} /> },
+    expired: { label: t('subs_expired_short', 'Expiré'), color: 'var(--color-text-secondary)', icon: <Clock size={14} /> },
+  }
+
   const [subs, setSubs] = useState<Subscription[]>([])
   const [plans, setPlans] = useState<Plan[]>([])
   const [tenants, setTenants] = useState<{ id: string; nom: string }[]>([])
@@ -81,7 +79,7 @@ export default function BillingPage() {
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
-    } catch {
+    } catch (err) {
       toast({ body: t('pdf_download_error'), type: 'error' })
     }
   }
@@ -95,8 +93,8 @@ export default function BillingPage() {
         const updated = await invoices.list(undefined, 'past_due')
         setOverdueInvoices(updated)
       }, 3000)
-    } catch {
-      toast({ body: t('pdf_generate_error'), type: 'error' })
+    } catch (err) {
+      toast({ body: err instanceof Error ? err.message : t('pdf_generate_error'), type: 'error' })
     } finally {
       setGeneratingId(null)
     }
@@ -315,7 +313,7 @@ export default function BillingPage() {
                       <button
                         onClick={() => handleDownload(inv)}
                         className="flex items-center justify-center rounded p-1 transition-colors hover:bg-black/5"
-                        title="Télécharger le PDF"
+                        title={t('action_download_pdf')}
                         style={{ color: 'var(--color-text-secondary)' }}
                       >
                         <Download size={14} />
@@ -325,7 +323,7 @@ export default function BillingPage() {
                         onClick={() => handleGeneratePdf(inv)}
                         disabled={generatingId === inv.id}
                         className="flex items-center justify-center rounded p-1 transition-colors hover:bg-black/5 disabled:opacity-50"
-                        title="Générer le PDF"
+                        title={t('action_generate_pdf')}
                         style={{ color: 'var(--color-text-secondary)' }}
                       >
                         {generatingId === inv.id ? (
