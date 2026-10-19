@@ -10,6 +10,8 @@ import {
   ReceiptText,
   Cpu,
   Settings,
+  Mail,
+  BarChart3,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -61,6 +63,17 @@ export const APPS: AppDefinition[] = [
       // boulangerie.
       { href: '/parametrage/modeles', labelKey: 'ai_models_nav', icon: Cpu },
       { href: '/parametrage/pdf-templates', labelKey: 'pdf_templates_nav', icon: FileText },
+      { href: '/parametrage/email', labelKey: 'email_smtp_nav', icon: Mail },
+      { href: '/parametrage/email-templates', labelKey: 'email_templates_nav', icon: FileText },
+    ],
+  },
+  {
+    id: 'email',
+    labelKey: 'app_email',
+    icon: Mail,
+    color: 'var(--color-text-secondary)',
+    pages: [
+      { href: '/email/stats', labelKey: 'email_stats_nav', icon: BarChart3 },
     ],
   },
   {
