@@ -9,6 +9,7 @@ import { FieldGrid } from '@/components/ui/modal'
 import { Spinner } from '@/components/ui/spinner'
 import { InlineError } from '@/components/ui/inline-error'
 import { ConfirmDialog } from '@/components/composite/confirm-dialog'
+import { PermissionGate } from '@/components/composite/permission-gate'
 import { plans, type Plan } from '@/lib/api-client'
 import { useI18n } from '@/lib/i18n'
 import { PageHeader } from '@/components/layout/page-header'
@@ -98,7 +99,10 @@ export default function PlanDetailPage() {
   if (fetchError || !plan) return <InlineError message={fetchError ?? t('plan_not_found')} />
 
   const codeBadge = (
-    <span className="font-mono text-xs rounded px-1.5 py-0.5" style={{ backgroundColor: 'color-mix(in srgb, var(--color-accent) 8%, transparent)', color: 'var(--color-accent)' }}>
+    <span
+      className="font-mono text-xs rounded px-1.5 py-0.5"
+      style={{ backgroundColor: 'color-mix(in srgb, var(--color-accent) 8%, transparent)', color: 'var(--color-accent)' }}
+    >
       {plan.code}
     </span>
   )
@@ -108,20 +112,44 @@ export default function PlanDetailPage() {
       <PageHeader title={plan.nom} backHref="/plans" badge={codeBadge} />
 
       <form onSubmit={handleSave} className="flex flex-col gap-5 max-w-lg">
-        <div className="rounded-lg border p-5 space-y-4" style={{ backgroundColor: 'var(--color-background-surface)', borderColor: 'var(--color-border)' }}>
-          <h2 className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>Identité</h2>
+        {/* Identity */}
+        <div
+          className="rounded-lg border p-5 space-y-4"
+          style={{ backgroundColor: 'var(--color-background-surface)', borderColor: 'var(--color-border)' }}
+        >
+          <h2 className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+            {t('plan_identity')}
+          </h2>
           <FieldGrid columns={2}>
-            <TextInput label="Code" value={plan.code} isRequired width="100%" isDisabled />
-            <TextInput label="Nom" value={form.nom} onChange={(v) => setForm((f) => ({ ...f, nom: v }))} isRequired width="100%" />
+            <TextInput label={t('plan_code')} value={plan.code} isRequired width="100%" isDisabled />
+            <TextInput label={t('plan_name')} value={form.nom} onChange={(v) => setForm((f) => ({ ...f, nom: v }))} isRequired width="100%" />
           </FieldGrid>
-          <TextInput label="Description" value={form.description} onChange={(v) => setForm((f) => ({ ...f, description: v }))} width="100%" />
+          <TextInput label={t('plan_description')} value={form.description} onChange={(v) => setForm((f) => ({ ...f, description: v }))} width="100%" />
         </div>
 
-        <div className="rounded-lg border p-5 space-y-4" style={{ backgroundColor: 'var(--color-background-surface)', borderColor: 'var(--color-border)' }}>
-          <h2 className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>Tarification</h2>
+        {/* Pricing */}
+        <div
+          className="rounded-lg border p-5 space-y-4"
+          style={{ backgroundColor: 'var(--color-background-surface)', borderColor: 'var(--color-border)' }}
+        >
+          <h2 className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+            {t('plan_pricing')}
+          </h2>
           <FieldGrid columns={2}>
-            <TextInput label="Prix mensuel (centimes)" type="text" value={form.prixMensuelCents} onChange={(v) => setForm((f) => ({ ...f, prixMensuelCents: v }))} width="100%" />
-            <TextInput label="Prix annuel (centimes)" type="text" value={form.prixAnnuelCents} onChange={(v) => setForm((f) => ({ ...f, prixAnnuelCents: v }))} width="100%" />
+            <TextInput
+              label={t('plan_price_monthly')}
+              type="text"
+              value={form.prixMensuelCents}
+              onChange={(v) => setForm((f) => ({ ...f, prixMensuelCents: v }))}
+              width="100%"
+            />
+            <TextInput
+              label={t('plan_price_yearly')}
+              type="text"
+              value={form.prixAnnuelCents}
+              onChange={(v) => setForm((f) => ({ ...f, prixAnnuelCents: v }))}
+              width="100%"
+            />
           </FieldGrid>
           <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
             {formatPrice(parseInt(form.prixMensuelCents) || 0)}/mois ·{' '}
@@ -129,16 +157,43 @@ export default function PlanDetailPage() {
           </p>
         </div>
 
-        <div className="rounded-lg border p-5 space-y-4" style={{ backgroundColor: 'var(--color-background-surface)', borderColor: 'var(--color-border)' }}>
-          <h2 className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>Limites</h2>
+        {/* Limits */}
+        <div
+          className="rounded-lg border p-5 space-y-4"
+          style={{ backgroundColor: 'var(--color-background-surface)', borderColor: 'var(--color-border)' }}
+        >
+          <h2 className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+            {t('plan_limits')}
+          </h2>
           <FieldGrid columns={2}>
-            <TextInput label="Nb sites max" type="text" value={form.nbSitesMax} onChange={(v) => setForm((f) => ({ ...f, nbSitesMax: v }))} width="100%" />
-            <TextInput label="Nb utilisateurs max" type="text" value={form.nbUsersMax} onChange={(v) => setForm((f) => ({ ...f, nbUsersMax: v }))} width="100%" />
+            <TextInput
+              label={t('plan_nb_sites_max')}
+              type="text"
+              value={form.nbSitesMax}
+              onChange={(v) => setForm((f) => ({ ...f, nbSitesMax: v }))}
+              width="100%"
+            />
+            <TextInput
+              label={t('plan_nb_users_max')}
+              type="text"
+              value={form.nbUsersMax}
+              onChange={(v) => setForm((f) => ({ ...f, nbUsersMax: v }))}
+              width="100%"
+            />
           </FieldGrid>
+          <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+            {t('plan_nb_hint')}
+          </p>
         </div>
 
-        <div className="rounded-lg border p-5 space-y-4" style={{ backgroundColor: 'var(--color-background-surface)', borderColor: 'var(--color-border)' }}>
-          <h2 className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>Fonctionnalités</h2>
+        {/* Features */}
+        <div
+          className="rounded-lg border p-5 space-y-4"
+          style={{ backgroundColor: 'var(--color-background-surface)', borderColor: 'var(--color-border)' }}
+        >
+          <h2 className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+            {t('plan_features')}
+          </h2>
           <textarea
             className="w-full rounded-md border px-3 py-2 text-sm"
             style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-background-surface)', color: 'var(--color-text-primary)' }}
@@ -148,18 +203,25 @@ export default function PlanDetailPage() {
           />
         </div>
 
-        <div className="flex items-center justify-between">
-          <Button variant="destructive" label="Supprimer le plan" onClick={() => setShowDeleteConfirm(true)} />
-          <Button variant="primary" label="Enregistrer" type="submit" isLoading={saving} />
-        </div>
+        {/* Actions */}
+        <PermissionGate permission="BILLING_WRITE">
+          <div className="flex items-center justify-between">
+            <Button
+              variant="destructive"
+              label={t('plan_delete')}
+              onClick={() => setShowDeleteConfirm(true)}
+            />
+            <Button variant="primary" label={t('save')} type="submit" isLoading={saving} />
+          </div>
+        </PermissionGate>
       </form>
 
       <ConfirmDialog
         isOpen={showDeleteConfirm}
         onOpenChange={(open) => { if (!open) setShowDeleteConfirm(false) }}
-        title="Supprimer ce plan ?"
-        description="Cette action est irréversible. Tous les tenants utilisant ce plan devront être réassignés."
-        confirmLabel="Supprimer"
+        title={t('plan_delete_confirm')}
+        description={t('plan_delete_description')}
+        confirmLabel={t('delete')}
         confirmVariant="destructive"
         onConfirm={handleDelete}
         isLoading={deleting}

@@ -1,12 +1,14 @@
 'use client'
 
 import { Fragment, useState, useEffect, useMemo } from 'react'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import { Lock } from 'lucide-react'
 import { Button, useToast } from '@astryxdesign/core'
 import { Spinner } from '@/components/ui/spinner'
 import { PageHeader } from '@/components/layout/page-header'
 import { InlineError } from '@/components/ui/inline-error'
+import { ConfirmDialog } from '@/components/composite/confirm-dialog'
+import { PermissionGate } from '@/components/composite/permission-gate'
 import { roles, type Role, type Permission } from '@/lib/api-client'
 import { useI18n } from '@/lib/i18n'
 
@@ -24,6 +26,7 @@ const MODULE_ORDER = [
 
 export default function RolePermissionsPage() {
   const params = useParams()
+  const router = useRouter()
   const roleId = params.id as string
   const { t } = useI18n()
   const toast = useToast()
@@ -34,6 +37,8 @@ export default function RolePermissionsPage() {
   const [loading, setLoading] = useState(true)
   const [fetchError, setFetchError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
+  const [showDelete, setShowDelete] = useState(false)
+  const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
     load()
@@ -84,6 +89,19 @@ export default function RolePermissionsPage() {
     }
   }
 
+  async function handleDelete() {
+    setDeleting(true)
+    try {
+      await roles.delete(roleId)
+      router.push('/roles')
+      toast({ body: t('role_deleted', 'Rôle supprimé'), type: 'info' })
+    } catch (err) {
+      toast({ body: err instanceof Error ? err.message : t('error'), type: 'error' })
+    } finally {
+      setDeleting(false)
+    }
+  }
+
   const grouped = useMemo(() => {
     const map = new Map<string, Permission[]>()
     for (const perm of allPermissions) {
@@ -122,7 +140,7 @@ export default function RolePermissionsPage() {
           }}
         >
           <Lock size={14} style={{ color: 'var(--color-warning)' }} />
-          Les rôles système ne peuvent pas être modifiés.
+          {t('role_system_locked')}
         </div>
       )}
 
@@ -134,34 +152,24 @@ export default function RolePermissionsPage() {
                 className="border-b px-4 py-3 text-left font-semibold"
                 style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
               >
-                Module
+                {t('role_permission_module', 'Module')}
               </th>
               <th
                 className="border-b px-4 py-3 text-left font-semibold"
                 style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
               >
-                Permission
+                {t('role_permission_label', 'Permission')}
               </th>
               <th
                 className="border-b px-4 py-3 text-center font-semibold"
                 style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-primary)' }}
               >
-                Accordée
+                {t('role_permission_granted', 'Accordée')}
               </th>
             </tr>
           </thead>
           <tbody>
             {grouped.map(([module, perms]) => (
-              /*
-               * `key` sur le FRAGMENT, pas sur un `<tr>` intérieur.
-               *
-               * La version précédente posait la clé sur la ligne d'en-tête du
-               * groupe, à l'intérieur d'un `<>` nu : React ignore la clé d'un
-               * enfant quand le parent direct n'en a pas. Résultat, un
-               * warning « each child in a list should have a unique key », et
-               * un ré-affichage qui peut.attacher la mauvaise ligne au mauvais
-               * module après un changement d'état.
-               */
               <Fragment key={module}>
                 <tr>
                   <td
@@ -173,7 +181,7 @@ export default function RolePermissionsPage() {
                       color: 'var(--color-accent)',
                     }}
                   >
-                    {module.replace(/_/g, ' ')}
+                    {t(`module_${module}` as any, module.replace(/_/g, ' '))}
                   </td>
                 </tr>
                 {perms.map((perm) => {
@@ -221,16 +229,38 @@ export default function RolePermissionsPage() {
         </table>
       </div>
 
-      {!role.isSystem && dirty && (
-        <div className="flex justify-end">
-          <Button
-            variant="primary"
-            label={saving ? 'Enregistrement…' : 'Enregistrer les permissions'}
-            onClick={handleSave}
-            isLoading={saving}
-          />
-        </div>
-      )}
+      <div className="flex items-center justify-between">
+        <PermissionGate permission="USER_WRITE">
+          {!role.isSystem && (
+            <Button
+              variant="destructive"
+              label={t('role_delete')}
+              onClick={() => setShowDelete(true)}
+            />
+          )}
+        </PermissionGate>
+        {!role.isSystem && dirty && (
+          <PermissionGate permission="USER_WRITE">
+            <Button
+              variant="primary"
+              label={saving ? t('saving') : t('role_save_permissions')}
+              onClick={handleSave}
+              isLoading={saving}
+            />
+          </PermissionGate>
+        )}
+      </div>
+
+      <ConfirmDialog
+        isOpen={showDelete}
+        onOpenChange={setShowDelete}
+        title={t('role_delete_confirm')}
+        description={t('role_delete_description')}
+        confirmLabel={t('delete')}
+        confirmVariant="destructive"
+        onConfirm={handleDelete}
+        isLoading={deleting}
+      />
     </div>
   )
 }
