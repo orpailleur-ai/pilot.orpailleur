@@ -227,6 +227,7 @@ export const en = {
   site_address: 'Address',
   site_postal: 'Postal code',
   site_city: 'City',
+  site_active: 'Active',
   site_phone: 'Phone',
   site_hours: 'Hours',
   site_open_day: 'Opening day (1=Mon, 7=Sun)',

@@ -39,6 +39,7 @@ export default function TenantSitesPage() {
     telephone: '',
     jour_ouverture: 7,
     jour_fermeture: 19,
+    actif: true,
   })
 
   useEffect(() => {
@@ -65,7 +66,7 @@ export default function TenantSitesPage() {
     try {
       await sites.create(tenantId, form)
       setShowCreate(false)
-      setForm({ nom: '', adresse: '', ville: '', code_postal: '', telephone: '', jour_ouverture: 7, jour_fermeture: 19 })
+      setForm({ nom: '', adresse: '', ville: '', code_postal: '', telephone: '', jour_ouverture: 7, jour_fermeture: 19, actif: true })
       fetchSites()
       toast({ body: t('site_created'), type: 'info' })
     } catch (err) {
@@ -82,7 +83,7 @@ export default function TenantSitesPage() {
     try {
       await sites.update(editingSite.id, form)
       setEditingSite(null)
-      setForm({ nom: '', adresse: '', ville: '', code_postal: '', telephone: '', jour_ouverture: 7, jour_fermeture: 19 })
+      setForm({ nom: '', adresse: '', ville: '', code_postal: '', telephone: '', jour_ouverture: 7, jour_fermeture: 19, actif: true })
       fetchSites()
       toast({ body: t('site_updated'), type: 'info' })
     } catch (err) {
@@ -117,12 +118,13 @@ export default function TenantSitesPage() {
       telephone: site.telephone ?? '',
       jour_ouverture: site.jour_ouverture,
       jour_fermeture: site.jour_fermeture,
+      actif: site.actif,
     })
   }
 
   function closeEdit() {
     setEditingSite(null)
-    setForm({ nom: '', adresse: '', ville: '', code_postal: '', telephone: '', jour_ouverture: 7, jour_fermeture: 19 })
+    setForm({ nom: '', adresse: '', ville: '', code_postal: '', telephone: '', jour_ouverture: 7, jour_fermeture: 19, actif: true })
   }
 
   const columns: Column<Site>[] = [
@@ -284,6 +286,34 @@ export default function TenantSitesPage() {
               width="100%"
               placeholder="05 61 00 00 00"
             />
+            {/* Toggle actif / inactif */}
+            <div className="flex items-center gap-3">
+              <span className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
+                {t('site_active', 'Actif')}
+              </span>
+              <button
+                type="button"
+                aria-pressed={form.actif}
+                onClick={() => setForm((f) => ({ ...f, actif: !f.actif }))}
+                className="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-2 focus-visible:outline-offset-2"
+                style={{
+                  backgroundColor: form.actif
+                    ? 'color-mix(in srgb, var(--color-success) 80%, transparent)'
+                    : 'color-mix(in srgb, var(--color-text-secondary) 30%, transparent)',
+                  outline: 'none',
+                }}
+              >
+                <span
+                  className="pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow transform transition duration-200 ease-in-out"
+                  style={{
+                    transform: form.actif ? 'translateX(20px)' : 'translateX(0)',
+                  }}
+                />
+              </button>
+              <span className="text-sm" style={{ color: form.actif ? 'var(--color-success)' : 'var(--color-text-secondary)' }}>
+                {form.actif ? t('active') : t('inactive')}
+              </span>
+            </div>
           </ModalSection>
 
           <ModalSection title={t('site_hours')}>
@@ -365,6 +395,34 @@ export default function TenantSitesPage() {
               onChange={(v) => setForm((f) => ({ ...f, telephone: v }))}
               width="100%"
             />
+            {/* Toggle actif / inactif */}
+            <div className="flex items-center gap-3">
+              <span className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
+                {t('site_active', 'Actif')}
+              </span>
+              <button
+                type="button"
+                aria-pressed={form.actif}
+                onClick={() => setForm((f) => ({ ...f, actif: !f.actif }))}
+                className="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-2 focus-visible:outline-offset-2"
+                style={{
+                  backgroundColor: form.actif
+                    ? 'color-mix(in srgb, var(--color-success) 80%, transparent)'
+                    : 'color-mix(in srgb, var(--color-text-secondary) 30%, transparent)',
+                  outline: 'none',
+                }}
+              >
+                <span
+                  className="pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow transform transition duration-200 ease-in-out"
+                  style={{
+                    transform: form.actif ? 'translateX(20px)' : 'translateX(0)',
+                  }}
+                />
+              </button>
+              <span className="text-sm" style={{ color: form.actif ? 'var(--color-success)' : 'var(--color-text-secondary)' }}>
+                {form.actif ? t('active') : t('inactive')}
+              </span>
+            </div>
           </ModalSection>
 
           <ModalSection title={t('site_hours')}>

@@ -320,6 +320,7 @@ export interface CreateSiteDto {
   telephone?: string
   jour_ouverture?: number
   jour_fermeture?: number
+  actif?: boolean
 }
 
 export const sites = {

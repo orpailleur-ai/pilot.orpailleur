@@ -226,6 +226,7 @@ export const fr = {
   site_address: 'Adresse',
   site_postal: 'Code postal',
   site_city: 'Ville',
+  site_active: 'Actif',
   site_phone: 'Téléphone',
   site_hours: 'Horaires',
   site_open_day: "Jour d'ouverture (1=lun, 7=dim)",
