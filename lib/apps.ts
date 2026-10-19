@@ -65,14 +65,10 @@ export const APPS: AppDefinition[] = [
       { href: '/parametrage/pdf-templates', labelKey: 'pdf_templates_nav', icon: FileText },
       { href: '/parametrage/email', labelKey: 'email_smtp_nav', icon: Mail },
       { href: '/parametrage/email-templates', labelKey: 'email_templates_nav', icon: FileText },
-    ],
-  },
-  {
-    id: 'email',
-    labelKey: 'app_email',
-    icon: Mail,
-    color: 'var(--color-text-secondary)',
-    pages: [
+      // Statistiques d'envoi : lecture seule, mais c'est bien du paramétrage
+      // — on surveille ce que le paramétrage a produit. Reste dans ce groupe
+      // plutot qu'un groupe « Email » a part, qui aurait surchargé la sidebar
+      // pour une seule page.
       { href: '/email/stats', labelKey: 'email_stats_nav', icon: BarChart3 },
     ],
   },

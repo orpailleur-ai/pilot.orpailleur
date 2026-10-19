@@ -594,5 +594,4 @@ export const en = {
   email_stats_empty: 'No statistics available.',
   email_stats_refresh: 'Refresh',
   email_stats_refreshed: 'Statistics refreshed.',
-  app_email: 'Email',
 } satisfies Record<ClePerimetre | ClePerimetreDetail, string> & Record<string, string>
