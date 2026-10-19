@@ -2,15 +2,15 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { ArrowLeft } from 'lucide-react'
+import { FileText, Pencil, Trash2, Eye } from 'lucide-react'
 import { Button, Spinner, TextArea, useToast } from '@astryxdesign/core'
 import { CheckboxInput } from '@astryxdesign/core/CheckboxInput'
-import { FileText, Globe, Pencil, Trash2, Eye } from 'lucide-react'
 import { ConfirmDialog } from '@/components/composite/confirm-dialog'
 import { PageHeader } from '@/components/layout/page-header'
 import { InlineError } from '@/components/ui/inline-error'
 import { CopyButton } from '@/components/ui/copy-button'
 import { Modal } from '@/components/ui/modal'
+import { Section } from '@/components/ui/section'
 import { useI18n } from '@/lib/i18n'
 import {
   getInstanceAdmin,
@@ -94,8 +94,8 @@ export default function PdfTemplateDetailPage() {
     try {
       const r = await previewTemplateAdmin(id, body)
       setPreviewUrl(r.url)
-    } catch {
-      toast({ body: t('pdf_templates_preview_err'), type: 'error' })
+    } catch (err) {
+      toast({ body: err instanceof Error ? err.message : t('pdf_templates_preview_err'), type: 'error' })
     } finally {
       setPreviewLoading(false)
     }
@@ -128,14 +128,9 @@ export default function PdfTemplateDetailPage() {
       <div className="flex flex-col gap-4">
         <PageHeader
           title={t('pdf_templates_title')}
+          backHref="/parametrage/pdf-templates"
         />
         <InlineError message={dataError || t('error')} />
-        <Button
-          label={t('back')}
-          variant="secondary"
-          icon={<ArrowLeft size={15} />}
-          onClick={() => router.push('/parametrage/pdf-templates')}
-        />
       </div>
     )
   }
@@ -146,49 +141,42 @@ export default function PdfTemplateDetailPage() {
     <>
       <PageHeader
         title={name || t('pdf_templates_title')}
+        backHref="/parametrage/pdf-templates"
         icon={<FileText size={20} style={{ color: 'var(--color-text-primary)' }} />}
         action={
-          <div className="flex items-center gap-2">
-            {isGlobal && (
-              <>
-                <Button
-                  label={previewLoading ? t('loading') : t('pdf_templates_preview')}
-                  variant="secondary"
-                  icon={previewLoading ? <Spinner size="sm" /> : <Eye size={15} />}
-                  isLoading={previewLoading}
-                  onClick={handlePreview}
-                />
-                <Button
-                  label={actif ? t('pdf_templates_deactivate') : t('pdf_templates_activate')}
-                  variant={actif ? 'secondary' : 'primary'}
-                  onClick={() => {
-                    const next = !actif
-                    setActif(next)
-                    setIsDirty(true)
-                  }}
-                />
-                <Button
-                  label={saving ? t('loading') : t('save')}
-                  variant="primary"
-                  isLoading={saving}
-                  isDisabled={!isDirty}
-                  onClick={handleSave}
-                />
-                <Button
-                  label={t('delete')}
-                  variant="secondary"
-                  icon={<Trash2 size={15} />}
-                  onClick={() => setDeleteTarget(true)}
-                />
-              </>
-            )}
-            <Button
-              label={t('back')}
-              variant="secondary"
-              icon={<ArrowLeft size={15} />}
-              onClick={() => router.push('/parametrage/pdf-templates')}
-            />
-          </div>
+          isGlobal && (
+            <div className="flex items-center gap-2">
+              <Button
+                label={previewLoading ? t('loading') : t('pdf_templates_preview')}
+                variant="secondary"
+                icon={previewLoading ? <Spinner size="sm" /> : <Eye size={15} />}
+                isLoading={previewLoading}
+                onClick={handlePreview}
+              />
+              <Button
+                label={actif ? t('pdf_templates_deactivate') : t('pdf_templates_activate')}
+                variant={actif ? 'secondary' : 'primary'}
+                onClick={() => {
+                  const next = !actif
+                  setActif(next)
+                  setIsDirty(true)
+                }}
+              />
+              <Button
+                label={saving ? t('loading') : t('save')}
+                variant="primary"
+                isLoading={saving}
+                isDisabled={!isDirty}
+                onClick={handleSave}
+              />
+              <Button
+                label={t('delete')}
+                variant="secondary"
+                icon={<Trash2 size={15} />}
+                onClick={() => setDeleteTarget(true)}
+              />
+            </div>
+          )
         }
       />
 
@@ -303,30 +291,5 @@ export default function PdfTemplateDetailPage() {
         </Modal>
       )}
     </>
-  )
-}
-
-function Section({
-  title,
-  children,
-  action,
-}: {
-  title: string
-  children: React.ReactNode
-  action?: React.ReactNode
-}) {
-  return (
-    <div className="flex flex-col gap-3">
-      <div className="flex items-center justify-between">
-        <h3
-          className="text-sm font-semibold"
-          style={{ color: 'var(--color-text-primary)' }}
-        >
-          {title}
-        </h3>
-        {action}
-      </div>
-      {children}
-    </div>
   )
 }
