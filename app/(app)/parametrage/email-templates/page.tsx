@@ -55,17 +55,17 @@ export default function EmailTemplatesPage() {
   const columns: Column<EmailTemplate>[] = [
     {
       key: 'scope',
-      header: t('email_template_scope'),
+      header: t('email_templates_scope'),
       render: (row) => t(SCOPE_LABELS[row.scope] ?? row.scope),
     },
     {
       key: 'name',
-      header: t('email_template_name'),
+      header: t('email_templates_name'),
       render: (row) => row.name,
     },
     {
       key: 'subject',
-      header: t('email_template_subject'),
+      header: t('email_templates_subject'),
       render: (row) => (
         <span className="truncate max-w-xs block" title={row.subject}>
           {row.subject}
@@ -74,7 +74,7 @@ export default function EmailTemplatesPage() {
     },
     {
       key: 'actif',
-      header: t('email_template_active'),
+      header: t('email_templates_active'),
       render: (row) => (
         <Badge variant={STATUS_BADGE[String(row.actif)]} label={row.actif ? t('active') : t('inactive')} />
       ),

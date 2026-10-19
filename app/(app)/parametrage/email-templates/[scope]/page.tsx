@@ -90,17 +90,13 @@ export default function EmailTemplateEditorPage() {
       })
       setIsDirty(false)
       setSaved(true)
-      toast({ body: t('email_template_saved'), type: 'info' })
+      toast({ body: t('email_templates_saved'), type: 'info' })
     } catch (e: unknown) {
       setSaveError(e instanceof Error ? e.message : t('error'))
     } finally {
       setSaving(false)
     }
   }, [scope, name, subject, bodyHtml, actif, t, toast])
-
-  const handleDelete = useCallback(async () => {
-    // TODO: implement delete when API supports it
-  }, [])
 
   if (loadingData) {
     return (
@@ -113,7 +109,7 @@ export default function EmailTemplateEditorPage() {
   if (dataError || !template) {
     return (
       <>
-        <PageHeader title={t('email_templates_title')} backHref="/parametrage/email/templates" />
+        <PageHeader title={t('email_templates_title')} backHref="/parametrage/email-templates" />
         <InlineError message={dataError || t('error')} />
       </>
     )
@@ -151,7 +147,7 @@ export default function EmailTemplateEditorPage() {
       <div className="flex flex-col gap-6">
         {/* Variables disponibles */}
         {variables.length > 0 && (
-          <Section title={t('email_template_variables')}>
+          <Section title={t('email_templates_variables')}>
             <div className="flex flex-wrap gap-2">
               {variables.map((v) => (
                 <code
@@ -170,13 +166,13 @@ export default function EmailTemplateEditorPage() {
               ))}
             </div>
             <p className="mt-2 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
-              {t('email_template_variables_hint')}
+              {t('email_templates_variables_hint')}
             </p>
           </Section>
         )}
 
         {/* Nom */}
-        <Section title={t('email_template_name')}>
+        <Section title={t('email_templates_name')}>
           <input
             value={name}
             onChange={(e) => { setName(e.target.value); setIsDirty(true) }}
@@ -191,7 +187,7 @@ export default function EmailTemplateEditorPage() {
         </Section>
 
         {/* Sujet */}
-        <Section title={t('email_template_subject')}>
+        <Section title={t('email_templates_subject')}>
           <input
             value={subject}
             onChange={(e) => { setSubject(e.target.value); setIsDirty(true) }}
@@ -206,11 +202,11 @@ export default function EmailTemplateEditorPage() {
 
         {/* Body HTML */}
         <Section
-          title={t('email_template_body')}
+          title={t('email_templates_body')}
           action={<CopyButton value={bodyHtml} label={t('copy')} labelCopied={t('copied')} />}
         >
           <TextArea
-            label={t('email_template_body')}
+            label={t('email_templates_body')}
             value={bodyHtml}
             onChange={(v) => { setBodyHtml(v); setIsDirty(true) }}
             rows={28}
@@ -221,7 +217,7 @@ export default function EmailTemplateEditorPage() {
         {/* Actif */}
         <Section title="">
           <CheckboxInput
-            label={t('email_template_active')}
+            label={t('email_templates_active')}
             value={actif}
             onChange={(checked) => { setActif(checked); setIsDirty(true) }}
           />
@@ -229,10 +225,10 @@ export default function EmailTemplateEditorPage() {
 
         {/* Metadata */}
         {template.updatedAt && (
-          <Section title={t('metadata')}>
+          <Section title={t('email_templates_updated_at')}>
             <div className="flex flex-col gap-1 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
-              <p>{t('email_template_updated_at')}: {new Date(template.updatedAt).toLocaleString('fr-FR')}</p>
-              {template.updatedBy && <p>{t('email_template_updated_by')}: {template.updatedBy}</p>}
+              <p>{t('email_templates_updated_at')}: {new Date(template.updatedAt).toLocaleString('fr-FR')}</p>
+              {template.updatedBy && <p>{t('email_templates_updated_by')}: {template.updatedBy}</p>}
             </div>
           </Section>
         )}

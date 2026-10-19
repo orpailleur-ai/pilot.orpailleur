@@ -11,6 +11,7 @@ export const en = {
   loading: 'Loading…',
   error: 'Error',
   save: 'Save',
+  saved: 'Saved',
   cancel: 'Cancel',
   delete: 'Delete',
   edit: 'Edit',

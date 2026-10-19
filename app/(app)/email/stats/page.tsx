@@ -67,7 +67,7 @@ export default function EmailStatsPage() {
     },
     {
       key: 'scope',
-      header: t('email_template_scope'),
+      header: t('email_templates_scope'),
       render: (row) => t(SCOPE_LABELS[row.scope] ?? row.scope),
     },
     {

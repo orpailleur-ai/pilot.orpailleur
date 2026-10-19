@@ -10,6 +10,7 @@ export const fr = {
   loading: 'Chargement…',
   error: 'Erreur',
   save: 'Enregistrer',
+  saved: 'Enregistré',
   cancel: 'Annuler',
   delete: 'Supprimer',
   edit: 'Modifier',
