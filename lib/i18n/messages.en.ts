@@ -86,6 +86,7 @@ export const en = {
   plans_new: 'New plan',
   plans_empty: 'No plans',
   plans_empty_hint: 'Create a plan to get started.',
+  plans_count: '{n} plan(s) available',
   plan_identity: 'Identity',
   plan_pricing: 'Pricing',
   plan_limits: 'Limits',

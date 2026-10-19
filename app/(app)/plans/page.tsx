@@ -57,7 +57,7 @@ export default function PlansPage() {
     <div className="space-y-6">
       <PageHeader
         title={t('plans_title', 'Plans')}
-        subtitle={`${planList.length} plan(s) disponible(s)`}
+        subtitle={t('plans_count', { n: planList.length })}
         icon={<CreditCard size={20} style={{ color: 'var(--color-text-primary)' }} />}
         action={action}
       />
