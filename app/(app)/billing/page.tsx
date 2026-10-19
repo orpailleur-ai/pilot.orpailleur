@@ -51,11 +51,11 @@ export default function BillingPage() {
   const { t } = useI18n()
   const toast = useToast()
 
-  const STATUT_LABELS: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
-    active: { label: t('active'), color: 'var(--color-success)', icon: <CheckCircle2 size={14} /> },
-    past_due: { label: t('subs_past_due_short', 'En retard'), color: 'var(--color-warning)', icon: <AlertTriangle size={14} /> },
-    canceled: { label: t('subs_canceled_short', 'Annulé'), color: 'var(--color-danger)', icon: <XCircle size={14} /> },
-    expired: { label: t('subs_expired_short', 'Expiré'), color: 'var(--color-text-secondary)', icon: <Clock size={14} /> },
+  const STATUT_LABELS: Record<string, { label: string; iconColor: string; icon: React.ReactNode }> = {
+    active: { label: t('active'), iconColor: 'var(--color-success)', icon: <CheckCircle2 size={14} /> },
+    past_due: { label: t('subs_past_due_short', 'En retard'), iconColor: 'var(--color-warning)', icon: <AlertTriangle size={14} /> },
+    canceled: { label: t('subs_canceled_short', 'Annulé'), iconColor: 'var(--color-danger)', icon: <XCircle size={14} /> },
+    expired: { label: t('subs_expired_short', 'Expiré'), iconColor: 'var(--color-text-secondary)', icon: <Clock size={14} /> },
   }
 
   const [subs, setSubs] = useState<Subscription[]>([])
@@ -312,9 +312,9 @@ export default function BillingPage() {
                     {inv.pdfUrl ? (
                       <button
                         onClick={() => handleDownload(inv)}
-                        className="flex items-center justify-center rounded p-1 transition-colors hover:bg-black/5"
-                        title={t('action_download_pdf')}
-                        style={{ color: 'var(--color-text-secondary)' }}
+                        aria-label={t('action_download_pdf')}
+                        className="flex items-center justify-center rounded p-1 transition-colors hover:bg-black/5 focus-visible:outline-2 focus-visible:outline-offset-2"
+                        style={{ color: 'var(--color-text-secondary)', outline: 'none' }}
                       >
                         <Download size={14} />
                       </button>
@@ -322,9 +322,9 @@ export default function BillingPage() {
                       <button
                         onClick={() => handleGeneratePdf(inv)}
                         disabled={generatingId === inv.id}
-                        className="flex items-center justify-center rounded p-1 transition-colors hover:bg-black/5 disabled:opacity-50"
-                        title={t('action_generate_pdf')}
-                        style={{ color: 'var(--color-text-secondary)' }}
+                        aria-label={t('action_generate_pdf')}
+                        className="flex items-center justify-center rounded p-1 transition-colors hover:bg-black/5 disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2"
+                        style={{ color: 'var(--color-text-secondary)', outline: 'none' }}
                       >
                         {generatingId === inv.id ? (
                           <Loader2 size={14} className="animate-spin" />
@@ -392,8 +392,8 @@ export default function BillingPage() {
                         {tenantNames[s.tenant_id] ?? s.tenant_id.slice(0, 8)}
                       </span>
                       <div className="flex items-center gap-1">
-                        <span style={{ color: info.color }}>{info.icon}</span>
-                        <span className="text-xs" style={{ color: info.color }}>
+                        <span style={{ color: info.iconColor }} aria-hidden="true">{info.icon}</span>
+                        <span className="text-xs" style={{ color: 'var(--color-text-primary)' }}>
                           {info.label}
                         </span>
                         <span className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>

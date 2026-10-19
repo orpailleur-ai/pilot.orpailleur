@@ -9,6 +9,7 @@ import { Spinner } from '@/components/ui/spinner'
 import { InlineError } from '@/components/ui/inline-error'
 import { EmptyState } from '@/components/ui/empty-state'
 import { PageHeader } from '@/components/layout/page-header'
+import { PermissionGate } from '@/components/composite/permission-gate'
 import { Modal, ModalSection } from '@/components/ui/modal'
 
 function formatPrice(cents: number) {
@@ -16,30 +17,21 @@ function formatPrice(cents: number) {
 }
 
 const STATUT_LABELS: Record<InvoiceStatut, string> = {
-  draft: 'Brouillon',
-  open: 'Ouverte',
-  paid: 'Payée',
-  past_due: 'En retard',
-  void: 'Annulée',
-  uncollectible: 'Impayée',
+  draft: 'invoice_statut_draft',
+  open: 'invoice_statut_open',
+  paid: 'invoice_statut_paid',
+  past_due: 'invoice_statut_past_due',
+  void: 'invoice_statut_void',
+  uncollectible: 'invoice_statut_uncollectible',
 }
 
-const STATUS_ICONS: Record<InvoiceStatut, React.ReactNode> = {
-  draft: <Clock size={12} />,
-  open: <Clock size={12} />,
-  paid: <CheckCircle size={12} />,
-  past_due: <AlertTriangle size={12} />,
-  void: <Ban size={12} />,
-  uncollectible: <AlertTriangle size={12} />,
-}
-
-const STATUS_COLORS: Record<InvoiceStatut, string> = {
-  draft: 'var(--color-text-secondary)',
-  open: 'var(--color-accent)',
-  paid: 'var(--color-success)',
-  past_due: 'var(--color-danger)',
-  void: 'var(--color-text-secondary)',
-  uncollectible: 'var(--color-danger)',
+const STATUS_ICONS: Record<InvoiceStatut, { icon: React.ReactNode; iconColor: string }> = {
+  draft: { icon: <Clock size={12} />, iconColor: 'var(--color-text-secondary)' },
+  open: { icon: <Clock size={12} />, iconColor: 'var(--color-accent)' },
+  paid: { icon: <CheckCircle size={12} />, iconColor: 'var(--color-success)' },
+  past_due: { icon: <AlertTriangle size={12} />, iconColor: 'var(--color-danger)' },
+  void: { icon: <Ban size={12} />, iconColor: 'var(--color-text-secondary)' },
+  uncollectible: { icon: <AlertTriangle size={12} />, iconColor: 'var(--color-danger)' },
 }
 
 type FilterValue = 'all' | InvoiceStatut
@@ -162,10 +154,10 @@ export default function InvoicesPage() {
             label="Filtre statut"
             size="sm"
           >
-            <SegmentedControlItem value="all" label="Toutes" />
-            <SegmentedControlItem value="open" label="Ouvertes" />
-            <SegmentedControlItem value="paid" label="Payées" />
-            <SegmentedControlItem value="past_due" label="En retard" />
+            <SegmentedControlItem value="all" label={t('all')} />
+            <SegmentedControlItem value="open" label={t('invoice_statut_open')} />
+            <SegmentedControlItem value="paid" label={t('invoice_statut_paid')} />
+            <SegmentedControlItem value="past_due" label={t('invoice_statut_past_due')} />
           </SegmentedControl>
         </div>
         <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
@@ -204,10 +196,12 @@ export default function InvoicesPage() {
                     </span>
                     <span
                       className="inline-flex items-center gap-1 text-xs"
-                      style={{ color: STATUS_COLORS[inv.statut] }}
+                      style={{ color: 'var(--color-text-primary)' }}
                     >
-                      {STATUS_ICONS[inv.statut]}
-                      {STATUT_LABELS[inv.statut]}
+                      <span style={{ color: STATUS_ICONS[inv.statut].iconColor }} aria-hidden="true">
+                        {STATUS_ICONS[inv.statut].icon}
+                      </span>
+                      {t(STATUT_LABELS[inv.statut])}
                     </span>
                   </div>
                   <div className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
@@ -217,8 +211,8 @@ export default function InvoicesPage() {
                     <span>Émise {new Date(inv.dateEmission).toLocaleDateString('fr-FR')}</span>
                     <span>Éch. {new Date(inv.dateEcheance).toLocaleDateString('fr-FR')}</span>
                     {inv.datePaiement && (
-                      <span style={{ color: 'var(--color-success)' }}>
-                        Payée {new Date(inv.datePaiement).toLocaleDateString('fr-FR')}
+                      <span style={{ color: 'var(--color-text-secondary)' }}>
+                        {t('invoice_paid', 'Payée')} {new Date(inv.datePaiement).toLocaleDateString('fr-FR')}
                       </span>
                     )}
                   </div>
@@ -251,14 +245,16 @@ export default function InvoicesPage() {
                       />
                     )}
                     {!isPaid && (
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        icon={<CheckCircle size={14} />}
-                        label="Marquer payée"
-                        onClick={() => handleMarkPaid(inv)}
-                        isLoading={paying === inv.id}
-                      />
+                      <PermissionGate permission="BILLING_WRITE">
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          icon={<CheckCircle size={14} />}
+                          label={t('invoice_mark_paid')}
+                          onClick={() => handleMarkPaid(inv)}
+                          isLoading={paying === inv.id}
+                        />
+                      </PermissionGate>
                     )}
                   </div>
                 </div>
@@ -272,7 +268,7 @@ export default function InvoicesPage() {
       <Modal
         isOpen={!!selectedInvoice}
         onOpenChange={(open) => { if (!open) setSelectedInvoice(null) }}
-        title="Marquer comme payée"
+        title={t('invoice_mark_paid')}
         size="sm"
       >
         {selectedInvoice && (
@@ -283,7 +279,7 @@ export default function InvoicesPage() {
             </p>
             <div className="flex flex-col gap-1">
               <label className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
-                Date de paiement
+                {t('invoice_payment_date')}
               </label>
               <input
                 type="date"
@@ -295,13 +291,13 @@ export default function InvoicesPage() {
             </div>
             <div className="flex gap-3 border-t pt-4" style={{ borderColor: 'var(--color-border)' }}>
               <Button
-                label="Annuler"
+                label={t('cancel')}
                 variant="secondary"
                 onClick={() => setSelectedInvoice(null)}
                 className="flex-1"
               />
               <Button
-                label="Confirmer"
+                label={t('confirm')}
                 variant="primary"
                 onClick={confirmMarkPaid}
                 isLoading={!!paying}
