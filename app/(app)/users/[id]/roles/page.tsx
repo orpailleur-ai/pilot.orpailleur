@@ -5,13 +5,13 @@ import { useParams } from 'next/navigation'
 import { Shield, Plus, Trash2 } from 'lucide-react'
 import { Button, useToast } from '@astryxdesign/core'
 import { Modal, ModalSection, FieldGrid } from '@/components/ui/modal'
-import { TextInput } from '@astryxdesign/core'
 import { DataTable, type Column } from '@/components/ui/data-table'
 import { EmptyState } from '@/components/ui/empty-state'
 import { PageHeader } from '@/components/layout/page-header'
 import { InlineError } from '@/components/ui/inline-error'
 import { Spinner } from '@/components/ui/spinner'
 import { ConfirmDialog } from '@/components/composite/confirm-dialog'
+import { PermissionGate } from '@/components/composite/permission-gate'
 import {
   adminUsers,
   adminTenants,
@@ -141,7 +141,7 @@ export default function UserRolesPage() {
     },
     {
       key: 'role_label',
-      header: 'Rôle',
+      header: t('user_role_column', 'Rôle'),
       mobile: 'inline',
       render: (row) => (
         <span
@@ -161,15 +161,17 @@ export default function UserRolesPage() {
       align: 'end',
       mobile: 'hidden',
       render: (row) => (
-        <Button
-          variant="ghost"
-          size="sm"
-          isIconOnly
-          label="Retirer"
-          icon={<Trash2 size={13} />}
-          isDisabled={removing === row.tenant_id}
-          onClick={() => setRemoveTarget(row.tenant_id)}
-        />
+        <PermissionGate permission="USER_WRITE">
+          <Button
+            variant="ghost"
+            size="sm"
+            isIconOnly
+            label={t('user_remove')}
+            icon={<Trash2 size={13} />}
+            isDisabled={removing === row.tenant_id}
+            onClick={() => setRemoveTarget(row.tenant_id)}
+          />
+        </PermissionGate>
       ),
     },
   ]
@@ -181,16 +183,18 @@ export default function UserRolesPage() {
   return (
     <div className="flex flex-col gap-4">
       <PageHeader
-        title={t('user_roles', 'Rôles utilisateur')}
+        title={t('user_roles')}
         action={
-          <Button
-            variant="primary"
-            size="sm"
-            icon={<Plus size={14} />}
-            label={t('assign_role', 'Assigner un rôle')}
-            onClick={() => setShowAdd(true)}
-            isDisabled={availableTenants.length === 0}
-          />
+          <PermissionGate permission="USER_WRITE">
+            <Button
+              variant="primary"
+              size="sm"
+              icon={<Plus size={14} />}
+              label={t('user_roles_assign')}
+              onClick={() => setShowAdd(true)}
+              isDisabled={availableTenants.length === 0}
+            />
+          </PermissionGate>
         }
       />
 
@@ -199,8 +203,8 @@ export default function UserRolesPage() {
       {rows.length === 0 ? (
         <EmptyState
           icon={<Shield size={24} />}
-          title="Aucun rôle assigné"
-          description="Assignez ce utilisateur à un tenant avec un rôle."
+          title={t('user_roles_empty')}
+          description={t('user_roles_empty_hint')}
         />
       ) : (
         <DataTable columns={columns} rows={rows} rowKey={(row) => row.tenant_id} />
@@ -210,18 +214,18 @@ export default function UserRolesPage() {
       <Modal
         isOpen={showAdd}
         onOpenChange={(open) => { if (!open) setShowAdd(false) }}
-        title="Assigner un rôle"
+        title={t('user_roles_assign')}
         size="sm"
       >
         <form onSubmit={handleAddAssignment} className="space-y-5">
-          <ModalSection title="Sélection">
+          <ModalSection title={t('user_roles_assign', 'Sélection')}>
             <FieldGrid columns={1}>
               <div>
                 <label
                   className="mb-1 block text-xs font-medium"
                   style={{ color: 'var(--color-text-secondary)' }}
                 >
-                  Tenant
+                  {t('tenants')}
                 </label>
                 <select
                   className="h-9 w-full rounded-md border px-2 text-sm"
@@ -234,7 +238,7 @@ export default function UserRolesPage() {
                   onChange={(e) => setForm((f) => ({ ...f, tenantId: e.target.value }))}
                   required
                 >
-                  <option value="">Sélectionner un tenant…</option>
+                  <option value="">{t('user_select_tenant')}</option>
                   {availableTenants.map((ten) => (
                     <option key={ten.id} value={ten.id}>{ten.nom}</option>
                   ))}
@@ -245,7 +249,7 @@ export default function UserRolesPage() {
                   className="mb-1 block text-xs font-medium"
                   style={{ color: 'var(--color-text-secondary)' }}
                 >
-                  Rôle
+                  {t('user_role_column', 'Rôle')}
                 </label>
                 <select
                   className="h-9 w-full rounded-md border px-2 text-sm"
@@ -258,7 +262,7 @@ export default function UserRolesPage() {
                   onChange={(e) => setForm((f) => ({ ...f, roleId: e.target.value }))}
                   required
                 >
-                  <option value="">Sélectionner un rôle…</option>
+                  <option value="">{t('user_role_select')}</option>
                   {allRoles.map((r) => (
                     <option key={r.id} value={r.id}>{r.label}</option>
                   ))}
@@ -275,7 +279,7 @@ export default function UserRolesPage() {
               className="flex-1"
             />
             <Button
-              label={saving ? t('saving') : 'Assigner'}
+              label={saving ? t('saving') : t('user_assign')}
               variant="primary"
               type="submit"
               isLoading={saving}

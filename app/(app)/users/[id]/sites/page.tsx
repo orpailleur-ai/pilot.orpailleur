@@ -11,6 +11,7 @@ import { InlineError } from '@/components/ui/inline-error'
 import { PageHeader } from '@/components/layout/page-header'
 import { Spinner } from '@/components/ui/spinner'
 import { ConfirmDialog } from '@/components/composite/confirm-dialog'
+import { PermissionGate } from '@/components/composite/permission-gate'
 import {
   adminUsers,
   adminTenants,
@@ -123,7 +124,7 @@ export default function UserSitesPage() {
   const columns: Column<SiteRow>[] = [
     {
       key: 'nom',
-      header: 'Site',
+      header: t('user_site_column', 'Site'),
       mobile: 'primary',
       render: (row) => (
         <div className="flex items-center gap-2">
@@ -134,7 +135,7 @@ export default function UserSitesPage() {
     },
     {
       key: 'ville',
-      header: 'Ville',
+      header: t('user_city_column', 'Ville'),
       mobile: 'inline',
       render: (row) => row.ville ?? '—',
     },
@@ -160,15 +161,17 @@ export default function UserSitesPage() {
       align: 'end',
       mobile: 'hidden',
       render: (row) => (
-        <Button
-          variant="ghost"
-          size="sm"
-          isIconOnly
-          label="Retirer"
-          icon={<Trash2 size={13} />}
-          isDisabled={removing === row.id}
-          onClick={() => setRemoveTarget(row.id)}
-        />
+        <PermissionGate permission="USER_WRITE">
+          <Button
+            variant="ghost"
+            size="sm"
+            isIconOnly
+            label={t('user_remove')}
+            icon={<Trash2 size={13} />}
+            isDisabled={removing === row.id}
+            onClick={() => setRemoveTarget(row.id)}
+          />
+        </PermissionGate>
       ),
     },
   ]
@@ -180,16 +183,18 @@ export default function UserSitesPage() {
   return (
     <div className="flex flex-col gap-4">
       <PageHeader
-        title={t('user_sites', 'Sites utilisateur')}
+        title={t('user_sites')}
         action={
-          <Button
-            variant="primary"
-            size="sm"
-            icon={<Plus size={14} />}
-            label={t('assign_site', 'Assigner un site')}
-            onClick={() => setShowAdd(true)}
-            isDisabled={availableSites.length === 0}
-          />
+          <PermissionGate permission="USER_WRITE">
+            <Button
+              variant="primary"
+              size="sm"
+              icon={<Plus size={14} />}
+              label={t('user_sites_assign')}
+              onClick={() => setShowAdd(true)}
+              isDisabled={availableSites.length === 0}
+            />
+          </PermissionGate>
         }
       />
 
@@ -198,8 +203,8 @@ export default function UserSitesPage() {
       {rows.length === 0 ? (
         <EmptyState
           icon={<Globe size={24} />}
-          title="Aucun site assigné"
-          description="Assignez des sites à cet utilisateur pour lui donner accès aux points de vente."
+          title={t('user_sites_empty')}
+          description={t('user_sites_empty_hint')}
         />
       ) : (
         <DataTable columns={columns} rows={rows} rowKey={(row) => row.id} />
@@ -208,18 +213,18 @@ export default function UserSitesPage() {
       <Modal
         isOpen={showAdd}
         onOpenChange={(open) => { if (!open) setShowAdd(false) }}
-        title="Assigner un site"
+        title={t('user_sites_assign')}
         size="sm"
       >
         <form onSubmit={handleAddSite} className="space-y-5">
-          <ModalSection title="Sélection du site">
+          <ModalSection title={t('user_sites_assign')}>
             <FieldGrid columns={1}>
               <div>
                 <label
                   className="mb-1 block text-xs font-medium"
                   style={{ color: 'var(--color-text-secondary)' }}
                 >
-                  Site
+                  {t('user_site_column', 'Site')}
                 </label>
                 <select
                   className="h-9 w-full rounded-md border px-2 text-sm"
@@ -232,7 +237,7 @@ export default function UserSitesPage() {
                   onChange={(e) => setForm((f) => ({ ...f, siteId: e.target.value }))}
                   required
                 >
-                  <option value="">Sélectionner un site…</option>
+                  <option value="">{t('user_site_select')}</option>
                   {availableSites.map((s) => {
                     const tenant = tenants.find((ten) => ten.id === s.tenant_id)
                     return (
@@ -254,7 +259,7 @@ export default function UserSitesPage() {
               className="flex-1"
             />
             <Button
-              label={saving ? t('saving') : 'Assigner'}
+              label={saving ? t('saving') : t('user_assign')}
               variant="primary"
               type="submit"
               isLoading={saving}

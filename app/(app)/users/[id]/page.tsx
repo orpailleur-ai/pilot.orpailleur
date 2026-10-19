@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import { useToast } from '@astryxdesign/core'
 import { TextInput } from '@astryxdesign/core'
@@ -9,8 +9,11 @@ import { FieldGrid } from '@/components/ui/modal'
 import { Spinner } from '@/components/ui/spinner'
 import { PageHeader } from '@/components/layout/page-header'
 import { ShieldCheck } from 'lucide-react'
+import { PermissionGate } from '@/components/composite/permission-gate'
 import { adminUsers, roles, type AdminUser, type Role, type Permission } from '@/lib/api-client'
 import { useI18n } from '@/lib/i18n'
+
+const MODULE_ORDER = ['ADMIN', 'TENANT', 'USER', 'SITE', 'BILLING', 'FOURNISSEUR', 'MERCURIALE', 'RECETTE', 'CMUP', 'COMMANDE', 'FACTURES', 'AI']
 
 export default function UserProfilePage() {
   const params = useParams()
@@ -68,7 +71,7 @@ export default function UserProfilePage() {
 
   if (!user) return null
 
-  // Compute effective permissions: union of all permissions from all roles assigned to this user
+  // Compute effective permissions
   const effectivePermissionIds = new Set<string>()
   for (const assignment of user.tenants) {
     const role = allRoles.find((r) => r.id === assignment.role_id)
@@ -86,22 +89,6 @@ export default function UserProfilePage() {
     if (!byModule[p.module]) byModule[p.module] = []
     byModule[p.module].push(p)
   }
-  const MODULE_LABELS: Record<string, string> = {
-    ADMIN: 'Administration',
-    TENANT: 'Tenant',
-    USER: 'Utilisateurs',
-    FOURNISSEUR: 'Fournisseurs',
-    MERCURIALE: 'Mercuriale',
-    RECETTE: 'Recettes',
-    CMUP: 'CMUP',
-    COMMANDE: 'Commandes',
-    FACTURES: 'Factures',
-    FACTURE: 'Factures',
-    AI: 'IA',
-    BILLING: 'Billing',
-    SITE: 'Sites',
-  }
-  const MODULE_ORDER = ['ADMIN', 'TENANT', 'USER', 'SITE', 'BILLING', 'FOURNISSEUR', 'MERCURIALE', 'RECETTE', 'CMUP', 'COMMANDE', 'FACTURES', 'AI']
   const sortedModules = Object.keys(byModule).sort((a, b) => {
     const ai = MODULE_ORDER.indexOf(a)
     const bi = MODULE_ORDER.indexOf(b)
@@ -111,17 +98,19 @@ export default function UserProfilePage() {
   return (
     <form onSubmit={handleSave} className="flex flex-col gap-5">
       <PageHeader
-        title={user ? `${user.prenom} ${user.nom}` : t('user_profile', 'Profil')}
+        title={user ? `${user.prenom} ${user.nom}` : t('user_profile')}
         icon={<ShieldCheck size={20} style={{ color: 'var(--color-text-primary)' }} />}
       />
 
-      {/* ── Avatar : centré en haut du formulaire ── */}
+      {/* ── Avatar ── */}
       <div
         className="rounded-lg border p-5 flex flex-col items-center gap-3"
         style={{ backgroundColor: 'var(--color-background-surface)', borderColor: 'var(--color-border)' }}
       >
-        <div className="w-16 h-16 rounded-full overflow-hidden flex items-center justify-center"
-          style={{ backgroundColor: 'var(--color-background-muted, rgba(10,19,23,0.05))' }}>
+        <div
+          className="w-16 h-16 rounded-full overflow-hidden flex items-center justify-center"
+          style={{ backgroundColor: 'var(--color-background-muted, rgba(10,19,23,0.05))' }}
+        >
           {avatarPreview || user.avatar_url ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -135,38 +124,37 @@ export default function UserProfilePage() {
             </span>
           )}
         </div>
-        <div className="flex gap-2">
-          <Button
-            variant="secondary"
-            size="sm"
-            label={t('choose_image', 'Choisir une image')}
-            isDisabled={uploadingAvatar}
-            isLoading={uploadingAvatar}
-            onClick={() => document.getElementById('pilot-avatar-input')?.click()}
-          />
-          {user.avatar_url && (
+        <PermissionGate permission="USER_WRITE">
+          <div className="flex gap-2">
             <Button
-              variant="ghost"
+              variant="secondary"
               size="sm"
-              label={t('remove_avatar', 'Retirer')}
-              onClick={async () => {
-                try {
-                  const updated = await adminUsers.removeAvatar(userId)
-                  setUser(updated)
-                  setAvatarPreview(null)
-                  toast({ body: t('avatar_removed', 'Avatar retiré'), type: 'info' })
-                } catch (err) {
-                  toast({
-                    body: err instanceof Error ? err.message : t('error'),
-                    type: 'error',
-                  })
-                }
-              }}
+              label={t('choose_image')}
+              isDisabled={uploadingAvatar}
+              isLoading={uploadingAvatar}
+              onClick={() => document.getElementById('pilot-avatar-input')?.click()}
             />
-          )}
-        </div>
+            {user.avatar_url && (
+              <Button
+                variant="ghost"
+                size="sm"
+                label={t('remove_avatar')}
+                onClick={async () => {
+                  try {
+                    const updated = await adminUsers.removeAvatar(userId)
+                    setUser(updated)
+                    setAvatarPreview(null)
+                    toast({ body: t('avatar_removed'), type: 'info' })
+                  } catch (err) {
+                    toast({ body: err instanceof Error ? err.message : t('error'), type: 'error' })
+                  }
+                }}
+              />
+            )}
+          </div>
+        </PermissionGate>
         <p className="text-xs text-center" style={{ color: 'var(--color-text-secondary)' }}>
-          JPEG, PNG, WebP, GIF · max 2 Mo
+          {t('user_avatar_format')}
         </p>
         <input
           id="pilot-avatar-input"
@@ -177,13 +165,9 @@ export default function UserProfilePage() {
             const file = e.target.files?.[0]
             if (!file) return
             if (file.size > 2 * 1024 * 1024) {
-              toast({
-                body: t('file_too_large', 'Fichier trop volumineux (max 2 Mo)'),
-                type: 'error',
-              })
+              toast({ body: t('file_too_large'), type: 'error' })
               return
             }
-            // Prévisualisation locale immédiate pendant l'upload
             const objectUrl = URL.createObjectURL(file)
             setAvatarPreview(objectUrl)
             setUploadingAvatar(true)
@@ -205,12 +189,9 @@ export default function UserProfilePage() {
               })
               setUser((u) => (u ? { ...u, avatar_url: res.avatar_url } : u))
               setAvatarPreview(null)
-              toast({ body: t('avatar_uploaded', 'Avatar téléversé'), type: 'info' })
+              toast({ body: t('avatar_uploaded'), type: 'info' })
             } catch (err) {
-              toast({
-                body: err instanceof Error ? err.message : t('error'),
-                type: 'error',
-              })
+              toast({ body: err instanceof Error ? err.message : t('error'), type: 'error' })
             } finally {
               URL.revokeObjectURL(objectUrl)
               setAvatarPreview(null)
@@ -221,59 +202,63 @@ export default function UserProfilePage() {
         />
       </div>
 
-      <div
-        className="rounded-lg border p-5 space-y-4"
-        style={{ backgroundColor: 'var(--color-background-surface)', borderColor: 'var(--color-border)' }}
-      >
-        <h2 className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-          Informations du compte
-        </h2>
-        <FieldGrid columns={1}>
-          <TextInput
-            label="Email"
-            type="email"
-            value={form.email}
-            onChange={(v) => setForm((f) => ({ ...f, email: v }))}
-            isRequired
-            width="100%"
-          />
-        </FieldGrid>
-        <FieldGrid columns={2}>
-          <TextInput
-            label="Prénom"
-            value={form.prenom}
-            onChange={(v) => setForm((f) => ({ ...f, prenom: v }))}
-            width="100%"
-          />
-          <TextInput
-            label="Nom"
-            value={form.nom}
-            onChange={(v) => setForm((f) => ({ ...f, nom: v }))}
-            width="100%"
-          />
-        </FieldGrid>
-      </div>
+      {/* ── Account info ── */}
+      <PermissionGate permission="USER_WRITE">
+        <div
+          className="rounded-lg border p-5 space-y-4"
+          style={{ backgroundColor: 'var(--color-background-surface)', borderColor: 'var(--color-border)' }}
+        >
+          <h2 className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+            {t('user_account_info')}
+          </h2>
+          <FieldGrid columns={1}>
+            <TextInput
+              label={t('users_email', 'Email')}
+              type="email"
+              value={form.email}
+              onChange={(v) => setForm((f) => ({ ...f, email: v }))}
+              isRequired
+              width="100%"
+            />
+          </FieldGrid>
+          <FieldGrid columns={2}>
+            <TextInput
+              label={t('users_prenom', 'Prénom')}
+              value={form.prenom}
+              onChange={(v) => setForm((f) => ({ ...f, prenom: v }))}
+              width="100%"
+            />
+            <TextInput
+              label={t('users_nom', 'Nom')}
+              value={form.nom}
+              onChange={(v) => setForm((f) => ({ ...f, nom: v }))}
+              width="100%"
+            />
+          </FieldGrid>
+        </div>
 
-      <div
-        className="rounded-lg border p-5 space-y-4"
-        style={{ backgroundColor: 'var(--color-background-surface)', borderColor: 'var(--color-border)' }}
-      >
-        <h2 className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-          Changer le mot de passe
-        </h2>
-        <FieldGrid columns={1}>
-          <TextInput
-            label="Nouveau mot de passe"
-            type="password"
-            value={form.password}
-            onChange={(v) => setForm((f) => ({ ...f, password: v }))}
-            width="100%"
-            placeholder="Laisser vide pour ne pas changer"
-          />
-        </FieldGrid>
-      </div>
+        {/* Password */}
+        <div
+          className="rounded-lg border p-5 space-y-4"
+          style={{ backgroundColor: 'var(--color-background-surface)', borderColor: 'var(--color-border)' }}
+        >
+          <h2 className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+            {t('user_change_password')}
+          </h2>
+          <FieldGrid columns={1}>
+            <TextInput
+              label={t('user_new_password')}
+              type="password"
+              value={form.password}
+              onChange={(v) => setForm((f) => ({ ...f, password: v }))}
+              width="100%"
+              placeholder={t('user_password_placeholder')}
+            />
+          </FieldGrid>
+        </div>
+      </PermissionGate>
 
-      {/* Effective permissions */}
+      {/* Effective permissions (read-only, no permission gate needed) */}
       {effectivePermissions.length > 0 && (
         <div
           className="rounded-lg border p-5 space-y-4"
@@ -282,7 +267,7 @@ export default function UserProfilePage() {
           <div className="flex items-center gap-2">
             <ShieldCheck size={15} style={{ color: 'var(--color-accent)' }} />
             <h2 className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-              Permissions effectives
+              {t('user_effective_permissions')}
             </h2>
             <span
               className="text-xs rounded px-1.5 py-0.5"
@@ -301,7 +286,7 @@ export default function UserProfilePage() {
                   className="text-xs font-medium uppercase tracking-wide"
                   style={{ color: 'var(--color-text-secondary)' }}
                 >
-                  {MODULE_LABELS[mod] ?? mod}
+                  {t(`module_${mod}` as any, mod)}
                 </span>
                 <div className="flex flex-wrap gap-1.5">
                   {byModule[mod].map((p) => (
@@ -314,7 +299,7 @@ export default function UserProfilePage() {
                       }}
                       title={p.label}
                     >
-                      {p.action === 'READ' ? 'R' : p.action === 'WRITE' ? 'W' : p.action}
+                      {p.action === 'READ' ? t('user_permission_r') : p.action === 'WRITE' ? t('user_permission_w') : p.action}
                       <span className="ml-1 opacity-60">{p.label}</span>
                     </span>
                   ))}
@@ -325,14 +310,16 @@ export default function UserProfilePage() {
         </div>
       )}
 
-      <div className="flex justify-end">
-        <Button
-          variant="primary"
-          label={t('save')}
-          type="submit"
-          isLoading={saving}
-        />
-      </div>
+      <PermissionGate permission="USER_WRITE">
+        <div className="flex justify-end">
+          <Button
+            variant="primary"
+            label={t('save')}
+            type="submit"
+            isLoading={saving}
+          />
+        </div>
+      </PermissionGate>
     </form>
   )
 }
