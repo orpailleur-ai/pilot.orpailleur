@@ -16,7 +16,7 @@ export function InlineError({ message }: { message: string }) {
       style={{
         backgroundColor: 'color-mix(in srgb, var(--color-danger) 10%, transparent)',
         borderColor: 'color-mix(in srgb, var(--color-danger) 40%, transparent)',
-        color: 'var(--color-danger)',
+        color: 'var(--color-danger-text)',
       }}
     >
       <AlertCircle size={16} className="mt-0.5 shrink-0" aria-hidden />

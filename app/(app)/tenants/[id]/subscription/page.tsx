@@ -7,6 +7,8 @@ import { Modal, ModalSection, FieldGrid } from '@/components/ui/modal'
 import { DataTable, type Column } from '@/components/ui/data-table'
 import { EmptyState } from '@/components/ui/empty-state'
 import { InlineError } from '@/components/ui/inline-error'
+import { FieldError } from '@/components/ui/form-field'
+import { useFormErrors } from '@/components/ui/form-field'
 import { PageHeader } from '@/components/layout/page-header'
 import { Spinner } from '@/components/ui/spinner'
 import { StatusPill } from '@/components/composite/status-pill'
@@ -31,6 +33,7 @@ export default function TenantSubscriptionPage() {
   const { tenant } = useTenantDetail()
   const { t } = useI18n()
   const toast = useToast()
+  const formErrors = useFormErrors()
   const [subs, setSubs] = useState<Subscription[]>([])
   const [planList, setPlanList] = useState<Plan[]>([])
   const [loading, setLoading] = useState(true)
@@ -76,7 +79,11 @@ export default function TenantSubscriptionPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!form.planId) return
+    if (!form.planId) {
+      formErrors.setError('planId', t('required'))
+      return
+    }
+    formErrors.clearError('planId')
     setSaving(true)
     try {
       if (editingSub) {
@@ -220,7 +227,7 @@ export default function TenantSubscriptionPage() {
       {/* Subscribe / change plan modal */}
       <Modal
         isOpen={showModal}
-        onOpenChange={(open) => { if (!open) setShowModal(false) }}
+        onOpenChange={(open) => { if (!open) { setShowModal(false); formErrors.clearAll() } }}
         title={editingSub ? t('subscription_change_plan') : t('subscription_change_plan')}
         size="sm"
       >
@@ -235,14 +242,15 @@ export default function TenantSubscriptionPage() {
                   {t('subscriptions_plan', 'Plan')}
                 </label>
                 <select
-                  className="h-9 w-full rounded-md border px-2 text-sm"
+                  className="h-9 w-full rounded-md border px-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2"
                   style={{
                     borderColor: 'var(--color-border)',
                     backgroundColor: 'var(--color-background-surface)',
                     color: 'var(--color-text-primary)',
+                    outline: 'none',
                   }}
                   value={form.planId}
-                  onChange={(e) => setForm((f) => ({ ...f, planId: e.target.value }))}
+                  onChange={(e) => { setForm((f) => ({ ...f, planId: e.target.value })); formErrors.clearError('planId') }}
                   required
                 >
                   <option value="">{t('subscription_select_plan')}</option>
@@ -252,6 +260,7 @@ export default function TenantSubscriptionPage() {
                     </option>
                   ))}
                 </select>
+                <FieldError message={formErrors.errors.planId} />
               </div>
               <div>
                 <label

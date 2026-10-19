@@ -2,14 +2,17 @@
 
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { Globe, Edit2, Trash2, CheckCircle, XCircle } from 'lucide-react'
+import { Globe, Edit2, Trash2 } from 'lucide-react'
 import { Button, useToast } from '@astryxdesign/core'
 import { TextInput } from '@astryxdesign/core'
 import { Modal, ModalSection, FieldGrid } from '@/components/ui/modal'
 import { PageHeader } from '@/components/layout/page-header'
 import { Spinner } from '@/components/ui/spinner'
 import { InlineError } from '@/components/ui/inline-error'
+import { FieldError } from '@/components/ui/form-field'
+import { useFormErrors } from '@/components/ui/form-field'
 import { ConfirmDialog } from '@/components/composite/confirm-dialog'
+import { StatusPill } from '@/components/composite/status-pill'
 import { PermissionGate } from '@/components/composite/permission-gate'
 import { sites, type Site, type CreateSiteDto } from '@/lib/api-client'
 import { useI18n } from '@/lib/i18n'
@@ -23,6 +26,7 @@ export default function SiteDetailPage() {
   const router = useRouter()
   const { t } = useI18n()
   const toast = useToast()
+  const formErrors = useFormErrors()
 
   const [site, setSite] = useState<Site | null>(null)
   const [loading, setLoading] = useState(true)
@@ -41,6 +45,7 @@ export default function SiteDetailPage() {
     telephone: '',
     jour_ouverture: 7,
     jour_fermeture: 19,
+    actif: true,
   })
 
   useEffect(() => {
@@ -61,6 +66,7 @@ export default function SiteDetailPage() {
         telephone: data.telephone ?? '',
         jour_ouverture: data.jour_ouverture,
         jour_fermeture: data.jour_fermeture,
+        actif: data.actif,
       })
     } catch (err) {
       setFetchError(err instanceof Error ? err.message : t('error'))
@@ -71,7 +77,11 @@ export default function SiteDetailPage() {
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault()
-    if (!form.nom.trim()) return
+    if (!form.nom.trim()) {
+      formErrors.setError('nom', t('required'))
+      return
+    }
+    formErrors.clearError('nom')
     setSaving(true)
     try {
       const updated = await sites.update(siteId, form)
@@ -141,15 +151,7 @@ export default function SiteDetailPage() {
 
       {/* Status badge */}
       <div className="flex items-center gap-2">
-        {site.actif ? (
-          <span className="inline-flex items-center gap-1.5 text-sm" style={{ color: 'var(--color-success)' }}>
-            <CheckCircle size={14} /> {t('active')}
-          </span>
-        ) : (
-          <span className="inline-flex items-center gap-1.5 text-sm" style={{ color: 'var(--color-danger)' }}>
-            <XCircle size={14} /> {t('inactive')}
-          </span>
-        )}
+        <StatusPill status={site.actif ? 'active' : 'inactive'} size="md" />
       </div>
 
       {/* Info cards */}
@@ -215,20 +217,23 @@ export default function SiteDetailPage() {
       {/* Edit modal */}
       <Modal
         isOpen={editingSite}
-        onOpenChange={(open) => { if (!open) setEditingSite(false) }}
+        onOpenChange={(open) => { if (!open) { setEditingSite(false); formErrors.clearAll() } }}
         title={t('site_edit')}
         size="md"
       >
         <form onSubmit={handleSave} className="space-y-5">
           <ModalSection title={t('site_info')}>
             <FieldGrid columns={1}>
-              <TextInput
-                label={t('site_name')}
-                value={form.nom}
-                onChange={(v) => setForm((f) => ({ ...f, nom: v }))}
-                isRequired
-                width="100%"
-              />
+              <div className="flex flex-col gap-1">
+                <TextInput
+                  label={t('site_name')}
+                  value={form.nom}
+                  onChange={(v) => { setForm((f) => ({ ...f, nom: v })); formErrors.clearError('nom') }}
+                  isRequired
+                  width="100%"
+                />
+                <FieldError message={formErrors.errors.nom} />
+              </div>
               <TextInput
                 label={t('site_address')}
                 value={form.adresse ?? ''}
@@ -256,6 +261,34 @@ export default function SiteDetailPage() {
               onChange={(v) => setForm((f) => ({ ...f, telephone: v }))}
               width="100%"
             />
+            {/* Toggle actif / inactif */}
+            <div className="flex items-center gap-3">
+              <span className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
+                {t('site_active', 'Actif')}
+              </span>
+              <button
+                type="button"
+                aria-pressed={form.actif}
+                onClick={() => setForm((f) => ({ ...f, actif: !f.actif }))}
+                className="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-2 focus-visible:outline-offset-2"
+                style={{
+                  backgroundColor: form.actif
+                    ? 'color-mix(in srgb, var(--color-success) 80%, transparent)'
+                    : 'color-mix(in srgb, var(--color-text-secondary) 30%, transparent)',
+                  outline: 'none',
+                }}
+              >
+                <span
+                  className="pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow transform transition duration-200 ease-in-out"
+                  style={{
+                    transform: form.actif ? 'translateX(20px)' : 'translateX(0)',
+                  }}
+                />
+              </button>
+              <span className="text-sm" style={{ color: form.actif ? 'var(--color-success)' : 'var(--color-text-secondary)' }}>
+                {form.actif ? t('active') : t('inactive')}
+              </span>
+            </div>
           </ModalSection>
 
           <ModalSection title={t('site_hours')}>

@@ -9,6 +9,8 @@ import { Modal, ModalSection, FieldGrid } from '@/components/ui/modal'
 import { DataTable, type Column } from '@/components/ui/data-table'
 import { EmptyState } from '@/components/ui/empty-state'
 import { InlineError } from '@/components/ui/inline-error'
+import { FieldError } from '@/components/ui/form-field'
+import { useFormErrors } from '@/components/ui/form-field'
 import { PageHeader } from '@/components/layout/page-header'
 import { Spinner } from '@/components/ui/spinner'
 import { ConfirmDialog } from '@/components/composite/confirm-dialog'
@@ -22,6 +24,7 @@ export default function TenantSitesPage() {
   const tenantId = params.id as string
   const { t } = useI18n()
   const toast = useToast()
+  const formErrors = useFormErrors()
   const [sitesList, setSitesList] = useState<Site[]>([])
   const [loading, setLoading] = useState(true)
   const [fetchError, setFetchError] = useState<string | null>(null)
@@ -61,7 +64,11 @@ export default function TenantSitesPage() {
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault()
-    if (!form.nom.trim()) return
+    if (!form.nom.trim()) {
+      formErrors.setError('nom', t('required'))
+      return
+    }
+    formErrors.clearError('nom')
     setSaving(true)
     try {
       await sites.create(tenantId, form)
@@ -240,21 +247,24 @@ export default function TenantSitesPage() {
       {/* Create modal */}
       <Modal
         isOpen={showCreate}
-        onOpenChange={(open) => { if (!open) setShowCreate(false) }}
+        onOpenChange={(open) => { if (!open) { setShowCreate(false); formErrors.clearAll() } }}
         title={t('site_create')}
         size="md"
       >
         <form onSubmit={handleCreate} className="space-y-5">
           <ModalSection title={t('site_info')}>
             <FieldGrid columns={1}>
-              <TextInput
-                label={t('site_name')}
-                value={form.nom}
-                onChange={(v) => setForm((f) => ({ ...f, nom: v }))}
-                isRequired
-                width="100%"
-                placeholder="Toulouse Centre"
-              />
+              <div className="flex flex-col gap-1">
+                <TextInput
+                  label={t('site_name')}
+                  value={form.nom}
+                  onChange={(v) => { setForm((f) => ({ ...f, nom: v })); formErrors.clearError('nom') }}
+                  isRequired
+                  width="100%"
+                  placeholder="Toulouse Centre"
+                />
+                <FieldError message={formErrors.errors.nom} />
+              </div>
               <TextInput
                 label={t('site_address')}
                 value={form.adresse ?? ''}
@@ -354,20 +364,23 @@ export default function TenantSitesPage() {
       {/* Edit modal */}
       <Modal
         isOpen={!!editingSite}
-        onOpenChange={(open) => { if (!open) closeEdit() }}
+        onOpenChange={(open) => { if (!open) { closeEdit(); formErrors.clearAll() } }}
         title={t('site_edit')}
         size="md"
       >
         <form onSubmit={handleUpdate} className="space-y-5">
           <ModalSection title={t('site_info')}>
             <FieldGrid columns={1}>
-              <TextInput
-                label={t('site_name')}
-                value={form.nom}
-                onChange={(v) => setForm((f) => ({ ...f, nom: v }))}
-                isRequired
-                width="100%"
-              />
+              <div className="flex flex-col gap-1">
+                <TextInput
+                  label={t('site_name')}
+                  value={form.nom}
+                  onChange={(v) => { setForm((f) => ({ ...f, nom: v })); formErrors.clearError('nom') }}
+                  isRequired
+                  width="100%"
+                />
+                <FieldError message={formErrors.errors.nom} />
+              </div>
               <TextInput
                 label={t('site_address')}
                 value={form.adresse ?? ''}

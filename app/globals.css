@@ -218,6 +218,16 @@ html:root {
      palette. Il est consigné ici pour qu'on ne le.redécouvre pas. */
   --color-danger: var(--color-error);
 
+  /* ── Jetons texte lisible pour usage sur teintage sémantique ───────────────
+     Les sémantiques brutes (#E3193B, #0D8626, #E9AF08) servent de couleur
+     d'icône et de signal. Elles ne sont PAS assez sombres pour du texte sur
+     un fond teinté à 10-15 % de leur propre couleur (ratio 3,5-3,7:1, sous AA).
+     Ces trois jetons passent > 4,5:1 sur leur fond teinté respectif.
+     Règle : texte = jeton -text, icône = sémantique brute, fond = sémantique 12 %. */
+  --color-danger-text: #B91C1C;
+  --color-success-text: #15803D;
+  --color-warning-text: #92400E;
+
   /* Couleurs de plan — uniquement visuelles (charts), pas sémantiques */
   --color-plan-starter: var(--color-accent);
   --color-plan-pro: #6366f1;
