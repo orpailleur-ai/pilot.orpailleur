@@ -12,6 +12,10 @@ import { PermissionGate } from '@/components/composite/permission-gate'
 import { plans, type Plan } from '@/lib/api-client'
 import { useI18n } from '@/lib/i18n'
 
+function formatPrice(cents: number) {
+  return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(cents / 100)
+}
+
 export default function PlanNewPage() {
   const router = useRouter()
   const toast = useToast()
@@ -133,6 +137,10 @@ export default function PlanNewPage() {
                 placeholder="47040"
               />
             </FieldGrid>
+            <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+              {formatPrice(parseInt(form.prixMensuelCents) || 0)} /mois ·{' '}
+              {formatPrice(parseInt(form.prixAnnuelCents) || 0)} /an
+            </p>
           </div>
 
           {/* Limits */}

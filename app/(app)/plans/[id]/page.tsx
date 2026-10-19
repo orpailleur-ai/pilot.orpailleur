@@ -30,6 +30,7 @@ export default function PlanDetailPage() {
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [isDirty, setIsDirty] = useState(false)
   const [form, setForm] = useState({
     nom: '',
     description: '',
@@ -122,9 +123,9 @@ export default function PlanDetailPage() {
           </h2>
           <FieldGrid columns={2}>
             <TextInput label={t('plan_code')} value={plan.code} isRequired width="100%" isDisabled />
-            <TextInput label={t('plan_name')} value={form.nom} onChange={(v) => setForm((f) => ({ ...f, nom: v }))} isRequired width="100%" />
+            <TextInput label={t('plan_name')} value={form.nom} onChange={(v) => { setForm((f) => ({ ...f, nom: v })); setIsDirty(true) }} isRequired width="100%" />
           </FieldGrid>
-          <TextInput label={t('plan_description')} value={form.description} onChange={(v) => setForm((f) => ({ ...f, description: v }))} width="100%" />
+          <TextInput label={t('plan_description')} value={form.description} onChange={(v) => { setForm((f) => ({ ...f, description: v })); setIsDirty(true) }} width="100%" />
         </div>
 
         {/* Pricing */}
@@ -140,20 +141,20 @@ export default function PlanDetailPage() {
               label={t('plan_price_monthly')}
               type="text"
               value={form.prixMensuelCents}
-              onChange={(v) => setForm((f) => ({ ...f, prixMensuelCents: v }))}
+              onChange={(v) => { setForm((f) => ({ ...f, prixMensuelCents: v })); setIsDirty(true) }}
               width="100%"
             />
             <TextInput
               label={t('plan_price_yearly')}
               type="text"
               value={form.prixAnnuelCents}
-              onChange={(v) => setForm((f) => ({ ...f, prixAnnuelCents: v }))}
+              onChange={(v) => { setForm((f) => ({ ...f, prixAnnuelCents: v })); setIsDirty(true) }}
               width="100%"
             />
           </FieldGrid>
           <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
-            {formatPrice(parseInt(form.prixMensuelCents) || 0)}/mois ·{' '}
-            {formatPrice(parseInt(form.prixAnnuelCents) || 0)}/an
+            {formatPrice(parseInt(form.prixMensuelCents) || 0)} /mois ·{' '}
+            {formatPrice(parseInt(form.prixAnnuelCents) || 0)} /an
           </p>
         </div>
 
@@ -170,14 +171,14 @@ export default function PlanDetailPage() {
               label={t('plan_nb_sites_max')}
               type="text"
               value={form.nbSitesMax}
-              onChange={(v) => setForm((f) => ({ ...f, nbSitesMax: v }))}
+              onChange={(v) => { setForm((f) => ({ ...f, nbSitesMax: v })); setIsDirty(true) }}
               width="100%"
             />
             <TextInput
               label={t('plan_nb_users_max')}
               type="text"
               value={form.nbUsersMax}
-              onChange={(v) => setForm((f) => ({ ...f, nbUsersMax: v }))}
+              onChange={(v) => { setForm((f) => ({ ...f, nbUsersMax: v })); setIsDirty(true) }}
               width="100%"
             />
           </FieldGrid>
@@ -197,7 +198,7 @@ export default function PlanDetailPage() {
           <TextArea
             label={t('plan_features')}
             value={form.features}
-            onChange={(v) => setForm((f) => ({ ...f, features: v }))}
+            onChange={(v) => { setForm((f) => ({ ...f, features: v })); setIsDirty(true) }}
             rows={5}
             width="100%"
           />
@@ -211,7 +212,7 @@ export default function PlanDetailPage() {
               label={t('plan_delete')}
               onClick={() => setShowDeleteConfirm(true)}
             />
-            <Button variant="primary" label={t('save')} type="submit" isLoading={saving} />
+            <Button variant="primary" label={t('save')} type="submit" isLoading={saving} isDisabled={!isDirty || saving} />
           </div>
         </PermissionGate>
       </form>

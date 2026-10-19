@@ -139,7 +139,7 @@ export default function RolePermissionsPage() {
             color: 'var(--color-text-secondary)',
           }}
         >
-          <Lock size={14} style={{ color: 'var(--color-warning)' }} />
+          <Lock size={14} style={{ color: 'var(--color-warning-text)' }} />
           {t('role_system_locked')}
         </div>
       )}
@@ -216,8 +216,8 @@ export default function RolePermissionsPage() {
                           checked={granted}
                           disabled={role.isSystem}
                           onChange={() => togglePermission(perm.id)}
-                          className="h-4 w-4 rounded"
-                          style={{ accentColor: 'var(--color-accent)' }}
+                          className="h-4 w-4 rounded focus-visible:outline-2 focus-visible:outline-offset-2"
+                          style={{ accentColor: 'var(--color-accent)', outline: 'none' }}
                         />
                       </td>
                     </tr>
