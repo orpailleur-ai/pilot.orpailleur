@@ -466,6 +466,11 @@ export const en = {
     'Rendering uses a headless browser: expect a few seconds.',
   pdf_templates_preview_retry: 'Retry',
   pdf_templates_preview_resize: 'Resize preview',
+  pdf_templates_assistant: 'AI assistant',
+  pdf_templates_assistant_copy: 'Copy the prompt',
+  pdf_templates_assistant_hint:
+    'Paste this prompt into an AI assistant: it contains the current template, the exact list of available variables and the helpers. There are no sample values — the assistant will not hard-code "Farine T55".',
+  pdf_templates_assistant_params: 'Available variables ({count})',
   pdf_templates_delete: 'Delete',
   pdf_templates_delete_confirm: 'Delete this global template?',
   pdf_templates_form_name: 'Name',

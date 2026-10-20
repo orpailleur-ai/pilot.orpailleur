@@ -1,10 +1,11 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { FileText, Eye, EyeOff, Pencil, Trash2 } from 'lucide-react'
 import { Button, Spinner, TextArea, useToast } from '@astryxdesign/core'
 import { ConfirmDialog } from '@/components/composite/confirm-dialog'
+import { ActiveTogglePill } from '@/components/composite/active-toggle-pill'
 import { PageHeader } from '@/components/layout/page-header'
 import { PdfPreviewPanel } from '@/components/pdf/pdf-preview-panel'
 import { CopyButton } from '@/components/ui/copy-button'
@@ -14,6 +15,12 @@ import { Section } from '@/components/ui/section'
 import { usePdfPreview } from '@/lib/hooks/use-pdf-preview'
 import { useMediaQuery } from '@/lib/hooks/use-media-query'
 import { useI18n } from '@/lib/i18n'
+import {
+  PARAMETER_GROUP_LABELS,
+  parametersForScope,
+  type TemplateParameter,
+} from '@/lib/pdf-template-parameters'
+import { buildTemplatePrompt } from '@/lib/pdf-template-prompt'
 import {
   getInstanceAdmin,
   updateGlobalTemplate,
@@ -204,6 +211,22 @@ export default function PdfTemplateDetailPage() {
 
   const isGlobal = instance.tenantId === null
 
+  /** Variables du type de document, regroupées pour l'affichage. */
+  const parametersByGroup = useMemo(() => {
+    const groups: Record<string, TemplateParameter[]> = {}
+    for (const p of parametersForScope(instance.scope)) {
+      const list = groups[p.group]
+      if (list) list.push(p)
+      else groups[p.group] = [p]
+    }
+    return groups
+  }, [instance.scope])
+
+  const parameters = useMemo(
+    () => Object.values(parametersByGroup).flat(),
+    [parametersByGroup],
+  )
+
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
@@ -235,10 +258,18 @@ export default function PdfTemplateDetailPage() {
             />
             {isGlobal && (
               <>
-                <Button
-                  label={actif ? t('pdf_templates_deactivate') : t('pdf_templates_activate')}
-                  variant={actif ? 'secondary' : 'primary'}
-                  onClick={() => {
+                {/*
+                  La pastille REMPLACE le bouton « Activer / Désactiver » :
+                  un bouton qui change de libellé selon l'état cache l'état
+                  (il faut déjà le connaître pour savoir ce qu'il va faire).
+                  La pastille montre l'état — en vert quand il est actif —
+                  et le bascule au clic. Un élément au lieu de deux.
+                */}
+                <ActiveTogglePill
+                  actif={actif}
+                  labelActif={t('pdf_templates_active')}
+                  labelInactif={t('pdf_templates_inactive')}
+                  onToggle={() => {
                     const next = !actif
                     setActif(next)
                     setIsDirty(true)
@@ -346,6 +377,68 @@ export default function PdfTemplateDetailPage() {
               </Section>
             </>
           )}
+
+          {/* ── Assistant IA ──
+              Un prompt prêt à coller dans un agent : le gabarit ACTUEL, la
+              liste EXACTE des variables, les helpers, la façon d'afficher
+              un logo. Sans valeurs d'exemple : un assistant qui recopie
+              « Farine T55 » produirait un document qui affiche « Farine
+              T55 » sur toutes les commandes.
+
+              Le récapitulatif des variables est replié : la page reste
+              courte, et le détail est à un clic. */}
+          <Section
+            title={t('pdf_templates_assistant')}
+            action={
+              <CopyButton
+                value={buildTemplatePrompt(instance.scope, name, body)}
+                label={t('pdf_templates_assistant_copy')}
+                labelCopied={t('copied')}
+              />
+            }
+          >
+            <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+              {t('pdf_templates_assistant_hint')}
+            </p>
+            <details className="mt-1">
+              <summary
+                className="cursor-pointer text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2"
+                style={{ color: 'var(--color-text-primary)' }}
+              >
+                {t('pdf_templates_assistant_params', { count: parameters.length })}
+              </summary>
+              <div className="mt-3 flex flex-col gap-4">
+                {Object.entries(parametersByGroup).map(([group, list]) => (
+                  <div key={group}>
+                    <p
+                      className="text-xs font-semibold uppercase tracking-wide"
+                      style={{ color: 'var(--color-text-secondary)' }}
+                    >
+                      {PARAMETER_GROUP_LABELS[group] ?? group}
+                    </p>
+                    <ul className="mt-1.5 flex flex-col gap-1.5">
+                      {list.map((p: TemplateParameter) => (
+                        <li key={p.name} className="flex flex-wrap items-baseline gap-x-2 text-sm">
+                          <code
+                            className="rounded border px-1.5 py-0.5 text-xs"
+                            style={{
+                              fontFamily: 'Menlo, ui-monospace, monospace',
+                              backgroundColor: 'var(--color-background-surface)',
+                              borderColor: 'var(--color-border)',
+                              color: 'var(--color-text-primary)',
+                            }}
+                          >
+                            {p.name}
+                          </code>
+                          <span style={{ color: 'var(--color-text-secondary)' }}>{p.label}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            </details>
+          </Section>
         </div>
 
         {/* ── Panneau d'aperçu ──

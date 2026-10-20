@@ -465,6 +465,11 @@ export const fr = {
     'Le rendu passe par un navigateur sans interface : comptez quelques secondes.',
   pdf_templates_preview_retry: 'Réessayer',
   pdf_templates_preview_resize: "Redimensionner l'aperçu",
+  pdf_templates_assistant: 'Assistant IA',
+  pdf_templates_assistant_copy: 'Copier le prompt',
+  pdf_templates_assistant_hint:
+    "Collez ce prompt dans un assistant IA : il contient le gabarit actuel, la liste exacte des variables disponibles et les helpers. Il n'y a aucune valeur d'exemple — l'assistant n'écrira pas « Farine T55 » en dur.",
+  pdf_templates_assistant_params: 'Variables disponibles ({count})',
   pdf_templates_delete: 'Supprimer',
   pdf_templates_delete_confirm: 'Supprimer ce modèle global ?',
   pdf_templates_form_name: 'Nom',
