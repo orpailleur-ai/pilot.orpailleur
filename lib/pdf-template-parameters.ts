@@ -41,7 +41,10 @@ export const TEMPLATE_HELPERS: Array<{ signature: string; description: string }>
   { signature: 'statusLabel(statut)', description: 'Statut → libellé français (« Brouillon », « Payée »…)' },
   { signature: 'tvaRate(taux)', description: 'Taux → « 20% »' },
   { signature: 'Devise(code)', description: 'Code devise → « EUR »' },
-  { signature: 'ifDevise(code)', description: 'Bloc exécuté si la devise est l’EUR' },
+  // Le helper est enregistre sous le nom `ifDevis` (et non `ifDevise`) :
+  // le recopier tel quel produirait « Missing helper » au rendu, et le
+  // document entier echouerait.
+  { signature: 'ifDevis(code)', description: 'Bloc exécuté si la devise est l’EUR' },
 ]
 
 /**

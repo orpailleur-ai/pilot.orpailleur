@@ -13,6 +13,7 @@ import { InlineError } from '@/components/ui/inline-error'
 import { ResizeHandle } from '@/components/ui/resize-handle'
 import { Section } from '@/components/ui/section'
 import { usePdfPreview } from '@/lib/hooks/use-pdf-preview'
+import { useTenant } from '@/components/providers/tenant-context'
 import { useMediaQuery } from '@/lib/hooks/use-media-query'
 import { useI18n } from '@/lib/i18n'
 import {
@@ -77,7 +78,11 @@ export default function PdfTemplateDetailPage() {
   const toggleRef = useRef<HTMLButtonElement>(null)
   const panelRef = useRef<HTMLElement>(null)
 
-  const preview = usePdfPreview(id, body)
+  // Le tenant selectionne dans le pilot : c'est sa boulangerie reelle qui
+  // doit apparaitre dans l'apercu (nom, adresse, logo). Sans lui, l'apercu
+  // montrait une boulangerie fictive.
+  const { currentTenantId } = useTenant()
+  const preview = usePdfPreview(id, body, currentTenantId)
 
   /** Le panneau est en plein écran sous `lg`, en colonne à côté au-delà. */
   const isWide = useMediaQuery('(min-width: 1024px)')

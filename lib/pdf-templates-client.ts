@@ -92,9 +92,16 @@ export async function deleteGlobalTemplate(id: string): Promise<void> {
 export async function previewTemplateAdmin(
   id: string,
   body?: string,
+  tenantId?: string | null,
 ): Promise<{ url: string; key: string }> {
+  // `tenantId` : le tenant dont les donnees REELLES (nom, adresse, logo)
+  // doivent apparaitre dans l'apercu. Sans lui, l'apercu montre une
+  // boulangerie fictive.
   return apiClient.post<{ url: string; key: string }>(
     `/admin/pdf-templates/instances/${id}/preview`,
-    body !== undefined ? { body } : {},
+    {
+      ...(body !== undefined ? { body } : {}),
+      ...(tenantId ? { tenantId } : {}),
+    },
   )
 }

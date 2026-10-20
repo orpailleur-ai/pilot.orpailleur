@@ -47,7 +47,12 @@ const INITIAL: PdfPreviewState = {
  * récent ne doit pas écraser le résultat le plus frais. Chaque appel incrémente
  * un compteur, et seule la réponse portant le bon numéro est appliquée.
  */
-export function usePdfPreview(id: string | null, body: string) {
+/**
+ * @param tenantId Tenant dont les donnees reelles doivent figurer dans
+ *                 l'apercu. Un changement de tenant redemande un rendu :
+ *                 l'apercu montre alors la boulangerie selectionnee.
+ */
+export function usePdfPreview(id: string | null, body: string, tenantId?: string | null) {
   const [state, setState] = useState<PdfPreviewState>(INITIAL)
 
   /** Numéro du dernier rendu demandé — sert à écarter les réponses obsolètes. */
@@ -67,7 +72,7 @@ export function usePdfPreview(id: string | null, body: string) {
     setState((s) => ({ ...s, status: 'loading', error: '' }))
 
     try {
-      const result = await previewTemplateAdmin(id, body)
+      const result = await previewTemplateAdmin(id, body, tenantId)
       if (!mounted.current || current !== requestId.current) return
       setState({
         status: 'ready',
@@ -87,7 +92,7 @@ export function usePdfPreview(id: string | null, body: string) {
         renderedFrom: s.renderedFrom,
       }))
     }
-  }, [id, body])
+  }, [id, body, tenantId])
 
   /**
    * L'aperçu est-il en retard sur le modèle affiché ?
