@@ -211,41 +211,55 @@ export default function PdfTemplateDetailPage() {
         backHref="/parametrage/pdf-templates"
         icon={<FileText size={20} style={{ color: 'var(--color-text-primary)' }} />}
         action={
-          isGlobal && (
-            <div className="flex items-center gap-2">
-              <Button
-                ref={toggleRef}
-                label={panelOpen ? t('pdf_templates_preview_hide') : t('pdf_templates_preview')}
-                variant={panelOpen ? 'primary' : 'secondary'}
-                icon={panelOpen ? <EyeOff size={15} aria-hidden="true" /> : <Eye size={15} aria-hidden="true" />}
-                aria-expanded={panelOpen}
-                aria-controls="pdf-preview-panel"
-                onClick={togglePanel}
-              />
-              <Button
-                label={actif ? t('pdf_templates_deactivate') : t('pdf_templates_activate')}
-                variant={actif ? 'secondary' : 'primary'}
-                onClick={() => {
-                  const next = !actif
-                  setActif(next)
-                  setIsDirty(true)
-                }}
-              />
-              <Button
-                label={saving ? t('loading') : t('save')}
-                variant="primary"
-                isLoading={saving}
-                isDisabled={!isDirty}
-                onClick={handleSave}
-              />
-              <Button
-                label={t('delete')}
-                variant="secondary"
-                icon={<Trash2 size={15} aria-hidden="true" />}
-                onClick={() => setDeleteTarget(true)}
-              />
-            </div>
-          )
+          <div className="flex items-center gap-2">
+            {/*
+              L'aperçu est proposé pour TOUT modèle, tenant compris : c'est
+              une lecture, pas une écriture, et l'API n'exige que
+              PARAMETRAGE_READ pour le rendre. Masquer le bouton aux modèles
+              de tenant les rendait consultables sans jamais pouvoir les
+              voir — l'aperçu est justement ce qui permet de juger un
+              modèle de tenant.
+
+              L'ÉDITION, elle, reste réservée aux modèles globaux : un
+              modèle de tenant appartient à son tenant, pilot n'en est pas
+              le propriétaire.
+            */}
+            <Button
+              ref={toggleRef}
+              label={panelOpen ? t('pdf_templates_preview_hide') : t('pdf_templates_preview')}
+              variant={panelOpen ? 'primary' : 'secondary'}
+              icon={panelOpen ? <EyeOff size={15} aria-hidden="true" /> : <Eye size={15} aria-hidden="true" />}
+              aria-expanded={panelOpen}
+              aria-controls="pdf-preview-panel"
+              onClick={togglePanel}
+            />
+            {isGlobal && (
+              <>
+                <Button
+                  label={actif ? t('pdf_templates_deactivate') : t('pdf_templates_activate')}
+                  variant={actif ? 'secondary' : 'primary'}
+                  onClick={() => {
+                    const next = !actif
+                    setActif(next)
+                    setIsDirty(true)
+                  }}
+                />
+                <Button
+                  label={saving ? t('loading') : t('save')}
+                  variant="primary"
+                  isLoading={saving}
+                  isDisabled={!isDirty}
+                  onClick={handleSave}
+                />
+                <Button
+                  label={t('delete')}
+                  variant="secondary"
+                  icon={<Trash2 size={15} aria-hidden="true" />}
+                  onClick={() => setDeleteTarget(true)}
+                />
+              </>
+            )}
+          </div>
         }
       />
 

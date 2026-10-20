@@ -47,7 +47,13 @@ export default function PdfTemplatesPage() {
   const [error, setError] = useState('')
 
   const [search, setSearch] = useState('')
-  const [previewLoading, setPreviewLoading] = useState(false)
+  /**
+   * Id du modèle dont l'aperçu est en cours de rendu.
+   *
+   * Un booléen ne suffisait pas : il faisait tourner le spinner sur TOUTES
+   * les lignes du tableau, alors qu'une seule est en cours.
+   */
+  const [previewLoadingId, setPreviewLoadingId] = useState<string | null>(null)
   const [preview, setPreview] = useState<{ url: string; key: string } | null>(null)
 
   const [modal, setModal] = useState<{
@@ -110,14 +116,14 @@ export default function PdfTemplatesPage() {
   }
 
   async function handlePreview(inst: PdfTemplateInstance) {
-    setPreviewLoading(true)
+    setPreviewLoadingId(inst.id)
     try {
       const result = await previewTemplateAdmin(inst.id)
       setPreview(result)
     } catch {
       toast({ body: t('pdf_templates_preview_err'), type: 'error' })
     } finally {
-      setPreviewLoading(false)
+      setPreviewLoadingId(null)
     }
   }
 
@@ -217,7 +223,7 @@ export default function PdfTemplatesPage() {
             isIconOnly
             icon={<Eye size={14} />}
             onClick={() => handlePreview(row)}
-            isLoading={previewLoading}
+            isLoading={previewLoadingId === row.id}
           />
           {row.tenantId === null ? (
             <>
