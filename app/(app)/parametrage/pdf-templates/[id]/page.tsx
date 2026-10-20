@@ -189,6 +189,30 @@ export default function PdfTemplateDetailPage() {
     }
   }, [id, t, toast, router])
 
+  /**
+   * Variables du type de document, regroupées pour l'affichage.
+   *
+   * Ces deux `useMemo` sont AVANT les retours anticipés : un hook appelé
+   * après un `return` conditionnel change le nombre de hooks selon
+   * l'état, et React lève alors « rendered more hooks than during the
+   * previous render » — la page entière tombe sur son écran d'erreur.
+   */
+  const parametersByGroup = useMemo(() => {
+    const groups: Record<string, TemplateParameter[]> = {}
+    if (!instance) return groups
+    for (const p of parametersForScope(instance.scope)) {
+      const list = groups[p.group]
+      if (list) list.push(p)
+      else groups[p.group] = [p]
+    }
+    return groups
+  }, [instance])
+
+  const parameters = useMemo(
+    () => Object.values(parametersByGroup).flat(),
+    [parametersByGroup],
+  )
+
   if (loadingData) {
     return (
       <div className="flex justify-center py-16">
@@ -210,22 +234,6 @@ export default function PdfTemplateDetailPage() {
   }
 
   const isGlobal = instance.tenantId === null
-
-  /** Variables du type de document, regroupées pour l'affichage. */
-  const parametersByGroup = useMemo(() => {
-    const groups: Record<string, TemplateParameter[]> = {}
-    for (const p of parametersForScope(instance.scope)) {
-      const list = groups[p.group]
-      if (list) list.push(p)
-      else groups[p.group] = [p]
-    }
-    return groups
-  }, [instance.scope])
-
-  const parameters = useMemo(
-    () => Object.values(parametersByGroup).flat(),
-    [parametersByGroup],
-  )
 
   return (
     <div className="flex flex-col gap-6">
