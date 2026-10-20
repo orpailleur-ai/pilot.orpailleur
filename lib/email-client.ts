@@ -23,16 +23,46 @@ export interface SmtpConfig {
   password?: never
 }
 
+/**
+ * Un scope de template, tel que renvoye par la liste admin.
+ *
+ * La liste ne depend PAS des lignes enregistrees : elle contient un entree
+ * par scope du registre, configure ou non. `exists` dit si un template a
+ * deja ete enregistre pour ce scope.
+ *
+ * `bodyHtml` n'y figure pas : la liste ne l'affiche pas, et le corps peut
+ * peser plusieurs kilo-octets.
+ */
 export interface EmailTemplate {
-  id?: string
   scope: string
+  /** Libelle du scope, depuis le registre. */
+  label: string
+  labelEn: string
+  /** Un template existe deja pour ce scope. */
+  exists: boolean
+  name: string
+  subject: string
+  actif: boolean
+  updatedAt: string | null
+}
+
+/** Detail d'un scope : le template enregistre, ou la definition du registre. */
+export interface EmailTemplateDetail {
+  exists: boolean
+  scope: string
+  /** Definition du scope : variables Handlebars, libelles. Toujours presente. */
+  scopeDef: {
+    scope: string
+    label: string
+    labelEn: string
+    variables: EmailTemplateVariable[]
+  }
   name: string
   subject: string
   bodyHtml: string
   actif: boolean
-  variables: EmailTemplateVariable[]
-  updatedAt?: string
-  updatedBy?: string | null
+  updatedAt: string | null
+  updatedBy: string | null
 }
 
 export interface EmailTemplateVariable {
@@ -87,24 +117,11 @@ export async function testSmtpConfig(toEmail: string): Promise<{ ok: boolean; me
 // ── Email Templates ──────────────────────────────────────────────────────────
 
 export async function listEmailTemplatesAdmin(): Promise<EmailTemplate[]> {
-  const rows = await apiClient.get<Array<{
-    id: string; scope: string; name: string; subject: string; bodyHtml: string
-    actif: boolean; variables: EmailTemplateVariable[]; updatedAt: string; updatedBy: string | null
-  }>>('/admin/email/templates')
-  return rows.map((r) => ({ ...r }))
+  return apiClient.get<EmailTemplate[]>('/admin/email/templates')
 }
 
-export async function getEmailTemplateAdmin(scope: string): Promise<{
-  exists: boolean
-  scope?: string
-  name?: string
-  subject?: string
-  bodyHtml?: string
-  actif?: boolean
-  variables?: EmailTemplateVariable[]
-  updatedAt?: string
-} | { exists: false }> {
-  return apiClient.get(`/admin/email/templates/${scope}`)
+export async function getEmailTemplateAdmin(scope: string): Promise<EmailTemplateDetail> {
+  return apiClient.get<EmailTemplateDetail>(`/admin/email/templates/${scope}`)
 }
 
 export async function upsertEmailTemplateAdmin(

@@ -13,7 +13,7 @@ import { useI18n } from '@/lib/i18n'
 import {
   getEmailTemplateAdmin,
   upsertEmailTemplateAdmin,
-  type EmailTemplate,
+  type EmailTemplateDetail,
 } from '@/lib/email-client'
 
 const SCOPE_LABELS: Record<string, string> = {
@@ -31,16 +31,7 @@ export default function EmailTemplateEditorPage() {
   const params = useParams<{ scope: string }>()
   const scope = params.scope
 
-  const [template, setTemplate] = useState<{
-    exists: boolean
-    name?: string
-    subject?: string
-    bodyHtml?: string
-    actif?: boolean
-    variables?: Array<{ name: string; label: string; labelEn: string; required?: boolean; type?: string }>
-    updatedAt?: string
-    updatedBy?: string | null
-  } | null>(null)
+  const [template, setTemplate] = useState<EmailTemplateDetail | null>(null)
   const [loadingData, setLoadingData] = useState(true)
   const [dataError, setDataError] = useState('')
 
@@ -61,12 +52,17 @@ export default function EmailTemplateEditorPage() {
     getEmailTemplateAdmin(scope)
       .then((tpl) => {
         setTemplate(tpl)
-        if (tpl.exists) {
-          setName(tpl.name ?? '')
-          setSubject(tpl.subject ?? '')
-          setBodyHtml(tpl.bodyHtml ?? '')
-          setActif(tpl.actif ?? false)
-        }
+        // Meme pour un template qui n'existe pas encore : le nom est
+        // pre-rempli avec le libelle du scope, et le corps reste vide. Sans
+        // cela la page demarrait sur un formulaire totalement nu, sans meme
+        // une idee de ce qu'on attendait.
+        setName(tpl.name ?? tpl.scopeDef?.label ?? '')
+        setSubject(tpl.subject ?? '')
+        setBodyHtml(tpl.bodyHtml ?? '')
+        // Un template cree sans plus est ACTIF (l'API fait `actif ?? true`) :
+        // afficher « inactif » dans le formulaire alors que l'enregistrement
+        // l'activait, c'etait incoherent.
+        setActif(tpl.exists ? (tpl.actif ?? false) : true)
       })
       .catch((e: unknown) => {
         setDataError(e instanceof Error ? e.message : t('error'))
@@ -115,7 +111,11 @@ export default function EmailTemplateEditorPage() {
     )
   }
 
-  const variables = template.variables ?? []
+  // Les variables viennent du REGISTRE des scopes, pas d'une colonne stockee
+  // dans la table des templates : celle-ci n'est jamais ecrite, donc elle
+  // serait vide — et le serait pour toujours. Le registre, lui, suit le
+  // code, et sert aussi bien a la creation qu'a l'edition.
+  const variables = template.scopeDef?.variables ?? []
 
   return (
     <>
@@ -143,6 +143,21 @@ export default function EmailTemplateEditorPage() {
       />
 
       {saveError && <InlineError message={saveError} />}
+
+      {/* Template jamais enregistre : on le dit, plutot que de laisser croire
+          a un template vide deja configure. */}
+      {!template.exists && (
+        <div
+          className="rounded border px-4 py-3 text-sm"
+          style={{
+            borderColor: 'var(--color-border)',
+            backgroundColor: 'var(--color-card)',
+            color: 'var(--color-text-secondary)',
+          }}
+        >
+          {t('email_templates_new_hint')}
+        </div>
+      )}
 
       <div className="flex flex-col gap-6">
         {/* Variables disponibles */}

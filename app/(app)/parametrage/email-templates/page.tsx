@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
-import { Mail, Pencil, Plus } from 'lucide-react'
+import { Mail, Pencil } from 'lucide-react'
 import { Badge, Button, useToast } from '@astryxdesign/core'
 import { PageHeader } from '@/components/layout/page-header'
 import { DataTable, type Column } from '@/components/ui/data-table'
@@ -68,15 +68,26 @@ export default function EmailTemplatesPage() {
       header: t('email_templates_subject'),
       render: (row) => (
         <span className="truncate max-w-xs block" title={row.subject}>
-          {row.subject}
+          {row.subject || '—'}
         </span>
       ),
     },
     {
-      key: 'actif',
-      header: t('email_templates_active'),
+      // Un scope peut exister sans etre active : c'est un template prepare
+      // mais desactive. Les deux etats meritent d'etre distingues.
+      key: 'etat',
+      header: t('email_templates_state'),
       render: (row) => (
-        <Badge variant={STATUS_BADGE[String(row.actif)]} label={row.actif ? t('active') : t('inactive')} />
+        <Badge
+          variant={!row.exists ? 'warning' : STATUS_BADGE[String(row.actif)]}
+          label={
+            !row.exists
+              ? t('email_templates_not_configured')
+              : row.actif
+                ? t('active')
+                : t('inactive')
+          }
+        />
       ),
     },
     {
@@ -85,7 +96,7 @@ export default function EmailTemplatesPage() {
       render: (row) => (
         <Link href={`/parametrage/email-templates/${row.scope}`}>
           <Button
-            label={t('edit')}
+            label={row.exists ? t('edit') : t('email_templates_create')}
             variant="ghost"
             size="sm"
             icon={<Pencil size={13} />}

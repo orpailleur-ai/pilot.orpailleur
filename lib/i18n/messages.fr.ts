@@ -592,6 +592,11 @@ export const fr = {
   email_templates_body: 'Corps HTML',
   email_templates_updated_at: 'Modifié le',
   email_templates_updated_by: 'Modifié par',
+  email_templates_state: 'État',
+  email_templates_configured: 'Configuré',
+  email_templates_not_configured: 'Non configuré',
+  email_templates_create: 'Créer',
+  email_templates_new_hint: 'Aucun template global pour ce scope. Renseignez le sujet et le corps ci-dessous : les variables disponibles sont listées pour être utilisées avec {{nom}}.',
 
   // ── Email scopes ───────────────────────────────────────────────────
   email_scope_commande_envoyee: 'Commande envoyée',

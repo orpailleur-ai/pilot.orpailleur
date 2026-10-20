@@ -593,6 +593,11 @@ export const en = {
   email_templates_body: 'HTML Body',
   email_templates_updated_at: 'Updated at',
   email_templates_updated_by: 'Updated by',
+  email_templates_state: 'Status',
+  email_templates_configured: 'Configured',
+  email_templates_not_configured: 'Not configured',
+  email_templates_create: 'Create',
+  email_templates_new_hint: 'No global template for this scope yet. Fill in the subject and body below; the available variables are listed for use with {{name}}.',
 
   // ── Email scopes ───────────────────────────────────────────────────
   email_scope_commande_envoyee: 'Order sent',

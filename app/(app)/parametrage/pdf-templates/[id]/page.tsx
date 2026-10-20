@@ -368,6 +368,7 @@ export default function PdfTemplateDetailPage() {
               >
                 <TextArea
                   label={t('pdf_templates_form_body')}
+                  isLabelHidden
                   value={body}
                   onChange={(v) => { setBody(v); setIsDirty(true) }}
                   rows={24}
