@@ -7,6 +7,11 @@ import { Button, Spinner, useToast } from '@astryxdesign/core'
 import { apiClient } from '@/lib/api-client'
 import { useI18n } from '@/lib/i18n'
 import { libelleDetail } from '@/lib/i18n/scopes'
+import {
+  listModelesAdmin,
+  testerModeleAdmin,
+  type Modele as ModeleClient,
+} from '@/lib/modeles-client'
 import { InlineError } from '@/components/ui/inline-error'
 import { CopyButton } from '@/components/ui/copy-button'
 import { PageHeader } from '@/components/layout/page-header'
@@ -17,25 +22,15 @@ interface EtatTest {
   resultat: { ok: boolean; code: string; message: string; duree_ms?: number } | null
 }
 
-/** Reprend la forme de `Modele` dans la page liste — les deux doivent évoluer ensemble. */
-interface Modele {
-  id: string
-  scope: string
-  provider: string
-  model: string
-  /** `env` : la clé vient d'une variable d'environnement. `db` : chiffrée. */
-  key_source: 'env' | 'db'
-  env_var: string | null
-  cle: string | null
-  prix_entree_eur_par_m: number | null
-  prix_sortie_eur_par_m: number | null
-  tarif_base: 'jetons' | 'pages' | null
-  prix_page_eur: number | null
-  taux_usd_eur: number | null
-  tarif_maj_le: string | null
-  actif: boolean
-  updated_at: string
-}
+/**
+ * La forme de `Modele` est définie UNE FOIS, dans `lib/modeles-client.ts`.
+ *
+ * Elle était dupliquée ici, avec un commentaire qui l'avouait (« les deux
+ * doivent évoluer ensemble ») : deux définitions à tenir synchronisées,
+ * c'est deux définitions qui divergent un jour. Le type vient désormais du
+ * client, comme la liste.
+ */
+type Modele = ModeleClient
 
 interface Stats {
   total: { appels: number; jetons_entree: number; jetons_sortie: number; cout_eur: number }
@@ -84,7 +79,7 @@ export default function ModeleDetailPage() {
       // La liste d'abord : c'est la seule source du type `Modele`. La route
       // `/:id` n'existe pas côté API, et le détail ne doit pas devenir un
       // second endroit où la forme du modèle est décrite.
-      const { modeles } = await apiClient.get<{ modeles: Modele[] }>('/admin/ai-modeles')
+      const modeles = await listModelesAdmin()
       const trouve = modeles.find((m) => m.id === id) ?? null
       if (!trouve) {
         setErreur(t('ai_models_detail_notfound'))
@@ -125,9 +120,7 @@ export default function ModeleDetailPage() {
     if (!modele) return
     setEtatTest({ enCours: true, resultat: null })
     try {
-      const r = await apiClient.post<{
-        ok: boolean; code: string; message: string; duree_ms?: number
-      }>(`/admin/ai-modeles/${modele.id}/tester`)
+      const r = await testerModeleAdmin(modele.id)
       setEtatTest({ enCours: false, resultat: r })
       toast({
         body: r.ok ? t('ai_models_test_ok', { ms: r.duree_ms ?? 0 }) : r.message,
@@ -219,26 +212,23 @@ export default function ModeleDetailPage() {
           {t('ai_models_pricing')}
         </h2>
         <div className="grid gap-3 sm:grid-cols-2">
-          {modele.tarif_base === 'pages' ? (
-            <Carte
-              libelle={t('ai_models_price_page')}
-              valeur={modele.prix_page_eur}
-              suffixe="€ / page"
-            />
-          ) : (
-            <>
-              <Carte
-                libelle={t('ai_models_price_in')}
-                valeur={modele.prix_entree_eur_par_m}
-                suffixe="€ / M"
-              />
-              <Carte
-                libelle={t('ai_models_price_out')}
-                valeur={modele.prix_sortie_eur_par_m}
-                suffixe="€ / M"
-              />
-            </>
-          )}
+          {/*
+            L'API n'envoie qu'un barème en euros par MILLION de jetons. La
+            branche « facturé à la page » ne s'exécutait donc jamais — le
+            type annonçait `tarif_base` et `prix_page_eur`, que la réponse
+            ne contient pas. Elle est retirée : un tarif que la base ne
+            sait pas ne doit pas s'afficher.
+          */}
+          <Carte
+            libelle={t('ai_models_price_in')}
+            valeur={modele.prix_entree_eur_par_m}
+            suffixe="€ / M"
+          />
+          <Carte
+            libelle={t('ai_models_price_out')}
+            valeur={modele.prix_sortie_eur_par_m}
+            suffixe="€ / M"
+          />
         </div>
       </section>
 
