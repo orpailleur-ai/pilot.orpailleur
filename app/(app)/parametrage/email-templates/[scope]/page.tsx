@@ -1,19 +1,23 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
-import { useParams } from 'next/navigation'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useParams, useSearchParams } from 'next/navigation'
 import { Mail, Pencil, CheckCircle } from 'lucide-react'
 import { Button, Spinner, TextArea, useToast } from '@astryxdesign/core'
 import { CheckboxInput } from '@astryxdesign/core/CheckboxInput'
 import { PageHeader } from '@/components/layout/page-header'
+import { EmailPreviewPanel } from '@/components/email/email-preview-panel'
 import { InlineError } from '@/components/ui/inline-error'
 import { CopyButton } from '@/components/ui/copy-button'
 import { Section } from '@/components/ui/section'
 import { useI18n } from '@/lib/i18n'
+import { useMediaQuery } from '@/lib/hooks/use-media-query'
 import {
   getEmailTemplateAdmin,
+  previewEmailTemplateAdmin,
   upsertEmailTemplateAdmin,
   type EmailTemplateDetail,
+  type EmailTemplatePreview,
 } from '@/lib/email-client'
 
 const SCOPE_LABELS: Record<string, string> = {
@@ -25,11 +29,24 @@ const SCOPE_LABELS: Record<string, string> = {
   notif_generic: 'email_scope_notif_generic',
 }
 
+/** Délai avant de redemander un rendu. */
+const PREVIEW_DEBOUNCE_MS = 500
+
 export default function EmailTemplateEditorPage() {
   const { t } = useI18n()
   const toast = useToast()
   const params = useParams<{ scope: string }>()
+  const searchParams = useSearchParams()
   const scope = params.scope
+
+  /**
+   * `?mode=read` : la page est une CONSULTATION, pas un formulaire.
+   *
+   * C'est ce qui distingue « Voir » et « Modifier » dans la liste : les deux
+   * mènent à la même page, mais l'une affiche le gabarit, l'autre permet de
+   * l'éditer. Sans ce mode, les deux boutons ne voudraient rien dire.
+   */
+  const lectureSeule = searchParams.get('mode') === 'read'
 
   const [template, setTemplate] = useState<EmailTemplateDetail | null>(null)
   const [loadingData, setLoadingData] = useState(true)
@@ -44,6 +61,28 @@ export default function EmailTemplateEditorPage() {
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState('')
   const [saved, setSaved] = useState(false)
+
+  // ── Aperçu ──────────────────────────────────────────────────────────────────
+  const [panelOpen, setPanelOpen] = useState(true)
+  const [preview, setPreview] = useState<EmailTemplatePreview | null>(null)
+  const [previewError, setPreviewError] = useState('')
+  const [previewEnCours, setPreviewEnCours] = useState(false)
+  const panelRef = useRef<HTMLElement>(null)
+
+  /**
+   * Le panneau s'ouvre sur grand écran et reste fermé sur téléphone.
+   *
+   * Sur un écran large, l'aperçu est la raison d'être de la page ; sur un
+   * téléphone, il recouvrirait l'éditeur et l'écran de saisie.
+   */
+  const isWide = useMediaQuery('(min-width: 1024px)')
+  const [largeVu, setLargeVu] = useState(false)
+  useEffect(() => {
+    if (!largeVu && isWide) {
+      setLargeVu(true)
+      setPanelOpen(true)
+    }
+  }, [isWide, largeVu])
 
   useEffect(() => {
     if (!scope) return
@@ -71,6 +110,43 @@ export default function EmailTemplateEditorPage() {
         setLoadingData(false)
       })
   }, [scope, t])
+
+  /**
+   * Demande un rendu à l'API.
+   *
+   * Le rendu d'un email ne coûte qu'une compilation Handlebars — quelques
+   * millisecondes, contre plusieurs secondes pour un PDF. On peut donc
+   * rafraîchir À CHAQUE PAUSE dans la frappe : l'aperçu suit la saisie.
+   */
+  const rafraichirApercu = useCallback(async () => {
+    if (!scope) return
+    setPreviewEnCours(true)
+    try {
+      const r = await previewEmailTemplateAdmin(scope, { subject, bodyHtml })
+      setPreview(r)
+      setPreviewError('')
+    } catch (e: unknown) {
+      setPreviewError(e instanceof Error ? e.message : t('error'))
+    } finally {
+      setPreviewEnCours(false)
+    }
+  }, [scope, subject, bodyHtml, t])
+
+  /**
+   * Le rendu est RELANCÉ à chaque modification, mais seulement après une
+   * pause : une requête par frappe saturerait l'API pour rien.
+   */
+  const dernierRendu = useRef<string>('')
+  useEffect(() => {
+    if (!scope) return
+    const signature = `${subject}\n${bodyHtml}`
+    if (signature === dernierRendu.current) return
+    const timer = setTimeout(() => {
+      dernierRendu.current = signature
+      void rafraichirApercu()
+    }, PREVIEW_DEBOUNCE_MS)
+    return () => clearTimeout(timer)
+  }, [scope, subject, bodyHtml, rafraichirApercu])
 
   const handleSave = useCallback(async () => {
     if (!scope) return
@@ -118,7 +194,7 @@ export default function EmailTemplateEditorPage() {
   const variables = template.scopeDef?.variables ?? []
 
   return (
-    <>
+    <div className="flex flex-col gap-6">
       <PageHeader
         title={name || t(SCOPE_LABELS[scope] ?? scope) || scope}
         backHref="/parametrage/email-templates"
@@ -132,122 +208,176 @@ export default function EmailTemplateEditorPage() {
               </span>
             )}
             <Button
-              label={saving ? t('loading') : t('save')}
-              variant="primary"
-              isLoading={saving}
-              isDisabled={!isDirty}
-              onClick={handleSave}
+              label={t('email_templates_preview_hide')}
+              variant={panelOpen ? 'primary' : 'secondary'}
+              aria-expanded={panelOpen}
+              aria-controls="email-preview-panel"
+              onClick={() => setPanelOpen((v) => !v)}
             />
+            {!lectureSeule && (
+              <Button
+                label={saving ? t('loading') : t('save')}
+                variant="primary"
+                isLoading={saving}
+                isDisabled={!isDirty}
+                onClick={handleSave}
+              />
+            )}
           </div>
         }
       />
 
       {saveError && <InlineError message={saveError} />}
 
-      {/* Template jamais enregistre : on le dit, plutot que de laisser croire
-          a un template vide deja configure. */}
-      {!template.exists && (
-        <div
-          className="rounded border px-4 py-3 text-sm"
-          style={{
-            borderColor: 'var(--color-border)',
-            backgroundColor: 'var(--color-card)',
-            color: 'var(--color-text-secondary)',
-          }}
-        >
-          {t('email_templates_new_hint')}
+      <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:gap-5">
+        {/* ── Éditeur ── */}
+        <div className="flex min-w-0 flex-1 flex-col gap-6">
+          {/* Template jamais enregistre : on le dit, plutot que de laisser croire
+              a un template vide deja configure. */}
+          {!template.exists && (
+            <div
+              className="rounded border px-4 py-3 text-sm"
+              style={{
+                borderColor: 'var(--color-border)',
+                backgroundColor: 'var(--color-card)',
+                color: 'var(--color-text-secondary)',
+              }}
+            >
+              {t('email_templates_new_hint')}
+            </div>
+          )}
+
+          {/* Variables disponibles */}
+          {variables.length > 0 && (
+            <Section title={t('email_templates_variables')}>
+              <div className="flex flex-wrap gap-2">
+                {variables.map((v) => (
+                  <code
+                    key={v.name}
+                    className="rounded border px-2 py-1 text-xs"
+                    style={{
+                      fontFamily: 'Menlo, ui-monospace, monospace',
+                      borderColor: 'var(--color-border)',
+                      backgroundColor: 'var(--color-card)',
+                      color: 'var(--color-text-secondary)',
+                    }}
+                    title={`{{${v.name}}}`}
+                  >
+                    {`{{${v.name}}}`}
+                  </code>
+                ))}
+              </div>
+              <p className="mt-2 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                {t('email_templates_variables_hint')}
+              </p>
+            </Section>
+          )}
+
+          {/* Nom */}
+          <Section title={t('email_templates_name')}>
+            <input
+              value={name}
+              onChange={(e) => { setName(e.target.value); setIsDirty(true) }}
+              disabled={lectureSeule}
+              className="w-full rounded border px-3 py-2 text-sm disabled:opacity-60"
+              style={{
+                backgroundColor: 'var(--color-card)',
+                borderColor: 'var(--color-border)',
+                color: 'var(--color-text-primary)',
+              }}
+              placeholder={t(SCOPE_LABELS[scope] ?? scope)}
+            />
+          </Section>
+
+          {/* Sujet */}
+          <Section title={t('email_templates_subject')}>
+            <input
+              value={subject}
+              onChange={(e) => { setSubject(e.target.value); setIsDirty(true) }}
+              disabled={lectureSeule}
+              className="w-full rounded border px-3 py-2 text-sm disabled:opacity-60"
+              style={{
+                backgroundColor: 'var(--color-card)',
+                borderColor: 'var(--color-border)',
+                color: 'var(--color-text-primary)',
+              }}
+            />
+          </Section>
+
+          {/* Body HTML */}
+          <Section
+            title={t('email_templates_body')}
+            action={
+              lectureSeule ? undefined : (
+                <CopyButton value={bodyHtml} label={t('copy')} labelCopied={t('copied')} />
+              )
+            }
+          >
+            <TextArea
+              label={t('email_templates_body')}
+              isLabelHidden
+              value={bodyHtml}
+              onChange={(v) => { setBodyHtml(v); setIsDirty(true) }}
+              rows={28}
+              isReadOnly={lectureSeule}
+              style={{ fontFamily: 'Menlo, ui-monospace, monospace', fontSize: 13 }}
+            />
+          </Section>
+
+          {/* Actif */}
+          <Section title={t('email_templates_active')}>
+            <CheckboxInput
+              label={t('email_templates_active')}
+              isLabelHidden
+              value={actif}
+              onChange={(checked) => { setActif(checked); setIsDirty(true) }}
+              isDisabled={lectureSeule}
+            />
+          </Section>
+
+          {/* Metadata */}
+          {template.updatedAt && (
+            <Section title={t('email_templates_updated_at')}>
+              <div className="flex flex-col gap-1 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                <p>{t('email_templates_updated_at')}: {new Date(template.updatedAt).toLocaleString('fr-FR')}</p>
+                {template.updatedBy && <p>{t('email_templates_updated_by')}: {template.updatedBy}</p>}
+              </div>
+            </Section>
+          )}
         </div>
-      )}
 
-      <div className="flex flex-col gap-6">
-        {/* Variables disponibles */}
-        {variables.length > 0 && (
-          <Section title={t('email_templates_variables')}>
-            <div className="flex flex-wrap gap-2">
-              {variables.map((v) => (
-                <code
-                  key={v.name}
-                  className="rounded border px-2 py-1 text-xs"
-                  style={{
-                    fontFamily: 'Menlo, ui-monospace, monospace',
-                    borderColor: 'var(--color-border)',
-                    backgroundColor: 'var(--color-card)',
-                    color: 'var(--color-text-secondary)',
-                  }}
-                  title={`{{${v.name}}}`}
-                >
-                  {`{{${v.name}}}`}
-                </code>
-              ))}
-            </div>
-            <p className="mt-2 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
-              {t('email_templates_variables_hint')}
-            </p>
-          </Section>
-        )}
-
-        {/* Nom */}
-        <Section title={t('email_templates_name')}>
-          <input
-            value={name}
-            onChange={(e) => { setName(e.target.value); setIsDirty(true) }}
-            className="w-full rounded border px-3 py-2 text-sm"
-            style={{
-              backgroundColor: 'var(--color-card)',
-              borderColor: 'var(--color-border)',
-              color: 'var(--color-text-primary)',
-            }}
-            placeholder={t(SCOPE_LABELS[scope] ?? scope)}
-          />
-        </Section>
-
-        {/* Sujet */}
-        <Section title={t('email_templates_subject')}>
-          <input
-            value={subject}
-            onChange={(e) => { setSubject(e.target.value); setIsDirty(true) }}
-            className="w-full rounded border px-3 py-2 text-sm"
-            style={{
-              backgroundColor: 'var(--color-card)',
-              borderColor: 'var(--color-border)',
-              color: 'var(--color-text-primary)',
-            }}
-          />
-        </Section>
-
-        {/* Body HTML */}
-        <Section
-          title={t('email_templates_body')}
-          action={<CopyButton value={bodyHtml} label={t('copy')} labelCopied={t('copied')} />}
+        {/* ── Panneau d'aperçu ──
+            Même disposition que sur les modèles PDF : une colonne à côté de
+            l'éditeur, collée au haut pendant le défilement. Sous `lg`, elle
+            recouvre la page (voile, fermeture par le voile ou par Échap). */}
+        <div
+          className={`fixed inset-0 z-40 justify-end lg:static lg:inset-auto lg:z-auto lg:shrink-0 lg:sticky lg:top-4 ${panelOpen ? 'flex' : 'hidden'}`}
         >
-          <TextArea
-            label={t('email_templates_body')}
-            value={bodyHtml}
-            onChange={(v) => { setBodyHtml(v); setIsDirty(true) }}
-            rows={28}
-            style={{ fontFamily: 'Menlo, ui-monospace, monospace', fontSize: 13 }}
+          <div
+            className="absolute inset-0 bg-black/40 lg:hidden"
+            onClick={() => setPanelOpen(false)}
+            aria-hidden="true"
           />
-        </Section>
-
-        {/* Actif */}
-        <Section title="">
-          <CheckboxInput
-            label={t('email_templates_active')}
-            value={actif}
-            onChange={(checked) => { setActif(checked); setIsDirty(true) }}
-          />
-        </Section>
-
-        {/* Metadata */}
-        {template.updatedAt && (
-          <Section title={t('email_templates_updated_at')}>
-            <div className="flex flex-col gap-1 text-xs" style={{ color: 'var(--color-text-secondary)' }}>
-              <p>{t('email_templates_updated_at')}: {new Date(template.updatedAt).toLocaleString('fr-FR')}</p>
-              {template.updatedBy && <p>{t('email_templates_updated_by')}: {template.updatedBy}</p>}
-            </div>
-          </Section>
-        )}
+          <aside
+            id="email-preview-panel"
+            ref={panelRef}
+            tabIndex={-1}
+            aria-label={t('email_templates_preview')}
+            className="relative flex h-full min-h-0 w-[92%] flex-col overflow-hidden rounded-lg border lg:h-[calc(100dvh_-_5.5rem)] lg:w-[520px]"
+            style={{
+              borderColor: 'var(--color-border)',
+              backgroundColor: 'var(--color-card)',
+              boxShadow: 'var(--shadow-card)',
+            }}
+          >
+            <EmailPreviewPanel
+              preview={preview}
+              enCours={previewEnCours}
+              error={previewError}
+            />
+          </aside>
+        </div>
       </div>
-    </>
+    </div>
   )
 }

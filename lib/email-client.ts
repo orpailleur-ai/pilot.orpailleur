@@ -131,6 +131,39 @@ export async function upsertEmailTemplateAdmin(
   return apiClient.put(`/admin/email/templates/${scope}`, data)
 }
 
+/**
+ * Résultat d'un aperçu de gabarit.
+ *
+ * `errors`   — ce qui empêche le rendu : syntaxe Handlebars invalide,
+ *               variable non déclarée pour le scope, `{{{html}}}` sur une
+ *               variable non fiable.
+ * `warnings` — ce qui n'empêche pas le rendu : variable requise absente
+ *               des données d'exemple.
+ */
+export interface EmailTemplatePreview {
+  renderedSubject: string
+  renderedBody: string
+  errors: string[]
+  warnings: string[]
+}
+
+/**
+ * Prévisualise un gabarit SANS l'enregistrer.
+ *
+ * Le client n'envoie que le gabarit : les données d'exemple viennent du
+ * registre des scopes, côté API. Deux administrateurs voient donc le même
+ * rendu du même gabarit.
+ */
+export async function previewEmailTemplateAdmin(
+  scope: string,
+  data: { subject: string; bodyHtml: string },
+): Promise<EmailTemplatePreview> {
+  return apiClient.post<EmailTemplatePreview>(
+    `/admin/email/templates/${scope}/preview`,
+    data,
+  )
+}
+
 // ── Stats ───────────────────────────────────────────────────────────────────
 
 export async function getEmailStatsAdmin(opts?: {

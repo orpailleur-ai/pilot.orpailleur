@@ -604,6 +604,15 @@ export const en = {
   email_templates_not_configured: 'Not configured',
   email_templates_create: 'Create',
   email_templates_new_hint: 'No global template for this scope yet. Fill in the subject and body below; the available variables are listed for use with {{name}}.',
+  email_templates_view: 'View the template',
+  email_templates_add: 'Add a template',
+  email_templates_add_choose: 'Which template type do you want to configure?',
+  email_templates_add_none: 'Every template type is already configured.',
+  email_templates_preview: 'Preview',
+  email_templates_preview_hide: 'Hide the preview',
+  email_templates_preview_rendering: 'Rendering…',
+  email_templates_preview_subject: 'Subject',
+  email_templates_preview_idle: 'The preview appears as soon as the subject or the body changes.',
 
   // ── Email scopes ───────────────────────────────────────────────────
   email_scope_commande_envoyee: 'Order sent',

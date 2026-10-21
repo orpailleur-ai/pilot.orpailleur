@@ -1,13 +1,14 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
-import Link from 'next/link'
-import { Mail, Pencil } from 'lucide-react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { Eye, Mail, Pencil, Plus } from 'lucide-react'
 import { Badge, Button, useToast } from '@astryxdesign/core'
 import { PageHeader } from '@/components/layout/page-header'
 import { DataTable, type Column } from '@/components/ui/data-table'
 import { EmptyState } from '@/components/ui/empty-state'
 import { InlineError } from '@/components/ui/inline-error'
+import { Modal, ModalSection, FieldGrid } from '@/components/ui/modal'
 import { Spinner } from '@/components/ui/spinner'
 import { useI18n } from '@/lib/i18n'
 import {
@@ -30,12 +31,14 @@ const STATUS_BADGE: Record<string, 'success' | 'neutral' | 'error' | 'warning' |
 }
 
 export default function EmailTemplatesPage() {
+  const router = useRouter()
   const { t } = useI18n()
   const toast = useToast()
 
   const [templates, setTemplates] = useState<EmailTemplate[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [ajout, setAjout] = useState(false)
 
   const charger = useCallback(async () => {
     setLoading(true)
@@ -52,16 +55,50 @@ export default function EmailTemplatesPage() {
 
   useEffect(() => { void charger() }, [charger])
 
+  /**
+   * Scopes sans configuration.
+   *
+   * « Ajouter » ne peut créer que ce qui n'existe pas : la liste porte un
+   * modèle par scope du registre, et un scope déjà configuré n'a pas de
+   * « nouvelle » version — l'éditer se fait sur sa ligne.
+   */
+  const scopesAConfigurer = useMemo(
+    () => templates.filter((tpl) => !tpl.exists),
+    [templates],
+  )
+
   const columns: Column<EmailTemplate>[] = [
     {
       key: 'scope',
       header: t('email_templates_scope'),
-      render: (row) => t(SCOPE_LABELS[row.scope] ?? row.scope),
+      mobile: 'primary',
+      render: (row) => (
+        <span className="flex items-center gap-2 min-w-0">
+          <span className="truncate font-medium" style={{ color: 'var(--color-text-primary)' }}>
+            {t(SCOPE_LABELS[row.scope] ?? row.scope)}
+          </span>
+          <code
+            className="rounded px-1 py-0.5 text-[11px]"
+            style={{
+              backgroundColor: 'var(--color-background-muted)',
+              color: 'var(--color-text-secondary)',
+              fontFamily: 'ui-monospace, monospace',
+            }}
+          >
+            {row.scope}
+          </code>
+        </span>
+      ),
     },
     {
       key: 'name',
       header: t('email_templates_name'),
-      render: (row) => row.name,
+      mobile: 'inline',
+      render: (row) => (
+        <span className="truncate block max-w-xs" title={row.name}>
+          {row.name || '—'}
+        </span>
+      ),
     },
     {
       key: 'subject',
@@ -77,6 +114,8 @@ export default function EmailTemplatesPage() {
       // mais desactive. Les deux etats meritent d'etre distingues.
       key: 'etat',
       header: t('email_templates_state'),
+      align: 'end',
+      mobile: 'inline',
       render: (row) => (
         <Badge
           variant={!row.exists ? 'warning' : STATUS_BADGE[String(row.actif)]}
@@ -93,15 +132,28 @@ export default function EmailTemplatesPage() {
     {
       key: 'actions',
       header: '',
+      align: 'end',
+      mobile: 'hidden',
+      noRowClick: true,
       render: (row) => (
-        <Link href={`/parametrage/email-templates/${row.scope}`}>
+        <div className="flex items-center justify-end gap-1">
           <Button
-            label={row.exists ? t('edit') : t('email_templates_create')}
+            label={t('email_templates_view')}
             variant="ghost"
             size="sm"
-            icon={<Pencil size={13} />}
+            isIconOnly
+            icon={<Eye size={13} />}
+            onClick={() => router.push(`/parametrage/email-templates/${row.scope}?mode=read`)}
           />
-        </Link>
+          <Button
+            label={t('edit')}
+            variant="ghost"
+            size="sm"
+            isIconOnly
+            icon={<Pencil size={13} />}
+            onClick={() => router.push(`/parametrage/email-templates/${row.scope}`)}
+          />
+        </div>
       ),
     },
   ]
@@ -111,6 +163,16 @@ export default function EmailTemplatesPage() {
       <PageHeader
         title={t('email_templates_title')}
         icon={<Mail size={20} style={{ color: 'var(--color-text-primary)' }} />}
+        action={
+          <Button
+            label={t('email_templates_add')}
+            variant="primary"
+            icon={<Plus size={15} />}
+            isDisabled={scopesAConfigurer.length === 0}
+            tooltip={scopesAConfigurer.length === 0 ? t('email_templates_add_none') : undefined}
+            onClick={() => setAjout(true)}
+          />
+        }
       />
 
       {error && <InlineError message={error} />}
@@ -128,6 +190,45 @@ export default function EmailTemplatesPage() {
       ) : (
         <DataTable columns={columns} rows={templates} rowKey={(row) => row.scope} />
       )}
+
+      {/* Choix du scope à configurer */}
+      <Modal
+        isOpen={ajout}
+        onOpenChange={setAjout}
+        title={t('email_templates_add')}
+        size="md"
+      >
+        <ModalSection title={t('email_templates_add_choose')}>
+          <FieldGrid columns={1}>
+            {scopesAConfigurer.map((row) => (
+              <button
+                key={row.scope}
+                type="button"
+                onClick={() => {
+                  setAjout(false)
+                  router.push(`/parametrage/email-templates/${row.scope}`)
+                }}
+                className="flex items-center justify-between gap-3 rounded-lg border px-3 py-2.5 text-left text-sm transition-colors hover:bg-[var(--color-background-muted)] focus-visible:outline-2 focus-visible:outline-offset-2"
+                style={{ borderColor: 'var(--color-border)' }}
+              >
+                <span className="font-medium" style={{ color: 'var(--color-text-primary)' }}>
+                  {t(SCOPE_LABELS[row.scope] ?? row.scope)}
+                </span>
+                <code
+                  className="rounded px-1.5 py-0.5 text-[11px]"
+                  style={{
+                    backgroundColor: 'var(--color-background-muted)',
+                    color: 'var(--color-text-secondary)',
+                    fontFamily: 'ui-monospace, monospace',
+                  }}
+                >
+                  {row.scope}
+                </code>
+              </button>
+            ))}
+          </FieldGrid>
+        </ModalSection>
+      </Modal>
     </>
   )
 }
