@@ -243,7 +243,7 @@ export default function ModelesPage() {
       },
       {
         key: 'prix',
-        header: t('ai_models_price_in'),
+        header: t('ai_models_pricing'),
         align: 'end',
         mobile: 'hidden',
         render: (m) => (

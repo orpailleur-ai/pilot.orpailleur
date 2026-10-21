@@ -133,6 +133,7 @@ export function ModeleModal({
               />
               <TextInput
                 label={t('ai_models_model')}
+                isLabelHidden
                 value={String(v['model'])}
                 onChange={(val) => set('model', val)}
                 isRequired
@@ -146,6 +147,7 @@ export function ModeleModal({
         <ModalSection title={t('ai_models_api_key')}>
           <TextInput
             label={t('ai_models_api_key')}
+            isLabelHidden
             value={String(v['api_key'] ?? '')}
             onChange={(val) => set('api_key', val)}
             isDisabled={!chiffrement}
@@ -163,7 +165,7 @@ export function ModeleModal({
           />
         </ModalSection>
 
-        <ModalSection title={t('ai_models_price_in')}>
+        <ModalSection title={t('ai_models_pricing')}>
           {/*
             Les tarifs sortent de la grille à trois colonnes.
             Dedans, ils tombaient sur UNE colonne puis étaient scindés en deux :
