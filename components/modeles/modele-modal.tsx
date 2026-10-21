@@ -207,6 +207,7 @@ export function ModeleModal({
         <ModalSection title={t('ai_models_form_active')}>
           <CheckboxInput
             label={t('ai_models_form_active')}
+            isLabelHidden
             value={Boolean(v['actif'])}
             onChange={(checked) => set('actif', checked)}
           />
