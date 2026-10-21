@@ -16,10 +16,18 @@ import Link from 'next/link'
 import { ArrowLeft, History as HistoryIcon } from 'lucide-react'
 import { AIConfigHistoryTimeline } from './ai-config-history-timeline'
 
+/**
+ * Props de la page.
+ *
+ * `params` est une PROMISE depuis Next.js 15 : le route segment est résolu
+ * côté serveur avant le rendu. Un `params.id` synchrone passerait la
+ * compilation de TypeScript mais échouerait à l'exécution — et le
+ * compilateur de Next le refuse à la construction, ce qui est mieux.
+ */
 interface PageProps {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
 async function getAIConfig(id: string) {
@@ -38,7 +46,8 @@ async function getAIConfig(id: string) {
 }
 
 export default async function AIConfigHistoryPage({ params }: PageProps) {
-  const config = await getAIConfig(params.id)
+  const { id } = await params
+  const config = await getAIConfig(id)
 
   if (!config) {
     notFound()
@@ -49,7 +58,7 @@ export default async function AIConfigHistoryPage({ params }: PageProps) {
       {/* En-tête */}
       <div className="mb-6">
         <Link
-          href={`/ai-config/${params.id}`}
+          href={`/ai-config/${id}`}
           className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 mb-4"
         >
           <ArrowLeft className="h-4 w-4" />
@@ -86,14 +95,15 @@ export default async function AIConfigHistoryPage({ params }: PageProps) {
           </div>
         }
       >
-        <AIConfigHistoryTimeline configId={params.id} />
+        <AIConfigHistoryTimeline configId={id} />
       </Suspense>
     </div>
   )
 }
 
 export async function generateMetadata({ params }: PageProps) {
-  const config = await getAIConfig(params.id)
+  const { id } = await params
+  const config = await getAIConfig(id)
 
   return {
     title: config ? `Historique - ${config.nom}` : 'Historique',
