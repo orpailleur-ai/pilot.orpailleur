@@ -6,7 +6,6 @@ import {
   Shield,
   CreditCard,
   FileText,
-  Receipt,
   ReceiptText,
   Cpu,
   Settings,
@@ -47,7 +46,6 @@ export const APPS: AppDefinition[] = [
       { href: '/plans', labelKey: 'plans', icon: CreditCard },
       { href: '/subscriptions', labelKey: 'subscriptions', icon: FileText },
       { href: '/invoices', labelKey: 'invoices', icon: ReceiptText },
-      { href: '/billing', labelKey: 'billing', icon: Receipt },
     ],
   },
   {

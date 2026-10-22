@@ -366,8 +366,35 @@ export const fr = {
   of: 'sur',
   clear_filters: 'Réinitialiser',
 
-  // Billing
-  billing: 'Tableau de bord',
+  // ── Facturation + tableau de bord fusionné ─────────────────────────────────
+  // La cle s'appelle `billing` mais la page associee est le tableau de bord :
+  // les deux pages portaient le meme effet — /billing est fusionnee dans
+  // /dashboard, et le libelle redevient ce qu'il designe.
+  billing: 'Facturation',
+  // ── Tableau de bord fusionne (fenetre + filtre + series) ───────────────────
+  date_from: 'Du',
+  date_to: 'Au',
+  filter_plan: 'Plan',
+  filter_plan_all: 'Tous les plans',
+  filter_statut: 'Statut',
+  reset: 'Réinitialiser',
+  active_subs_hint: 'abonnements actifs',
+  arpu: 'ARPU',
+  per_active_tenant: 'par tenant actif',
+  tenants_actifs_lbl: 'Tenants actifs',
+  new_tenants_period: 'Nouveaux ({days} j)',
+  users_lbl: 'Utilisateurs',
+  sites_lbl: 'Sites',
+  chase_actions: 'À relancer',
+  tenant_inactive_alert: 'tenant(s) inactif(s) — vérifiez leur statut.',
+  series_signups: 'Nouvelles inscriptions',
+  series_revenue: 'Encaissé (factures payées)',
+  plan_distribution: 'Répartition par plan',
+  mrr_by_plan: 'MRR par plan',
+  subs_health: 'Santé des abonnements',
+  due_on: 'échéance',
+  recent_activity: 'Activité récente',
+  recent_signups: 'Dernières inscriptions',
   billing_subtitle: 'MRR, santé des abonnements et facturation',
   mrr_reel: 'MRR réel',
   month: 'mois',

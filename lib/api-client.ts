@@ -276,6 +276,45 @@ export interface DashboardStats {
   alerts: {
     tenant_inactive: number
   }
+  // ── Nouveaux champs (fenetre + filtres) ────────────────────────────────────
+  /** Fenetre reellement appliquee par l'API. */
+  periode: { de: string; a: string; jours: number; pas: 'day' | 'month' }
+  /** Nouveaux tenants DANS la fenetre. */
+  nouveaux_tenants: number
+  /** MRR reel des abonnements actifs, groupe par formule du tenant. */
+  mrr_par_plan: Array<{ plan: string; mrr_cents: number; tenants: number }>
+  /** Sante des abonnements (Tous les statuts du cycle de vie). */
+  subs_sante: {
+    actifs: number
+    en_retard: number
+    annules: number
+    expires: number
+  }
+  /** Les 10 impayees les plus anciennes de la fenetre. */
+  factures_impayees: Array<{
+    id: string
+    numero: string
+    montant_cents: number
+    date_echeance: string | null
+    tenant_nom: string
+  }>
+  /**
+   * Serie temporelle. Les jours sans activite sont presents a zero —
+   * l'API etire la fenetre complete via generate_series. Le `pas` suit
+   * `periode.pas` : jour si <= 120 jours, mois sinon.
+   */
+  series: Array<{ jour: string; crees: number; factures: number; paye_cents: number }>
+  /** Codes de formule du catalogue, pour alimenter le filtre. */
+  plans_disponibles: string[]
+}
+
+export interface DashboardStatsParams {
+  days?: number
+  plan?: string
+  /** 'active' | 'inactive' — statut du tenant. */
+  statut?: string
+  from?: string
+  to?: string
 }
 
 export const adminTenants = {
@@ -289,8 +328,19 @@ export const adminTenants = {
     request<void>("DELETE", `/admin/tenants/${id}`),
   getStats: (id: string) =>
     request<TenantStats>(`GET`, `/admin/tenants/${id}/stats`),
-  getDashboardStats: () =>
-    request<DashboardStats>("GET", "/admin/dashboard/stats"),
+  getDashboardStats: (params?: DashboardStatsParams) => {
+    const q = new URLSearchParams()
+    if (params?.days) q.set("days", String(params.days))
+    if (params?.plan) q.set("plan", params.plan)
+    if (params?.statut) q.set("statut", params.statut)
+    if (params?.from) q.set("from", params.from)
+    if (params?.to) q.set("to", params.to)
+    const qs = q.toString()
+    return request<DashboardStats>(
+      "GET",
+      `/admin/dashboard/stats${qs ? `?${qs}` : ""}`,
+    )
+  },
   getTenantUsers: (tenantId: string) =>
     request<AdminUser[]>("GET", `/admin/tenants/${tenantId}/users`),
 }
