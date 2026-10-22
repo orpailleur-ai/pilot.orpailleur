@@ -2,16 +2,17 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
-import { Mail, Pencil, CheckCircle } from 'lucide-react'
+import { Mail, Pencil, CheckCircle, Lock } from 'lucide-react'
 import { Button, Spinner, TextArea, useToast } from '@astryxdesign/core'
-import { CheckboxInput } from '@astryxdesign/core/CheckboxInput'
 import { PageHeader } from '@/components/layout/page-header'
+import { ActiveTogglePill } from '@/components/composite/active-toggle-pill'
 import { EmailPreviewPanel } from '@/components/email/email-preview-panel'
 import { InlineError } from '@/components/ui/inline-error'
 import { CopyButton } from '@/components/ui/copy-button'
 import { Section } from '@/components/ui/section'
 import { useI18n } from '@/lib/i18n'
 import { useMediaQuery } from '@/lib/hooks/use-media-query'
+import { buildEmailTemplatePrompt } from '@/lib/email-template-prompt'
 import {
   getEmailTemplateAdmin,
   previewEmailTemplateAdmin,
@@ -201,7 +202,40 @@ export default function EmailTemplateEditorPage() {
         icon={<Mail size={20} style={{ color: 'var(--color-text-primary)' }} />}
         action={
           <div className="flex items-center gap-2">
-            {saved && (
+            {/* Mode lecture seule : l'etat est montre, pas modifie.
+                Le cadenas dit pourquoi la page n'est pas un formulaire. */}
+            {lectureSeule && (
+              <span
+                className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium"
+                style={{
+                  backgroundColor: 'color-mix(in srgb, var(--color-text-secondary) 10%, transparent)',
+                  color: 'var(--color-text-secondary)',
+                }}
+              >
+                <Lock size={12} aria-hidden="true" />
+                {t('email_templates_read_only')}
+              </span>
+            )}
+            {/* L'etat actif/inactif est dans l'EN-TETE, pas en bas du
+                formulaire : c'est l'information la plus consultee d'un
+                gabarit, et un controleuble au defilement de la page
+                n'aide pas. La pastille montre l'etat ET le change au clic —
+                un bouton qui change de libelle selon l'etat cache l'etat. */}
+            <ActiveTogglePill
+              actif={actif}
+              labelActif={t('email_templates_active')}
+              labelInactif={t('email_templates_inactive')}
+              onToggle={
+                lectureSeule
+                  ? undefined
+                  : () => {
+                      setActif((v) => !v)
+                      setIsDirty(true)
+                    }
+              }
+              isDisabled={lectureSeule}
+            />
+            {!lectureSeule && saved && (
               <span className="flex items-center gap-1 text-sm" style={{ color: 'var(--color-success, green)' }}>
                 <CheckCircle size={14} />
                 {t('saved')}
@@ -330,15 +364,58 @@ export default function EmailTemplateEditorPage() {
             />
           </Section>
 
-          {/* Actif */}
-          <Section title={t('email_templates_active')}>
-            <CheckboxInput
-              label={t('email_templates_active')}
-              isLabelHidden
-              value={actif}
-              onChange={(checked) => { setActif(checked); setIsDirty(true) }}
-              isDisabled={lectureSeule}
-            />
+          {/* ── Assistant IA ──
+              Un prompt prêt à coller dans un agent externe (ChatGPT, Claude,
+              Copilot…) pour faire évoluer le gabarit. Il contient le SUJET et
+              le CORPS actuels, la liste EXACTE des variables du scope, et la
+              syntaxe Handlebars — rien d'autre, et surtout pas de valeurs
+              d'exemple : un assistant qui recopierait « CMD-2026-001 »
+              produirait un email qui l'affiche sur toutes les commandes.
+
+              La section reste visible en lecture seule : consulter un
+              gabarit et demander à un assistant de le réécrire, c'est un
+              usage normal de l'écran de consultation. */}
+          <Section
+            title={t('email_templates_assistant')}
+            action={
+              <CopyButton
+                value={buildEmailTemplatePrompt(scope, name, subject, bodyHtml, variables)}
+                label={t('email_templates_assistant_copy')}
+                labelCopied={t('copied')}
+              />
+            }
+          >
+            <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+              {t('email_templates_assistant_hint')}
+            </p>
+            {variables.length > 0 && (
+              <details className="mt-1">
+                <summary
+                  className="cursor-pointer text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2"
+                  style={{ color: 'var(--color-text-primary)' }}
+                >
+                  {t('email_templates_assistant_params', { count: variables.length })}
+                </summary>
+                <ul className="mt-2 flex flex-col gap-1">
+                  {variables.map((v) => (
+                    <li key={v.name} className="flex flex-wrap items-baseline gap-x-2 text-sm">
+                      <code
+                        className="rounded border px-1.5 py-0.5 text-xs"
+                        style={{
+                          fontFamily: 'Menlo, ui-monospace, monospace',
+                          backgroundColor: 'var(--color-background-surface)',
+                          borderColor: 'var(--color-border)',
+                          color: 'var(--color-text-primary)',
+                        }}
+                      >
+                        {v.name}
+                      </code>
+                      <span style={{ color: 'var(--color-text-secondary)' }}>{v.label}</span>
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            )}
           </Section>
 
           {/* Metadata */}

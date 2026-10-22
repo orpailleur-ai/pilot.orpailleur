@@ -592,6 +592,13 @@ export const fr = {
   email_templates_name: 'Nom',
   email_templates_subject: 'Sujet',
   email_templates_active: 'Actif',
+  email_templates_read_only: 'Lecture seule',
+  email_templates_inactive: 'Inactif',
+  email_templates_assistant: 'Assistant IA',
+  email_templates_assistant_copy: 'Copier le prompt',
+  email_templates_assistant_hint:
+    "Copiez ce prompt dans un assistant (ChatGPT, Claude, Copilot…) pour faire évoluer le gabarit. Il contient le sujet et le corps actuels, la liste exacte des variables et la syntaxe Handlebars — sans valeur d’exemple, pour qu'une donnée de démonstration ne se retrouve pas dans tous les envois.",
+  email_templates_assistant_params: 'Variables disponibles ({count})',
   email_templates_saved: 'Template enregistré.',
   email_templates_variables: 'Variables disponibles',
   email_templates_variables_hint: 'Copiez une variable et collez-la dans le sujet ou le corps avec {{nom}}. Utilisez {{{triple}}} pour les contenus HTML non fiables.',

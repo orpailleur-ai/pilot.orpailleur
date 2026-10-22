@@ -28,8 +28,13 @@ export function ActiveTogglePill({
   labelActif: string
   /** Libellé de l'état inactif. */
   labelInactif: string
-  /** Appelé au clic : bascule l'état. */
-  onToggle: () => void
+  /**
+   * Appelé au clic : bascule l'état.
+   *
+   * OPTIONNEL : en mode lecture seule, la pastille montre l'état sans
+   * permettre de le changer. Elle est alors neutralisée par `isDisabled`.
+   */
+  onToggle?: () => void
   isDisabled?: boolean
 }) {
   const Icon = actif ? CheckCircle2 : XCircle

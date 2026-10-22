@@ -593,6 +593,13 @@ export const en = {
   email_templates_name: 'Name',
   email_templates_subject: 'Subject',
   email_templates_active: 'Active',
+  email_templates_read_only: 'Read-only',
+  email_templates_inactive: 'Inactive',
+  email_templates_assistant: 'AI assistant',
+  email_templates_assistant_copy: 'Copy prompt',
+  email_templates_assistant_hint:
+    'Paste this prompt into an assistant (ChatGPT, Claude, Copilot…) to evolve the template. It contains the current subject and body, the exact list of variables and the Handlebars syntax — with no sample values, so a demo figure never ends up in every send.',
+  email_templates_assistant_params: 'Available variables ({count})',
   email_templates_saved: 'Template saved.',
   email_templates_variables: 'Available variables',
   email_templates_variables_hint: 'Copy a variable and paste it in the subject or body with {{name}}. Use {{{triple}}} for untrusted HTML content.',
