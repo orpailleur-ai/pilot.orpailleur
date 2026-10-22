@@ -11,7 +11,6 @@ import {
   Cpu,
   Settings,
   Mail,
-  BarChart3,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -64,12 +63,15 @@ export const APPS: AppDefinition[] = [
       { href: '/parametrage/modeles', labelKey: 'ai_models_nav', icon: Cpu },
       { href: '/parametrage/pdf-templates', labelKey: 'pdf_templates_nav', icon: FileText },
       { href: '/parametrage/email', labelKey: 'email_smtp_nav', icon: Mail },
-      { href: '/parametrage/email-templates', labelKey: 'email_templates_nav', icon: FileText },
+      { href: '/parametrage/email-templates', labelKey: 'email_templates_nav', icon: Mail },
       // Statistiques d'envoi : lecture seule, mais c'est bien du paramétrage
       // — on surveille ce que le paramétrage a produit. Reste dans ce groupe
       // plutot qu'un groupe « Email » a part, qui aurait surchargé la sidebar
       // pour une seule page.
-      { href: '/email/stats', labelKey: 'email_stats_nav', icon: BarChart3 },
+      //
+      // Elle porte l'icone `Mail` comme les autres pages de la famille :
+      // l'icone signale la famille (l'email), le libelle distingue la page.
+      { href: '/email/stats', labelKey: 'email_stats_nav', icon: Mail },
     ],
   },
   {
