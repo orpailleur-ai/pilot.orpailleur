@@ -603,7 +603,7 @@ export const en = {
   email_templates_configured: 'Configured',
   email_templates_not_configured: 'Not configured',
   email_templates_create: 'Create',
-  email_templates_new_hint: 'No global template for this scope yet. Fill in the subject and body below; the available variables are listed for use with {{name}}.',
+  email_templates_new_hint: 'No global template for this scope yet. The subject and body below are the DEFAULT TEMPLATE — edit them, or save them as they are to make them this scope\'s template.',
   email_templates_view: 'View the template',
   email_templates_add: 'Add a template',
   email_templates_add_choose: 'Which template type do you want to configure?',

@@ -602,7 +602,7 @@ export const fr = {
   email_templates_configured: 'Configuré',
   email_templates_not_configured: 'Non configuré',
   email_templates_create: 'Créer',
-  email_templates_new_hint: 'Aucun template global pour ce scope. Renseignez le sujet et le corps ci-dessous : les variables disponibles sont listées pour être utilisées avec {{nom}}.',
+  email_templates_new_hint: "Aucun template global pour ce scope. Le sujet et le corps ci-dessous sont le GABARIT PAR DÉFAUT — modifiez-les, ou enregistrez-les tels quels pour en faire le modèle de ce scope.",
   email_templates_view: 'Voir le template',
   email_templates_add: 'Ajouter un template',
   email_templates_add_choose: 'Quel type de template configurer ?',

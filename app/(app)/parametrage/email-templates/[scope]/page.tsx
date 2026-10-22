@@ -219,7 +219,13 @@ export default function EmailTemplateEditorPage() {
                 label={saving ? t('loading') : t('save')}
                 variant="primary"
                 isLoading={saving}
-                isDisabled={!isDirty}
+                // Un template qui N'EXISTE PAS encore s'enregistre même
+                // sans modification : le sujet et le corps sont pré-remplis
+                // avec le gabarit par défaut du scope, et c'est déjà un
+                // template. Sans cette exception, le bouton resterait
+                // inactif et le gabarit par défaut ne pourrait jamais
+                // devenir le gabarit du scope.
+                isDisabled={!isDirty && template.exists}
                 onClick={handleSave}
               />
             )}
