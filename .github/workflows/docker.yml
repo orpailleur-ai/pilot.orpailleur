@@ -47,6 +47,49 @@ jobs:
       - name: Variables CSS
         run: npm run check:tokens
 
+  # ── Les tests d'interface ────────────────────────────────────────────────
+  #
+  # Ce job ne construit rien : il vérifie que les ÉCRANS fonctionnent.
+  #
+  # Un test qui lit une page ne prouve pas qu'elle marche : une page peut
+  # s'afficher ET planter en silence. Le passage complet a trouvé, en une
+  # exécution, une dozen de clés de traduction brutes affichées à l'écran
+  # (« all_statuses », « invoice_paid »…), une URL d'avatar servie en HTTP
+  # sur une page HTTPS, et un lien « Retour » vers une route inexistante.
+  #
+  # Le garde-fou des traductions ne demande aucun accès : il lit le code et
+  # les messages. Le reste de la suite a besoin d'un compte d'administration ;
+  # sans identifiants, les tests sont SAUTÉS (et le job reste vert) plutôt
+  # que d'échouer sur une connexion impossible.
+  e2e:
+    needs: verify
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci --legacy-peer-deps
+
+      - name: Installer le navigateur
+        run: npx playwright install --with-deps chromium
+
+      - name: Gardes-fou des traductions
+        run: npx playwright test tests/i18n.spec.ts
+
+      - name: Passage sur chaque écran
+        env:
+          PILOT_BASE_URL: ${{ vars.PILOT_BASE_URL || 'https://pilot.orpailleur-software.fr' }}
+          PILOT_EMAIL: ${{ secrets.E2E_PILOT_EMAIL }}
+          PILOT_PASSWORD: ${{ secrets.E2E_PILOT_PASSWORD }}
+        run: npx playwright test
+
   build-and-push:
     needs: verify
     runs-on: ubuntu-latest

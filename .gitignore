@@ -35,6 +35,9 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# ... mais le MODELE des identifiants de test est committé : il ne contient
+# aucun secret, et sans lui on ne sait pas quoi copier.
+!.env.e2e.example
 
 # vercel
 .vercel

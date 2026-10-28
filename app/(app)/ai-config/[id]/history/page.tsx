@@ -1,111 +1,26 @@
-/**
- * Page d'historique des configurations AI.
- *
- * Affiche la timeline complète des modifications d'une config AI avec :
- *  - Masquage automatique des secrets (API keys)
- *  - Diff field-by-field
- *  - Session grouping (modifications en batch)
- *  - Bouton de rollback (recréer une config depuis un snapshot)
- *
- * Route: /ai-config/[id]/history
- */
-
-import { Suspense } from 'react'
-import { notFound } from 'next/navigation'
-import Link from 'next/link'
-import { ArrowLeft, History as HistoryIcon } from 'lucide-react'
-import { AIConfigHistoryTimeline } from './ai-config-history-timeline'
+import { redirect } from 'next/navigation'
 
 /**
- * Props de la page.
+ * L'historique d'une configuration IA : la VRAIE page est ailleurs.
  *
- * `params` est une PROMISE depuis Next.js 15 : le route segment est résolu
- * côté serveur avant le rendu. Un `params.id` synchrone passerait la
- * compilation de TypeScript mais échouerait à l'exécution — et le
- * compilateur de Next le refuse à la construction, ce qui est mieux.
+ * Cette route a été écrite comme un prototype — configuration factice,
+ * timeline factice, et un lien « Retour » vers `/ai-config/<id>`, route qui
+ * n'a jamais existé (404 à chaque visite).
+ *
+ * L'historique réel, lui, est sur la fiche du modèle : elle charge
+ * `/admin/ai-modeles/<id>/historique` et affiche les modifications. Deux
+ * écrans pour la même chose, dont un factice, c'est l'un des deux qu'on
+ * supprime.
+ *
+ * On garde la route, mais elle RENVOIE vers la fiche : une URL déjà
+ * diffusée (un lien dans un e-mail, un signet) continue de fonctionner, et
+ * l'utilisateur atterrit sur l'écran qui montre la vérité.
  */
-interface PageProps {
-  params: Promise<{
-    id: string
-  }>
-}
-
-async function getAIConfig(id: string) {
-  // En production, fetcher depuis l'API
-  // const response = await fetch(`${process.env.API_URL}/admin/ai-modeles/${id}`)
-  // if (!response.ok) return null
-  // return response.json()
-
-  // Pour l'instant, retourner mock data
-  return {
-    id,
-    nom: 'Configuration Mistral OCR',
-    provider: 'mistral',
-    scope: 'tenant',
-  }
-}
-
-export default async function AIConfigHistoryPage({ params }: PageProps) {
+export default async function AIConfigHistoryRedirect({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}) {
   const { id } = await params
-  const config = await getAIConfig(id)
-
-  if (!config) {
-    notFound()
-  }
-
-  return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
-      {/* En-tête */}
-      <div className="mb-6">
-        <Link
-          href={`/ai-config/${id}`}
-          className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 mb-4"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Retour à la configuration
-        </Link>
-
-        <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-100">
-            <HistoryIcon className="h-6 w-6 text-blue-600" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Historique des modifications</h1>
-            <p className="text-gray-600">{config.nom}</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Note sécurité */}
-      <div className="mb-6 rounded-lg border border-yellow-200 bg-yellow-50 p-4">
-        <div className="flex gap-3">
-          <div className="text-yellow-600">🔒</div>
-          <div className="text-sm text-yellow-800">
-            <strong>Sécurité :</strong> Les clés API et autres secrets sont masqués dans
-            l'historique. Seule l'information qu'ils ont changé est conservée.
-          </div>
-        </div>
-      </div>
-
-      {/* Timeline */}
-      <Suspense
-        fallback={
-          <div className="flex items-center justify-center py-12">
-            <div className="text-gray-500">Chargement de l'historique...</div>
-          </div>
-        }
-      >
-        <AIConfigHistoryTimeline configId={id} />
-      </Suspense>
-    </div>
-  )
-}
-
-export async function generateMetadata({ params }: PageProps) {
-  const { id } = await params
-  const config = await getAIConfig(id)
-
-  return {
-    title: config ? `Historique - ${config.nom}` : 'Historique',
-  }
+  redirect(`/parametrage/modeles/${id}`)
 }
