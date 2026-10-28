@@ -9,6 +9,7 @@ import { AuthProvider } from '@/components/providers/auth-context'
 import { TenantProvider } from '@/components/providers/tenant-context'
 import { ThemeModeProvider } from '@/components/providers/theme-mode-provider'
 import { I18nProvider } from '@/lib/i18n'
+import { DesignSystemI18n } from '@/components/providers/design-system-i18n'
 
 /**
  * Manrope — la police qu'impose la charte.
@@ -80,11 +81,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className={`${manrope.variable} font-sans antialiased`}>
         <I18nProvider>
-          <ThemeModeProvider>
-            <AuthProvider>
-              <TenantProvider>{children}</TenantProvider>
-            </AuthProvider>
-          </ThemeModeProvider>
+          <DesignSystemI18n>
+            <ThemeModeProvider>
+              <AuthProvider>
+                <TenantProvider>{children}</TenantProvider>
+              </AuthProvider>
+            </ThemeModeProvider>
+          </DesignSystemI18n>
         </I18nProvider>
       </body>
     </html>

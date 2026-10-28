@@ -21,6 +21,14 @@ testConnecte.describe('chaque page du pilot', () => {
 
   for (const route of ROUTES) {
     testConnecte(`la page ${route.chemin} fonctionne`, async ({ page, request, session }) => {
+      // Un écran PUBLIC (la connexion) n'a pas sa place ici : le passage
+      // générique exige de ne PAS retomber sur /login, ce qui est
+      // justement ce que fait un écran connecté. Sa connexion a son test.
+      if (route.public) {
+        testConnecte.skip(true, `Écran public : son test est dans tests/auth.spec.ts`)
+        return
+      }
+
       // L'URL réelle : les pages à identifiant vont la chercher dans l'API.
       let url = route.chemin
       if (route.resoudre) {

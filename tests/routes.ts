@@ -14,6 +14,14 @@ export interface Route {
   /** Le chemin affiché, avec ses crochets. */
   chemin: string
   /**
+   * Écran accessible SANS session (la page de connexion).
+   *
+   * Le passage générique exige de ne pas retomber sur /login — ce qui est
+   * précisément le comportement d'un écran connecté. La page de connexion a
+   * donc son propre test, dans `tests/auth.spec.ts`.
+   */
+  public?: boolean
+  /**
    * Résout l'URL réelle. Renvoie `null` si la donnée n'existe pas.
    *
    * Le jeton est passé à part : la requête de l'API est porteuse du
@@ -51,7 +59,8 @@ const liste = (corps: unknown): unknown[] =>
        [])
 
 export const ROUTES: Route[] = [
-  { chemin: '/' },
+  { chemin: '/', public: false },
+  { chemin: '/login', public: true },
   { chemin: '/dashboard' },
   { chemin: '/tenants' },
   { chemin: '/tenants/new' },

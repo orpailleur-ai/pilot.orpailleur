@@ -187,6 +187,21 @@ async function request<T>(
     }
 
     if (res.status === 401) {
+      // La CONNEXION renvoie 401 quand les identifiants sont faux. Ce n'est
+      // pas une session expirée : c'est un mot de passe erroné.
+      //
+      // Sans cette cas particulier, l'écran de connexion affichait « Session
+      // expirée — reconnectez-vous. » à quelqu'un qui venait de taper son
+      // mot de passe : un message qui ne dit pas ce qui ne va pas, et qui
+      // renvoie l'utilisateur vers la page où il est déjà.
+      if (path.includes("/auth/login")) {
+        const err = await res.json().catch(() => ({ message: res.statusText }));
+        const message = err.message;
+        throw new Error(
+          Array.isArray(message) ? String(message[0]) : (message ?? "Identifiants invalides"),
+        );
+      }
+
       // Un 401 isolé ne doit pas fermer la session : c'est ce comportement qui
       // causait la boucle logout/relogin. On tente un refresh, puis on rejoue.
       if (!refreshed && (await refreshAccessToken())) {
