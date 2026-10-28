@@ -58,7 +58,16 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     (key: string, fallback?: string | Record<string, string | number>): string => {
       const dict = messages[locale] as Record<string, string | undefined>
       const template = dict[key] ?? (fr as Record<string, string | undefined>)[key] ?? key
-      if (typeof fallback === 'string') return template
+      // Un REPLI explicite doit être rendu quand la clé manque — c'est le
+      // contrat de `t('cle', 'Texte')`.
+      //
+      // La version d'ici renvoyait `template`, c'est-à-dire la CLÉ : le
+      // repli n'était jamais utilisé, et l'écran affichait « danger_zone »,
+      // « tenant_users », « all_statuses » ou « invoice_paid » en toutes
+      // lettres. Le repli n'était qu'un décor.
+      if (typeof fallback === 'string') {
+        return dict[key] ?? (fr as Record<string, string | undefined>)[key] ?? fallback
+      }
       if (!fallback) return template
       return template.replace(/\{(\w+)\}/g, (match, name: string) =>
         name in fallback ? String(fallback[name]) : match,

@@ -667,4 +667,21 @@ export const fr = {
   email_stats_empty: 'Aucune statistique disponible.',
   email_stats_refresh: 'Rafraîchir',
   email_stats_refreshed: 'Statistiques actualisées.',
+  // ── Cles qui manquaient ───────────────────────────────────────────────────
+  // Chacune etait UTILISEE par un ecran sans exister dans les messages : le
+  // helper `t()` renvoyait alors la cle brute, et l'ecran affichait
+  // « required » ou « view » au lieu d'un libelle. Les replis ecrits dans le
+  // code (« Zone danger ») ne servaient a rien : le helper les ignorait.
+  all_masculine: 'Tous',
+  all_statuses: 'Tous les statuts',
+  danger_zone: 'Zone danger',
+  invoice_paid: 'Payée',
+  no_activity: 'Aucune activité récente',
+  onboarding_summary: 'Récapitulatif',
+  required: 'Ce champ est obligatoire',
+  role_label: 'Rôle',
+  select_kiosk: 'Choisir une caisse',
+  site_created: 'Site créé',
+  tenant_users: 'Utilisateurs',
+  view: 'Voir',
 } satisfies Record<ClePerimetre | ClePerimetreDetail, string> & Record<string, string>

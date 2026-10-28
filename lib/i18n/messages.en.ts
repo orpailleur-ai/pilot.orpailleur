@@ -665,4 +665,21 @@ export const en = {
   email_stats_empty: 'No statistics available.',
   email_stats_refresh: 'Refresh',
   email_stats_refreshed: 'Statistics refreshed.',
+  // ── Keys that were missing ───────────────────────────────────────────────
+  // Each was USED by a screen without existing in the messages: the `t()`
+  // helper returned the raw key, and the screen displayed "required" or
+  // "view" instead of a label. The fallbacks written in the code
+  // ("Zone danger") were useless: the helper ignored them.
+  all_masculine: 'All',
+  all_statuses: 'All statuses',
+  danger_zone: 'Danger zone',
+  invoice_paid: 'Paid',
+  no_activity: 'No recent activity',
+  onboarding_summary: 'Summary',
+  required: 'This field is required',
+  role_label: 'Role',
+  select_kiosk: 'Choose a till',
+  site_created: 'Site created',
+  tenant_users: 'Users',
+  view: 'View',
 } satisfies Record<ClePerimetre | ClePerimetreDetail, string> & Record<string, string>
