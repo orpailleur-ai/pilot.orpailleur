@@ -32,9 +32,13 @@ test.describe('la connexion', () => {
     await page.locator('input[type="password"]').first().fill('mauvais-mot-de-passe')
     await page.getByRole('button', { name: /connexion|login/i }).first().click()
 
-    // Un message d'erreur, ou un champ qui signale le refus.
+    // Un message d'erreur. On ne dépend pas du texte EXACT : l'API peut
+    // répondre « Identifiants invalides », mais aussi « Trop de requêtes »
+    // si le limiteur de débit s'en mêle — et le refus reste un refus.
     const refus = page
-      .locator('text=/identifiants invalides|invalid|incorrect|échec|erreur/i')
+      .locator(
+        'text=/identifiants invalides|invalid|incorrect|échec|erreur|trop de requêtes|too many/i',
+      )
       .first()
     await refus.waitFor({ state: 'visible', timeout: 20_000 }).catch(() => undefined)
     expect(await refus.count()).toBeGreaterThan(0)

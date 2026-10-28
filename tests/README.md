@@ -44,6 +44,23 @@ npm run test:e2e
 sont **sautés** — et le disent — au lieu d'échouer sur une connexion
 impossible.
 
+### En CI
+
+Le job `e2e` du workflow lit deux secrets du dépôt :
+
+| secret | contenu |
+|---|---|
+| `E2E_PILOT_EMAIL` | l'adresse du compte de test (`e2e@orpailleur.com`) |
+| `E2E_PILOT_PASSWORD` | son mot de passe |
+
+Tant qu'ils ne sont pas posés, **seuls les tests qui n'ont pas besoin d'accès
+s'exécutent** (le garde-fou des traductions, la connexion refusée) ; les
+autres sont sautés, et le job reste vert. Ce n'est pas unrani : un job rouge
+pour « pas de secret » MASQUERAIT un vrai défaut.
+
+La variable `PILOT_BASE_URL` est prise dans les variables du dépôt
+(`vars.PILOT_BASE_URL`), avec le prod par défaut.
+
 ## Contre quoi tester
 
 Par défaut : le pilot **déployé** (`https://pilot.orpailleur-software.fr`).
