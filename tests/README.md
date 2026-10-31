@@ -33,6 +33,12 @@ Les identifiants ne sont **jamais** dans le dépôt. Deux chemins :
 | `PILOT_EMAIL` + `PILOT_PASSWORD` | la suite se connecte par le **formulaire**, comme un utilisateur |
 | `PILOT_TOKEN` | le jeton est injecté dans le navigateur (pratique en CI) |
 
+Et, pour le provisionnement :
+
+| variable | effet |
+|---|---|
+| `API_BASE_URL` | l'origine de l'API d'administration (`https://console.orpailleur-software.fr`) |
+
 Les lire depuis un fichier local :
 
 ```bash
@@ -76,11 +82,51 @@ La suite **écrit**, sur des objets qu'elle crée pour l'occasion :
 
 - un modèle IA déclaré puis supprimé (`tests/modeles.spec.ts`) — le
   nettoyage est fait dans un `finally`, donc même si le test échoue au
-  milieu, l'objet disparaît.
+  milieu, l'objet disparaît ;
+- une boulangerie, un rôle, un compte global et un compte de tenant
+  (`tests/provisionnement.spec.ts`) ;
+- un compte de test (`tests/roles.spec.ts`).
+
+Le nettoyage est **contrôlé** : si un objet n'a pas pu être supprimé, le
+test le dit. Un test qui laisse des traces en production est un test qui a
+réussi à moitié — et une boulangerie `E2E-*` qui traîne dans les listes
+pollue le travail de tous les administrateurs.
 
 Elle **n'écrit pas** sur la configuration SMTP : elle est globale, elle
 sert à tous les tenants, et le test d'envoi vise une adresse du domaine
 `.invalid` — inexistant par construction (RFC 2606).
+
+## Le provisionnement de la plateforme
+
+`tests/provisionnement.spec.ts` est le test le plus long de la suite, et
+le plus important : il vérifie que le pilot sait faire ce pour quoi il
+existe.
+
+Il crée une **boulangerie**, un **rôle** restreint (lecture du stock
+seulement), un compte **GLOBAL** (administrateur de la plateforme, sans
+boulangerie) et un compte de **TENANT**. Puis il vérifie trois choses :
+
+- le compte global **administre la plateforme** (`/admin/tenants` répond
+  200) ;
+- le compte de tenant **ne la passe pas** (403) ;
+- le compte de tenant a **exactement** les permissions de son rôle : il lit
+  le stock, il ne lit pas les factures.
+
+C'est ce qui fait tenir la séparation entre la plateforme et les
+boulangeries. Un test qui vérifie seulement « la route répond 200 » ne la
+verrait pas.
+
+## Les rôles globaux
+
+Un compte créé par le pilot n'appartient à aucune boulangerie — et n'a donc
+aucun rôle. La connexion d'administration le refusait : le compte existait,
+mais ne pouvait rien faire.
+
+Les rôles **globaux** (`user_roles`) sont ceux dont le jeton tire ses
+permissions, et qui ne sont attachés à aucune boulangerie. C'est la seule
+façon de faire un administrateur de plateforme. `tests/roles.spec.ts` les
+affecte depuis l'interface — la page des rôles d'un compte — et vérifie
+que l'API les voit aussi.
 
 ## L'état de session
 
