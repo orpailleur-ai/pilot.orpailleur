@@ -2,6 +2,7 @@ import { expect } from '@playwright/test'
 import { raisonSansAcces, sansAcces, testConnecte } from './fixtures'
 import { ROUTES } from './routes'
 import { releverClesBrutes, sonder } from './helpers/probe'
+import { aller } from './helpers/navigation'
 
 /**
  * LE PASSAGE SUR CHAQUE PAGE.
@@ -48,7 +49,7 @@ testConnecte.describe('chaque page du pilot', () => {
       }
 
       const sonde = sonder(page)
-      await page.goto(url, { waitUntil: 'domcontentloaded' })
+      await aller(page, url)
 
       // On attend la fin des requêtes : une page qui charge encore son
       // squelette ne peut pas être jugée.

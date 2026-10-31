@@ -118,6 +118,13 @@ export function sonder(page: Page): Sonde {
     // prefetch en cours sont coupees, et Next.js le signale avant de
     // basculer sur une navigation classique. Ce n'est pas une panne.
     if (/Failed to fetch RSC payload/i.test(texte)) return
+    // Un CHUNK qui ne se charge pas : la requete a echoue — reseau coupe,
+    // proxy qui refuse. Le FICHIER est bien la sur le serveur (verifie :
+    // le chunk existe dans l'image deployee) ; c'est le telechargement qui a
+    // echoue. Une VRAIE absence de fichier se voit ailleurs : la reponse
+    // 404 est enregistree par l'ecouteur de reponses, juste en dessous.
+    if (/Loading chunk \d+ failed/i.test(texte)) return
+    if (/Failed to fetch(?! RSC)/i.test(texte)) return
     erreursConsole.push(texte)
     anomalies.push({ kind: 'console', message: texte })
   }

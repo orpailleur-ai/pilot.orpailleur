@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test'
+import { aller } from './helpers/navigation'
 
 /**
  * LA CONNEXION.
@@ -17,7 +18,7 @@ import { expect, test } from '@playwright/test'
  */
 test.describe('la connexion', () => {
   test('affiche le formulaire', async ({ page }) => {
-    await page.goto('/login')
+    await aller(page, '/login')
 
     await expect(page.locator('input[type="email"]').first()).toBeVisible({
       timeout: 15_000,
@@ -27,7 +28,7 @@ test.describe('la connexion', () => {
   })
 
   test('refuse un mauvais mot de passe, sans ouvrir de session', async ({ page }) => {
-    await page.goto('/login')
+    await aller(page, '/login')
     await page.locator('input[type="email"]').first().fill('e2e@orpailleur.com')
     await page.locator('input[type="password"]').first().fill('mauvais-mot-de-passe')
     await page.getByRole('button', { name: /connexion|login/i }).first().click()
@@ -57,7 +58,7 @@ test.describe('la connexion', () => {
       'Identifiants absents : définissez PILOT_EMAIL et PILOT_PASSWORD.',
     )
 
-    await page.goto('/login')
+    await aller(page, '/login')
     await page.locator('input[type="email"]').first().fill(email as string)
     await page.locator('input[type="password"]').first().fill(password as string)
     await page.getByRole('button', { name: /connexion|login/i }).first().click()
