@@ -428,6 +428,19 @@ export const en = {
   user_role_removed: 'Role removed',
   user_role_remove_confirm: 'Remove this role?',
   user_role_remove_description: 'The user will lose access associated with this role for this tenant.',
+  user_role_code: 'Code',
+  user_global_roles: 'Global roles',
+  user_global_roles_assign: 'Assign a global role',
+  user_global_roles_hint:
+    'Global roles are not attached to any bakery: that is what makes a platform administrator. An account without a global role cannot sign in to the administration.',
+  user_global_roles_empty: 'No global role',
+  user_global_roles_empty_hint:
+    'Assign a global role to this account so that it can administer the platform.',
+  user_global_role_assigned: 'Global role assigned',
+  user_global_role_removed: 'Global role removed',
+  user_global_role_remove_confirm: 'Remove this global role?',
+  user_global_role_remove_description:
+    'The account will lose the permissions of this role across the whole platform.',
   user_site_remove_confirm: 'Remove this site?',
   user_site_remove_description: 'The user will no longer have access to this point of sale.',
   dashboard_mrr: 'Estimated MRR',

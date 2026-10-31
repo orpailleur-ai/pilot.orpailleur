@@ -430,6 +430,19 @@ export const fr = {
   user_role_removed: 'Rôle retiré',
   user_role_remove_confirm: 'Retirer ce rôle ?',
   user_role_remove_description: "L'utilisateur perdra l'accès associé à ce rôle pour ce tenant.",
+  user_role_code: 'Code',
+  user_global_roles: 'Rôles globaux',
+  user_global_roles_assign: 'Assigner un rôle global',
+  user_global_roles_hint:
+    "Les rôles globaux ne sont attachés à aucune boulangerie : c'est ce qui fait un administrateur de plateforme. Un compte sans rôle global ne peut pas se connecter à l'administration.",
+  user_global_roles_empty: 'Aucun rôle global',
+  user_global_roles_empty_hint:
+    "Assignez un rôle global à ce compte pour qu'il administrer la plateforme.",
+  user_global_role_assigned: 'Rôle global assigné',
+  user_global_role_removed: 'Rôle global retiré',
+  user_global_role_remove_confirm: 'Retirer ce rôle global ?',
+  user_global_role_remove_description:
+    "Le compte perdra les permissions de ce rôle sur l'ensemble de la plateforme.",
   user_site_remove_confirm: 'Retirer ce site ?',
   user_site_remove_description: "L'utilisateur ne pourra plus accéder à ce point de vente.",
   dashboard_mrr: 'MRR estimé',
