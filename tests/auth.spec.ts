@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test'
 import { aller } from './helpers/navigation'
+import { connecterParLeFormulaire } from './helpers/connexion'
 
 /**
  * LA CONNEXION.
@@ -28,21 +29,20 @@ test.describe('la connexion', () => {
   })
 
   test('refuse un mauvais mot de passe, sans ouvrir de session', async ({ page }) => {
-    await aller(page, '/login')
-    await page.locator('input[type="email"]').first().fill('e2e@orpailleur.com')
-    await page.locator('input[type="password"]').first().fill('mauvais-mot-de-passe')
-    await page.getByRole('button', { name: /connexion|login/i }).first().click()
-
     // Un message d'erreur. On ne dépend pas du texte EXACT : l'API peut
     // répondre « Identifiants invalides », mais aussi « Trop de requêtes »
     // si le limiteur de débit s'en mêle — et le refus reste un refus.
-    const refus = page
+    const refuse = await connecterParLeFormulaire(page, 'e2e@orpailleur.com', 'mauvais-mot-de-passe', {
+      attendreRefus: true,
+    })
+    expect(refuse, 'un mauvais mot de passe ne doit PAS ouvrir de session').toBe(false)
+
+    const message = page
       .locator(
         'text=/identifiants invalides|invalid|incorrect|échec|erreur|trop de requêtes|too many/i',
       )
       .first()
-    await refus.waitFor({ state: 'visible', timeout: 20_000 }).catch(() => undefined)
-    expect(await refus.count()).toBeGreaterThan(0)
+    await expect(message).toBeVisible({ timeout: 10_000 })
 
     // ET surtout : aucune session ouverte.
     const jeton = await page.evaluate(() => window.localStorage.getItem('pilot_token'))
@@ -58,17 +58,10 @@ test.describe('la connexion', () => {
       'Identifiants absents : définissez PILOT_EMAIL et PILOT_PASSWORD.',
     )
 
-    await aller(page, '/login')
-    await page.locator('input[type="email"]').first().fill(email as string)
-    await page.locator('input[type="password"]').first().fill(password as string)
-    await page.getByRole('button', { name: /connexion|login/i }).first().click()
+    const connecte = await connecterParLeFormulaire(page, email as string, password as string)
+    expect(connecte, 'la connexion doit ouvrir la session').toBe(true)
 
-    // Le jeton est pose, et l'application quitte /login.
-    await page.waitForFunction(
-      () => Boolean(window.localStorage.getItem('pilot_token')),
-      undefined,
-      { timeout: 30_000 },
-    )
+    // Le jeton est posé, et l'application quitte /login.
     await expect(page).not.toHaveURL(/\/login(\?|$)/, { timeout: 15_000 })
   })
 })
