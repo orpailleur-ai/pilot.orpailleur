@@ -417,6 +417,18 @@ export interface AdminUser {
     role_code: string
     role_label: string
   }>
+  /**
+   * Les rôles GLOBAUX du compte (`user_roles`).
+   *
+   * Ce ne sont pas les mêmes que `tenants` : ceux-là sont attachés à une
+   * boulangerie, ceux-ci ne le sont pas. Un administrateur de plateforme
+   * n'a que ceux-ci.
+   */
+  global_roles: Array<{
+    role_id: string
+    role_code: string
+    role_label: string
+  }>
   sites: string[]
 }
 
@@ -460,6 +472,20 @@ export const adminUsers = {
     } as Partial<CreateUserDto>),
   getUserSites: (userId: string) =>
     request<Site[]>("GET", `/admin/users/${userId}/sites/full`),
+  /**
+   * Affecte les rôles d'un utilisateur — par boulangerie et globaux.
+   *
+   * `PUT /admin/users/:id/roles`. Les deux listes sont facultatives, mais il
+   * en faut au moins une : une liste ABSENTE n'est pas touchée, une liste
+   * VIDE vide la table qu'elle nomme.
+   */
+  assignRoles: (
+    id: string,
+    dto: {
+      assignments?: Array<{ tenant_id: string; role_id: string }>
+      global_role_ids?: string[]
+    },
+  ) => request<AdminUser>(`PUT`, `/admin/users/${id}/roles`, dto),
 }
 
 // ── Roles ─────────────────────────────────────────────────────────────────────

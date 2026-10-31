@@ -18,7 +18,6 @@ import {
   adminUsers,
   adminTenants,
   roles,
-  apiClient,
   type AdminUser,
   type Role,
 } from '@/lib/api-client'
@@ -81,10 +80,17 @@ export default function TenantUsersPage() {
         prenom: form.prenom || undefined,
         nom: form.nom || undefined,
       })
-      // Assign to tenant with default role
-      const defaultRole = roleList.find((r) => r.code === 'user') ?? roleList[0]
+      // Affectation du rôle par défaut dans la boulangerie.
+      //
+      // Le rôle par défaut est le MOINS PRIVILÉGIÉ : `caissier`. Prendre
+      // « le premier rôle de la liste » revenait à donner `admin_boutique`
+      // — l'administration complète de la boulangerie — à toute personne
+      // qu'on ajoutait. On ne recrute pas un administrator en le
+      //ISTRATIONnant dans la boulangerie.
+      const defaultRole =
+        roleList.find((r) => r.code === 'caissier') ?? roleList[0]
       if (defaultRole) {
-        await apiClient.post(`/admin/users/${newUser.id}/roles`, {
+        await adminUsers.assignRoles(newUser.id, {
           assignments: [{ tenant_id: tenantId, role_id: defaultRole.id }],
         })
       }
