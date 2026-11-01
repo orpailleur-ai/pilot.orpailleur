@@ -1,5 +1,6 @@
 import { expect, raisonSansAcces, sansAcces, testConnecte } from './fixtures'
 import { sonder } from './helpers/probe'
+import { aller } from './helpers/navigation'
 
 /**
  * L'ÉCRAN « CONFIGURATION SMTP » (/parametrage/email).
@@ -25,7 +26,7 @@ testConnecte.describe('la configuration SMTP', () => {
 
   testConnecte('affiche la configuration et son origine', async ({ page }) => {
     const sonde = sonder(page)
-    await page.goto('/parametrage/email')
+    await aller(page, '/parametrage/email')
     await page.waitForLoadState('networkidle')
 
     // Le formulaire est là : sans lui, l'écran ne sert à rien.
@@ -41,7 +42,7 @@ testConnecte.describe('la configuration SMTP', () => {
 
   testConnecte('dit ce qu\'il advient d\'un envoi de test', async ({ page }) => {
     const sonde = sonder(page)
-    await page.goto('/parametrage/email')
+    await aller(page, '/parametrage/email')
     await page.waitForLoadState('networkidle')
 
     // L'adresse d'un domaine `.invalid` n'existe pas : le relais doit
