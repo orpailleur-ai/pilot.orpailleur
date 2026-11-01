@@ -105,7 +105,7 @@ export default function TenantSettingsPage() {
   return (
     <>
       <PageHeader
-        title={t('tenant_settings', 'Paramètres du tenant')}
+        title={t('tenant_settings', 'Paramètres de la boulangerie')}
         icon={<Settings size={20} style={{ color: 'var(--color-text-primary)' }} />}
       />
 
@@ -122,7 +122,7 @@ export default function TenantSettingsPage() {
         <FieldGrid columns={2}>
           <div className="flex flex-col gap-1">
             <TextInput
-              label={t('name', 'Nom du tenant')}
+              label={t('name', 'Nom de la boulangerie')}
               value={form.nom ?? ''}
               onChange={(v) => { setForm((f) => ({ ...f, nom: v })); formErrors.clearError('nom') }}
               isRequired

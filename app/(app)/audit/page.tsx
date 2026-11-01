@@ -14,12 +14,12 @@ import { SelectField } from '@/components/ui/select-field'
 import { useAuth } from '@/components/providers/auth-context'
 
 const ACTION_LABELS: Record<string, string> = {
-  // Tenant
-  'tenant.create': 'Création tenant',
-  'tenant.update': 'Modification tenant',
-  'tenant.delete': 'Suppression tenant',
-  'tenant.activate': 'Activation tenant',
-  'tenant.deactivate': 'Désactivation tenant',
+  // Boulangerie
+  'tenant.create': 'Création boulangerie',
+  'tenant.update': 'Modification boulangerie',
+  'tenant.delete': 'Suppression boulangerie',
+  'tenant.activate': 'Activation boulangerie',
+  'tenant.deactivate': 'Désactivation boulangerie',
   // User
   'user.create': 'Création utilisateur',
   'user.update': 'Modification utilisateur',

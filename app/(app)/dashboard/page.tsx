@@ -107,7 +107,7 @@ export default function DashboardPage() {
     <>
       <PageHeader
         title={t('dashboard', 'Tableau de bord')}
-        subtitle={t('billing_subtitle', 'Tenant·tes, facturation et activité de la plateforme')}
+        subtitle={t('billing_subtitle', 'MRR, santé des abonnements et facturation')}
         icon={<TrendingUp size={20} style={{ color: 'var(--color-text-primary)' }} />}
       />
 
@@ -227,7 +227,7 @@ export default function DashboardPage() {
                   {stats.alerts.tenant_inactive}
                 </strong>
                 {' '}
-                {t('tenant_inactive_alert', 'tenant(s) inactif(s) — vérifiez leur statut.')}
+                {t('tenant_inactive_alert', 'boulangerie(s) inactive(s) — vérifiez leur statut.')}
               </span>
             </div>
           )}
@@ -243,15 +243,15 @@ export default function DashboardPage() {
             <KpiCard
               label={t('arpu', 'ARPU')}
               value={formatMRR(arpu)}
-              deltaLabel={t('per_active_tenant', 'par tenant actif')}
+              deltaLabel={t('per_active_tenant', 'par boulangerie active')}
             />
             <KpiCard
-              label={t('tenants_actifs_lbl', 'Tenants actifs')}
+              label={t('tenants_actifs_lbl', 'Boulangeries actives')}
               value={String(stats.tenants_actifs)}
               icon={<Building2 size={16} />}
             />
             <KpiCard
-              label={t('new_tenants_period', `Nouveaux (${stats.periode.jours} j)`)}
+              label={t('new_tenants_period', `Nouvelles (${stats.periode.jours} j)`)}
               value={String(stats.nouveaux_tenants)}
               icon={<Clock size={16} />}
             />
@@ -593,8 +593,16 @@ function AuditFeed({ logs }: { logs: DashboardStats['recent_audit'] }) {
 }
 
 function RecentSignups({ tenants }: { tenants: DashboardStats['recent_signups'] }) {
+  // Le texte du vide était en dur, et en anglais technique : « Aucun
+  // nouveau tenant. » La clé existe déjà dans les messages — c'est elle
+  // qu'il faut utiliser, sinon elle reste en décalage.
+  const { t } = useI18n()
   if (!tenants || tenants.length === 0) {
-    return <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>Aucun nouveau tenant.</p>
+    return (
+      <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+        {t('dashboard_no_new_tenant')}
+      </p>
+    )
   }
   return (
     <div className="flex flex-col gap-2">

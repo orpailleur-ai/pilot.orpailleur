@@ -36,8 +36,8 @@ const PAGE_SHORTCUTS: SearchResult[] = [
   {
     id: 'page-tenants',
     type: 'tenant',
-    label: 'Tenants',
-    description: 'Tous les tenants',
+    label: 'Boulangeries',
+    description: 'Toutes les boulangeries',
     href: '/tenants',
     icon: <Building2 size={16} />,
   },
@@ -209,7 +209,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
   const tenants = results.filter((r) => r.type === 'tenant')
   const users = results.filter((r) => r.type === 'user')
   if (pages.length) groups.push({ label: 'Navigation', items: pages })
-  if (tenants.length) groups.push({ label: 'Tenants', items: tenants })
+  if (tenants.length) groups.push({ label: 'Boulangeries', items: tenants })
   if (users.length) groups.push({ label: 'Utilisateurs', items: users })
 
   let globalIndex = -1
@@ -244,7 +244,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Rechercher tenants, utilisateurs, pages…"
+            placeholder="Rechercher boulangeries, utilisateurs, pages…"
             className="flex-1 bg-transparent text-sm outline-none"
             style={{ color: 'var(--color-text-primary, #111827)' }}
           />

@@ -219,7 +219,7 @@ export default function TenantSubscriptionPage() {
       {subs.length === 0 ? (
         <EmptyState
           title={t('subscription_tenant_empty', 'Aucun abonnement')}
-          description={t('subscription_tenant_empty_hint', `Aucun abonnement actif pour ${tenant?.nom ?? 'ce tenant'}. Souscrivez à un plan.`)}
+          description={t('subscription_tenant_empty_hint', `Aucun abonnement actif pour ${tenant?.nom ?? 'cette boulangerie'}. Souscrivez à un plan.`)}
         />
       ) : (
         <DataTable columns={columns} rows={subs} rowKey={(row) => row.id} />

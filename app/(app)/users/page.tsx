@@ -229,7 +229,7 @@ export default function UsersPage() {
           label={t('users_filter_tenant')}
           value={filterTenant}
           onChange={(v) => setFilterTenant(v)}
-          options={[{ value: '', label: t('all_tenants', 'Tous les tenants') }, ...tenants.map((t) => ({ value: t.id, label: t.nom }))]}
+          options={[{ value: '', label: t('all_tenants', 'Toutes les boulangeries') }, ...tenants.map((t) => ({ value: t.id, label: t.nom }))]}
         />
         <SelectField
           label={t('users_filter_status')}

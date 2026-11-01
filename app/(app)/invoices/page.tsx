@@ -142,7 +142,7 @@ export default function InvoicesPage() {
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
           <input
             type="text"
-            placeholder="Rechercher par tenant ou numéro…"
+            placeholder="Rechercher par boulangerie ou numéro…"
             className="h-9 rounded-md border px-3 text-sm sm:w-64"
             style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-background-surface)', color: 'var(--color-text-primary)' }}
             value={search}

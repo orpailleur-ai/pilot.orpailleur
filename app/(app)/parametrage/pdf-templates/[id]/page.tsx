@@ -249,16 +249,16 @@ export default function PdfTemplateDetailPage() {
         action={
           <div className="flex items-center gap-2">
             {/*
-              L'aperçu est proposé pour TOUT modèle, tenant compris : c'est
-              une lecture, pas une écriture, et l'API n'exige que
-              PARAMETRAGE_READ pour le rendre. Masquer le bouton aux modèles
-              de tenant les rendait consultables sans jamais pouvoir les
-              voir — l'aperçu est justement ce qui permet de juger un
-              modèle de tenant.
+              L'aperçu est proposé pour TOUT modèle, de boulangerie
+              compris : c'est une lecture, pas une écriture, et l'API
+              n'exige que PARAMETRAGE_READ pour le rendre. Masquer le
+              bouton aux modèles de boulangerie les rendait consultables
+              sans jamais pouvoir les voir — l'aperçu est justement ce qui
+              permet de juger un modèle de boulangerie.
 
               L'ÉDITION, elle, reste réservée aux modèles globaux : un
-              modèle de tenant appartient à son tenant, pilot n'en est pas
-              le propriétaire.
+              modèle de boulangerie appartient à sa boulangerie, pilot n'en
+              est pas le propriétaire.
             */}
             <Button
               ref={toggleRef}

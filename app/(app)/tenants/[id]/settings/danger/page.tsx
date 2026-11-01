@@ -104,10 +104,10 @@ export default function TenantDangerPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-medium text-sm" style={{ color: 'var(--color-text-primary)' }}>
-                  {t('tenant_deactivate_label', 'Désactiver le tenant')}
+                  {t('tenant_deactivate_label', 'Désactiver la boulangerie')}
                 </p>
                 <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
-                  {t('tenant_deactivate_hint', 'Le tenant ne pourra plus se connecter, mais les données seront conservées.')}
+                  {t('tenant_deactivate_hint', 'La boulangerie ne pourra plus se connecter, mais les données seront conservées.')}
                 </p>
               </div>
               <PermissionGate permission="TENANT_WRITE">
@@ -124,10 +124,10 @@ export default function TenantDangerPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-medium text-sm" style={{ color: 'var(--color-text-primary)' }}>
-                  {t('tenant_reactivate', 'Réactiver le tenant')}
+                  {t('tenant_reactivate', 'Réactiver la boulangerie')}
                 </p>
                 <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
-                  {t('tenant_activate_description', 'Le tenant pourra à nouveau se connecter.')}
+                  {t('tenant_activate_description', 'La boulangerie pourra à nouveau se connecter.')}
                 </p>
               </div>
               <PermissionGate permission="TENANT_WRITE">
@@ -143,7 +143,7 @@ export default function TenantDangerPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="font-medium text-sm" style={{ color: 'var(--color-text-primary)' }}>
-                {t('tenant_delete_label', 'Supprimer le tenant')}
+                {t('tenant_delete_label', 'Supprimer la boulangerie')}
               </p>
               <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
                 {t('tenant_delete_hint', 'Suppression définitive : toutes les données seront perdues.')}
@@ -164,7 +164,7 @@ export default function TenantDangerPage() {
         isOpen={showDeactivate}
         onOpenChange={setShowDeactivate}
         title={t('tenant_deactivate_confirm')}
-        description={`${tenant.nom} ? ${t('tenant_deactivate_hint', 'Il ne pourra plus se connecter.')}`}
+        description={`${tenant.nom} ? ${t('tenant_deactivate_hint', 'Elle ne pourra plus se connecter.')}`}
         confirmLabel={t('deactivate')}
         confirmVariant="primary"
         onConfirm={handleDeactivate}
