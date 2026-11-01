@@ -210,7 +210,7 @@ export const fr = {
   admin_warning: 'Ce compte aura accès complet à la console de gestion boulangerie. Choisissez un mot de passe robuste.',
   tenant_siret: 'SIRET',
   create_tenant: 'Créer la boulangerie',
-  tenant_irreversible: 'La création est irréversible pour la boulangerie et la subscription. L&apos;utilisateur peut être supprimé séparément.',
+  tenant_irreversible: 'La création est irréversible pour la boulangerie et l&apos;abonnement. L&apos;utilisateur peut être supprimé séparément.',
   no_tenants_hint: 'Créez une boulangerie pour commencer.',
   no_results: 'Aucun résultat',
 
