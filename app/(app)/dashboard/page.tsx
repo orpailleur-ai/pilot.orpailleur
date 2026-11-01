@@ -512,7 +512,7 @@ function MrrParPlan({
               {formatMRR(r.mrr_cents)}
             </div>
             <div className="min-w-[60px] text-right text-xs" style={{ color: 'var(--color-text-secondary)' }}>
-              {r.tenants} tenant{r.tenants > 1 ? 's' : ''}
+              {r.tenants} boulangerie{r.tenants > 1 ? 's' : ''}
             </div>
           </div>
         )
