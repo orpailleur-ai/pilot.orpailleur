@@ -81,7 +81,16 @@ export async function connecterParLeFormulaire(
   for (let essai = 1; essai <= 3; essai++) {
     await champEmail.fill(email)
     await champMotDePasse.fill(motDePasse)
-    await page.getByRole('button', { name: /connexion|login/i }).first().click()
+
+    // Le CLIC peut échouer : le bouton est disabled pendant qu'une requête
+    // est en vol, et il peut rester couvert. Un clic qui expire n'est pas
+    // un échec de la connexion — c'est une page qui n'était pas prête. On
+    // le laisse passer, et la tentative suivante reprend.
+    await page
+      .getByRole('button', { name: /connexion|login/i })
+      .first()
+      .click({ timeout: 5_000 })
+      .catch(() => undefined)
 
     // Deux issues possibles, et il faut la PREMIERE : une session ouverte,
     // ou un refus affiché. Les attendre l'une après l'autre ferait perdre
