@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { ClipboardList, ChevronLeft, ChevronRight, Filter } from 'lucide-react'
 import { auditLogs, clearToken, type AuditLog } from '@/lib/api-client'
 import { useI18n } from '@/lib/i18n'
+import { ACTION_LABELS, KNOWN_ACTIONS } from '@/lib/audit-actions'
 import { PageHeader } from '@/components/layout/page-header'
 import { DataTable, type Column } from '@/components/ui/data-table'
 import { EmptyState } from '@/components/ui/empty-state'
@@ -13,39 +14,7 @@ import { Spinner } from '@/components/ui/spinner'
 import { SelectField } from '@/components/ui/select-field'
 import { useAuth } from '@/components/providers/auth-context'
 
-const ACTION_LABELS: Record<string, string> = {
-  // Boulangerie
-  'tenant.create': 'Création boulangerie',
-  'tenant.update': 'Modification boulangerie',
-  'tenant.delete': 'Suppression boulangerie',
-  'tenant.activate': 'Activation boulangerie',
-  'tenant.deactivate': 'Désactivation boulangerie',
-  // User
-  'user.create': 'Création utilisateur',
-  'user.update': 'Modification utilisateur',
-  'user.delete': 'Suppression utilisateur',
-  'user.assign_role': 'Affectation rôle',
-  'user.remove_role': 'Retrait rôle',
-  // Subscription
-  'subscription.create': 'Nouvel abonnement',
-  'subscription.update': 'Modification abonnement',
-  'subscription.cancel': 'Annulation abonnement',
-  'subscription.expire': 'Expiration abonnement',
-  // Plan
-  'plan.create': 'Création plan',
-  'plan.update': 'Modification plan',
-  'plan.delete': 'Suppression plan',
-  // Invoice
-  'invoice.create': 'Création facture',
-  'invoice.paid': 'Paiement facture',
-  'invoice.overdue': 'Facture en retard',
-  // Auth
-  'auth.login': 'Connexion admin',
-  'auth.logout': 'Déconnexion admin',
-  'auth_impersonate': 'Emprunt d\'identité',
-}
 
-const KNOWN_ACTIONS = Object.keys(ACTION_LABELS).sort()
 
 function formatMeta(meta: Record<string, unknown>): string {
   const entries = Object.entries(meta)

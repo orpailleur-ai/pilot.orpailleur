@@ -18,6 +18,7 @@ import { InlineError } from '@/components/ui/inline-error'
 import { KpiCard } from '@/components/composite/kpi-card'
 import { BarChart } from '@/components/composite/bar-chart'
 import { adminTenants, type DashboardStats } from '@/lib/api-client'
+import { libelleAction } from '@/lib/audit-actions'
 import { useI18n } from '@/lib/i18n'
 
 function formatMRR(cents: number) {
@@ -577,7 +578,7 @@ function AuditFeed({ logs }: { logs: DashboardStats['recent_audit'] }) {
                 color: 'var(--color-accent)',
               }}
             >
-              {log.action}
+              {libelleAction(log.action)}
             </span>
             <span className="text-xs truncate" style={{ color: 'var(--color-text-secondary)' }}>
               {log.user_id.slice(0, 8)}…
