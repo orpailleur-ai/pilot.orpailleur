@@ -133,7 +133,6 @@ export async function testerModeleAdmin(id: string): Promise<TestResultat> {
 export const MODELES_PAR_DEFAUT: Record<string, string> = {
   ocr_vision: 'mistral-ocr-latest',
   ocr_reasoning: 'mistral-large',
-  ocr_agent: 'mistral-small',
   import_recette: 'mistral-small',
   bot: 'mistral-small',
 }
