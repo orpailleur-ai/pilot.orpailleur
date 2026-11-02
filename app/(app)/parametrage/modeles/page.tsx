@@ -20,6 +20,7 @@ import {
   deleteModeleAdmin,
   listModelesAdmin,
   listScopesAdmin,
+  changements,
   testerModeleAdmin,
   updateModeleAdmin,
   type Modele,
@@ -97,9 +98,19 @@ export default function ModelesPage() {
   async function enregistrer(valeurs: ModeleInput & { id?: string }) {
     setEnregistrement(true)
     setErreur('')
+    let modeleChange = false
     try {
       if (valeurs.id) {
-        await updateModeleAdmin(valeurs.id, valeurs)
+        // Seulement ce qui a changé : voir `changements`.
+        const avant = edition ?? modeles.find((m) => m.id === valeurs.id)
+        const diff = avant ? changements(avant, valeurs) : valeurs
+        if (Object.keys(diff).length === 0) {
+          setEdition(null)
+          toast({ body: t('ai_models_nothing_changed'), type: 'info' })
+          return
+        }
+        await updateModeleAdmin(valeurs.id, diff)
+        modeleChange = Boolean(avant && 'model' in diff)
       } else {
         await createModeleAdmin(valeurs)
       }
@@ -109,7 +120,9 @@ export default function ModelesPage() {
       // Sans ce toast, un enregistrement reussi ne se distinguait d'un clic
       // perdu : le formulaire se fermait, c'etait tout. Une action qui ne dit
       // rien avoir fait laisse l'utilisateur se demander s'il a SAVE ou non.
-      toast({ body: t('ai_models_saved'), type: 'info' })
+      // Le service IA relit la configuration toutes les 30 s : on le dit, sinon
+      // le premier appel juste après l'enregistrement passe pour un échec.
+      toast({ body: modeleChange ? t('ai_models_saved_delay') : t('ai_models_saved'), type: 'info' })
     } catch (e: unknown) {
       setErreur(e instanceof Error ? e.message : t('error'))
       toast({ body: e instanceof Error ? e.message : t('error'), type: 'error' })

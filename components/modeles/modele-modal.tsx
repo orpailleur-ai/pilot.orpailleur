@@ -7,7 +7,7 @@ import { Modal, ModalSection, FieldGrid } from '@/components/ui/modal'
 import { SelectField } from '@/components/ui/select-field'
 import { useT } from '@/lib/i18n'
 import { libelleScope } from '@/lib/i18n/scopes'
-import type { Modele, ModeleInput, ScopeInfo } from '@/lib/modeles-client'
+import { modelesConnus, type Modele, type ModeleInput, type ScopeInfo } from '@/lib/modeles-client'
 
 const FOURNISSEURS = ['mistral', 'openai', 'anthropic', 'litellm', 'ollama']
 
@@ -137,10 +137,34 @@ export function ModeleModal({
                 value={String(v['model'])}
                 onChange={(val) => set('model', val)}
                 isRequired
-                placeholder="mistral-large"
+                placeholder="mistral-large-latest"
                 width="100%"
               />
             </FieldGrid>
+            {/* Un toucher remplit le nom : pas de faute de frappe sur un modèle. */}
+            <div className="flex flex-wrap gap-1.5" role="group" aria-label={t('ai_models_known')}>
+              {modelesConnus(String(v['provider']), String(v['scope'])).map((m) => {
+                const actif = String(v['model']).trim() === m
+                return (
+                  <button
+                    key={m}
+                    type="button"
+                    aria-pressed={actif}
+                    onClick={() => set('model', m)}
+                    className="min-h-8 rounded-full border px-3 text-xs font-medium"
+                    style={{
+                      borderColor: actif ? 'var(--color-accent)' : 'var(--color-border)',
+                      backgroundColor: actif
+                        ? 'color-mix(in srgb, var(--color-accent) 12%, transparent)'
+                        : 'var(--color-background-muted)',
+                      color: 'var(--color-text-primary)',
+                    }}
+                  >
+                    {m}
+                  </button>
+                )
+              })}
+            </div>
           </FieldGrid>
         </ModalSection>
 

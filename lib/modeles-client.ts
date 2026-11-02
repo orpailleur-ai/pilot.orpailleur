@@ -141,3 +141,40 @@ export const MODELES_PAR_DEFAUT: Record<string, string> = {
 export function defautDe(scope: string): string | null {
   return MODELES_PAR_DEFAUT[scope] ?? null
 }
+
+/**
+ * Modèles proposés d'un geste dans le formulaire, par fournisseur.
+ *
+ * Les noms du catalogue LiteLLM / Mistral (`*-latest`). Saisir « mistral-large »
+ * à la main marche aussi (LiteLLM l'aliase), mais un nom tapé se trompe : la
+ * puce évite la faute de frappe, et le champ reste libre pour tout autre nom.
+ * Le modèle de vision (`ocr`) n'a de sens que pour le périmètre `ocr_vision`.
+ */
+export function modelesConnus(provider: string, scope: string): string[] {
+  if (provider !== 'mistral') return []
+  return scope === 'ocr_vision'
+    ? ['mistral-ocr-latest']
+    : ['mistral-small-latest', 'mistral-medium-latest', 'mistral-large-latest']
+}
+
+/**
+ * Ce qui a VRAIMENT changé entre la configuration éditée et le formulaire.
+ *
+ * On n'envoie que cela : le formulaire entier (avec `id` et `scope`) faisait de
+ * chaque enregistrement une réécriture complète, et une clé laissée vide ne
+ * doit surtout pas partir. Un objet vide veut dire « rien à enregistrer ».
+ */
+export function changements(
+  avant: Modele,
+  v: ModeleInput,
+): Partial<ModeleInput> {
+  const diff: Partial<ModeleInput> = {}
+  const model = v.model.trim()
+  if (model !== avant.model) diff.model = model
+  if (v.provider !== avant.provider) diff.provider = v.provider
+  if (v.api_key) diff.api_key = v.api_key
+  if (v.prix_entree_eur_par_m !== avant.prix_entree_eur_par_m) diff.prix_entree_eur_par_m = v.prix_entree_eur_par_m
+  if (v.prix_sortie_eur_par_m !== avant.prix_sortie_eur_par_m) diff.prix_sortie_eur_par_m = v.prix_sortie_eur_par_m
+  if (v.actif !== avant.actif) diff.actif = v.actif
+  return diff
+}

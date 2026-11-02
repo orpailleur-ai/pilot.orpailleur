@@ -96,4 +96,47 @@ testConnecte.describe('les modèles IA', () => {
       }
     }
   })
+
+  /**
+   * Le bug : changer le NOM du modèle d'une configuration (small → large)
+   * répondait 200 et ne changeait rien — l'API ignorait `model` dans PATCH.
+   * On le vérifie par un aller-retour : modifier, relire, comparer.
+   */
+  testConnecte('change le modèle d\'une configuration existante', async ({ request, session }) => {
+    const jeton =
+      session.origins
+        .flatMap((o) => o.localStorage)
+        .find((e) => e.name === 'pilot_token')?.value ?? ''
+    const entetes = { headers: { Authorization: `Bearer ${jeton}` } }
+
+    const perimetre = await perimetreLibre(request, jeton)
+    testConnecte.skip(!perimetre, 'Aucun perimetre libre : tous ont deja une configuration')
+    if (!perimetre) return
+
+    const avant = `modele-e2e-a-${Date.now()}`
+    const apres = `modele-e2e-b-${Date.now()}`
+    const creation = await request.post('/api/v1/admin/ai-modeles', {
+      ...entetes,
+      data: { scope: perimetre.code, provider: 'mistral', model: avant, api_key: 'sk-e2e-factice', actif: false },
+    })
+    testConnecte.skip(!creation.ok(), 'Creation impossible (chiffrement non configure ?)')
+    const { id } = (await creation.json()) as { id: string }
+
+    try {
+      const maj = await request.patch(`/api/v1/admin/ai-modeles/${id}`, { ...entetes, data: { model: apres } })
+      expect(maj.ok()).toBe(true)
+
+      const liste = (await (await request.get('/api/v1/admin/ai-modeles', entetes)).json()) as {
+        modeles: Array<{ id: string; model: string }>
+      }
+      // L'assertion qui aurait échoué avant le correctif.
+      expect(liste.modeles.find((m) => m.id === id)?.model).toBe(apres)
+
+      // Un champ que l'API n'écrit pas est refusé, pas ignoré.
+      const inconnu = await request.patch(`/api/v1/admin/ai-modeles/${id}`, { ...entetes, data: { modele: 'x' } })
+      expect(inconnu.status()).toBe(400)
+    } finally {
+      await request.delete(`/api/v1/admin/ai-modeles/${id}`, entetes)
+    }
+  })
 })
