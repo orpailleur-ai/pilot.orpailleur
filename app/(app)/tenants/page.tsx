@@ -1,26 +1,19 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { Plus, Building2, Search, Trash2, CheckCircle, XCircle, Wand2 } from 'lucide-react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { Plus, Building2, Search, Trash2, CheckCircle, XCircle } from 'lucide-react'
 import { TextInput, Button, useToast } from '@astryxdesign/core'
-import {
-  adminTenants,
-  clearToken,
-  type Tenant,
-  type CreateTenantDto,
-} from '@/lib/api-client'
+import { adminTenants, clearToken, type Tenant } from '@/lib/api-client'
 import { useI18n } from '@/lib/i18n'
 import { PageHeader } from '@/components/layout/page-header'
 import { DataTable, type Column } from '@/components/ui/data-table'
 import { EmptyState } from '@/components/ui/empty-state'
 import { InlineError } from '@/components/ui/inline-error'
-import { FieldError } from '@/components/ui/form-field'
-import { useFormErrors } from '@/components/ui/form-field'
 import { Spinner } from '@/components/ui/spinner'
-import { Modal, ModalSection, FieldGrid } from '@/components/ui/modal'
 import { ConfirmDialog } from '@/components/composite/confirm-dialog'
 import { useAuth } from '@/components/providers/auth-context'
+import { NouvelleBoulangerieModal } from '@/components/tenants/nouvelle-boulangerie-modal'
 
 const PLAN_LABELS: Record<string, string> = {
   starter: 'Starter',
@@ -39,6 +32,8 @@ interface TenantRow {
   nb_users_max: number
   actif: boolean
   createdAt: string
+  sites_count: number | null
+  users_count: number | null
 }
 
 function toRow(t: Tenant): TenantRow {
@@ -53,33 +48,25 @@ function toRow(t: Tenant): TenantRow {
     nb_users_max: t.nb_users_max,
     actif: t.actif,
     createdAt: t.createdAt,
+    sites_count: t.sites_count ?? null,
+    users_count: t.users_count ?? null,
   }
 }
 
 export default function TenantsPage() {
   const router = useRouter()
+  const params = useSearchParams()
   const { t } = useI18n()
   const toast = useToast()
   const { isLoading: authLoading } = useAuth()
   const [tenants, setTenants] = useState<Tenant[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
-  const [showCreate, setShowCreate] = useState(false)
-  const [saving, setSaving] = useState(false)
+  // `?nouvelle=1` : l'ancien lien « Onboarding » ouvre directement le formulaire.
+  const [showCreate, setShowCreate] = useState(params.get('nouvelle') === '1')
   const [deleting, setDeleting] = useState<string | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; nom: string } | null>(null)
   const [fetchError, setFetchError] = useState<string | null>(null)
-  const formErrors = useFormErrors()
-
-  const [form, setForm] = useState<CreateTenantDto>({
-    nom: '',
-    email: '',
-    siret: '',
-    ville: '',
-    plan: 'starter',
-    nb_sites_max: 1,
-    nb_users_max: 5,
-  })
 
   useEffect(() => {
     if (!authLoading) fetchTenants()
@@ -101,24 +88,6 @@ export default function TenantsPage() {
       }
     } finally {
       setLoading(false)
-    }
-  }
-
-  async function handleCreate(e: React.FormEvent) {
-    e.preventDefault()
-    if (!form.nom.trim()) { formErrors.setError('nom', t('required')); return }
-    formErrors.clearError('nom')
-    setSaving(true)
-    try {
-      await adminTenants.create(form)
-      setShowCreate(false)
-      setForm({ nom: '', email: '', siret: '', ville: '', plan: 'starter', nb_sites_max: 1, nb_users_max: 5 })
-      fetchTenants()
-      toast({ body: t('tenant_created'), type: 'info' })
-    } catch (err) {
-      toast({ body: err instanceof Error ? err.message : t('error'), type: 'error' })
-    } finally {
-      setSaving(false)
     }
   }
 
@@ -166,7 +135,7 @@ export default function TenantsPage() {
     },
     {
       key: 'plan',
-      header: 'Plan',
+      header: t('tenants_plan'),
       mobile: 'hidden',
       render: (row) => (
         <span
@@ -181,13 +150,14 @@ export default function TenantsPage() {
       ),
     },
     {
-      key: 'limits',
-      header: 'Sites / Users',
+      key: 'usage',
+      header: t('tenants_usage'),
       mobile: 'hidden',
       align: 'end',
+      // Ce que la boulangerie A, sur ce que son plan PERMET : « 2 / 3 · 5 / 20 ».
       render: (row) => (
-        <span style={{ color: 'var(--color-text-secondary)' }}>
-          {row.nb_sites_max} sites · {row.nb_users_max} users
+        <span className="tabular-nums" style={{ color: 'var(--color-text-secondary)' }}>
+          {row.sites_count ?? '—'} / {row.nb_sites_max} · {row.users_count ?? '—'} / {row.nb_users_max}
         </span>
       ),
     },
@@ -233,7 +203,7 @@ export default function TenantsPage() {
             onClick={() => router.push(`/tenants/${row.id}`)}
           />
           <Button
-            label=""
+            label={t('tenant_delete_action')}
             variant="ghost"
             size="sm"
             isIconOnly
@@ -246,21 +216,14 @@ export default function TenantsPage() {
     },
   ]
 
+  // UN seul point d'entrée : la création d'une boulangerie, prête à servir.
   const action = (
-    <div className="flex gap-2">
-      <Button
-        label="Onboarding"
-        variant="secondary"
-        icon={<Wand2 size={14} />}
-        onClick={() => router.push('/tenants/new')}
-      />
-      <Button
-        label={t('new_tenant')}
-        variant="primary"
-        icon={<Plus size={15} />}
-        onClick={() => setShowCreate(true)}
-      />
-    </div>
+    <Button
+      label={t('new_tenant')}
+      variant="primary"
+      icon={<Plus size={15} />}
+      onClick={() => setShowCreate(true)}
+    />
   )
 
   if (loading) {
@@ -275,7 +238,7 @@ export default function TenantsPage() {
     <>
       <PageHeader
         title={t('tenants')}
-        subtitle={t('audit_log_count', { n: tenants.length })}
+        subtitle={t('tenants_count', { n: tenants.length })}
         action={action}
         icon={<Building2 size={22} style={{ color: 'var(--color-accent)' }} />}
       />
@@ -309,99 +272,18 @@ export default function TenantsPage() {
         />
       )}
 
-      {/* Create modal */}
-      <Modal
-        isOpen={showCreate}
-        onOpenChange={(open) => { if (!open) { setShowCreate(false); formErrors.clearAll() } }}
-        title={t('new_tenant')}
-        size="md"
-      >
-        <form onSubmit={handleCreate} className="space-y-5">
-          <ModalSection title={t('name')}>
-            <FieldGrid columns={1}>
-              <div className="flex flex-col gap-1">
-                <TextInput
-                  label={t('name')}
-                  value={form.nom}
-                  onChange={(v) => { setForm((f) => ({ ...f, nom: v })); formErrors.clearError('nom') }}
-                  isRequired
-                  width="100%"
-                  placeholder="La Mie Câline — Toulouse"
-                />
-                <FieldError message={formErrors.errors.nom} />
-              </div>
-            </FieldGrid>
-          </ModalSection>
-
-          <ModalSection title={t('contact')}>
-            <FieldGrid columns={2}>
-              <TextInput
-                label={t('email')}
-                type="email"
-                value={form.email ?? ''}
-                onChange={(v) => setForm((f) => ({ ...f, email: v }))}
-                width="100%"
-                placeholder="contact@lamiecacaline.fr"
-              />
-              <TextInput
-                label="Ville"
-                value={form.ville ?? ''}
-                onChange={(v) => setForm((f) => ({ ...f, ville: v }))}
-                width="100%"
-                placeholder="Toulouse"
-              />
-              <TextInput
-                label="SIRET"
-                value={form.siret ?? ''}
-                onChange={(v) => setForm((f) => ({ ...f, siret: v }))}
-                width="100%"
-                placeholder="123 456 789 00012"
-              />
-            </FieldGrid>
-          </ModalSection>
-
-          <ModalSection title="Plan">
-            <FieldGrid columns={3}>
-              <TextInput
-                label="Plan"
-                value={form.plan ?? 'starter'}
-                onChange={(v) => setForm((f) => ({ ...f, plan: v }))}
-                width="100%"
-              />
-              <TextInput
-                label="Sites max"
-                type="text"
-                value={String(form.nb_sites_max ?? 1)}
-                onChange={(v) => setForm((f) => ({ ...f, nb_sites_max: parseInt(v) || 1 }))}
-                width="100%"
-              />
-              <TextInput
-                label="Users max"
-                type="text"
-                value={String(form.nb_users_max ?? 5)}
-                onChange={(v) => setForm((f) => ({ ...f, nb_users_max: parseInt(v) || 5 }))}
-                width="100%"
-              />
-            </FieldGrid>
-          </ModalSection>
-
-          <div className="flex gap-3 pt-2 border-t" style={{ borderColor: 'var(--color-border)' }}>
-            <Button
-              label={t('cancel')}
-              variant="secondary"
-              onClick={() => setShowCreate(false)}
-              className="flex-1"
-            />
-            <Button
-              label={saving ? t('saving') : t('add')}
-              variant="primary"
-              type="submit"
-              isLoading={saving}
-              className="flex-1"
-            />
-          </div>
-        </form>
-      </Modal>
+      {/* Monté seulement à l'ouverture : fermée, sa surface mobile (une feuille
+          plein écran) restait au-dessus de la page et interceptait les touchers. */}
+      {showCreate && (
+        <NouvelleBoulangerieModal
+          isOpen
+          onOpenChange={setShowCreate}
+          onCreated={(id) => {
+            toast({ body: t('tenant_created'), type: 'info' })
+            router.push(`/tenants/${id}`)
+          }}
+        />
+      )}
 
       <ConfirmDialog
         isOpen={deleteTarget !== null}

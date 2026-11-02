@@ -337,6 +337,9 @@ export const adminTenants = {
   get: (id: string) => request<Tenant>("GET", `/admin/tenants/${id}`),
   create: (dto: CreateTenantDto) =>
     request<Tenant>("POST", "/admin/tenants", dto),
+  /** Crée la boulangerie, sa première boutique, son abonnement et son premier compte, en une transaction. */
+  onboard: (dto: OnboardTenantInput) =>
+    request<OnboardTenantResult>("POST", "/admin/tenants/onboard", dto),
   update: (id: string, dto: Partial<CreateTenantDto>) =>
     request<Tenant>("PATCH", `/admin/tenants/${id}`, dto),
   delete: (id: string) =>
@@ -680,6 +683,32 @@ export interface Tenant {
   actif: boolean;
   createdAt: string;
   updatedAt: string;
+  /** Présents sur la liste (`GET /admin/tenants`) : ce que la boulangerie A réellement. */
+  sites_count?: number;
+  users_count?: number;
+}
+
+/** Corps de `POST /admin/tenants/onboard` : une boulangerie prête à servir. */
+export interface OnboardTenantInput {
+  boulangerie: {
+    nom: string;
+    siret?: string;
+    email?: string;
+    adresse?: string;
+    ville?: string;
+    code_postal?: string;
+  };
+  planId: string;
+  periode: "monthly" | "yearly";
+  admin: { email: string; password: string; prenom?: string; nom?: string };
+  boutique_nom?: string;
+}
+
+export interface OnboardTenantResult {
+  tenant_id: string;
+  site_id: string;
+  subscription_id: string;
+  user_id: string;
 }
 
 export interface CreateTenantDto {
