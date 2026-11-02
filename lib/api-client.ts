@@ -677,6 +677,7 @@ export interface Tenant {
   code_postal: string | null;
   telephone: string | null;
   email: string | null;
+  type_activite?: string;
   plan: string;
   nb_sites_max: number;
   nb_users_max: number;
@@ -692,6 +693,7 @@ export interface Tenant {
 export interface OnboardTenantInput {
   boulangerie: {
     nom: string;
+    type_activite?: string;
     siret?: string;
     email?: string;
     adresse?: string;

@@ -1,4 +1,5 @@
 import type { OnboardTenantInput } from '@/lib/api-client'
+import { TYPE_ACTIVITE_DEFAUT } from '@/lib/types-activite'
 
 /**
  * Le formulaire « Nouvelle boulangerie » : valeurs, règles, charge envoyée.
@@ -10,6 +11,7 @@ import type { OnboardTenantInput } from '@/lib/api-client'
  */
 export interface OnboardingForm {
   nom: string
+  typeActivite: string
   ville: string
   email: string
   siret: string
@@ -24,7 +26,7 @@ export interface OnboardingForm {
 }
 
 export const FORMULAIRE_VIDE: OnboardingForm = {
-  nom: '', ville: '', email: '', siret: '', adresse: '', code_postal: '',
+  nom: '', typeActivite: TYPE_ACTIVITE_DEFAUT, ville: '', email: '', siret: '', adresse: '', code_postal: '',
   planId: '', periode: 'monthly', adminNom: '', adminEmail: '', adminPassword: '', boutiqueNom: '',
 }
 
@@ -68,6 +70,7 @@ export function versCharge(f: OnboardingForm): OnboardTenantInput {
   return {
     boulangerie: {
       nom: f.nom.trim(),
+      type_activite: f.typeActivite,
       ...(ou(f.siret) && { siret: chiffresDuSiret(f.siret) }),
       ...(ou(f.email) && { email: ou(f.email) }),
       ...(ou(f.adresse) && { adresse: ou(f.adresse) }),

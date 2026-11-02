@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useId, type ReactNode } from 'react'
+import { useCallback, useId, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import {
   Button,
   Dialog,
@@ -28,6 +28,12 @@ export interface ModalProps {
   className?: string
   preventClose?: boolean
   headerStart?: ReactNode
+  /**
+   * Barre d'actions COLLÉE au bas de la fenêtre pendant que le corps défile.
+   * Elle est rendue sous le corps, hors de son padding : collée dans le corps,
+   * elle ne pouvait pas atteindre le bord et laissait voir le contenu dessous.
+   */
+  footer?: ReactNode
 }
 
 function getWidth(size: string | undefined): number {
@@ -45,9 +51,30 @@ export function Modal({
   className,
   preventClose,
   headerStart,
+  footer,
 }: ModalProps) {
   const titleId = useId()
   const descId = useId()
+
+  // Hauteur réelle de la barre de titre : le corps défile dans ce qui reste.
+  // Astryx donne au corps toute la hauteur de la fenêtre, donc il dépassait par le
+  // bas de la hauteur du titre — le dernier bouton d'un long formulaire se trouvait
+  // sous le bord visible, et un pied « collé en bas » aussi.
+  const barreRef = useRef<HTMLDivElement>(null)
+  const [hauteurBarre, setHauteurBarre] = useState(60)
+  useLayoutEffect(() => {
+    const el = barreRef.current?.parentElement
+    const corps = el?.nextElementSibling
+    const racine = el?.parentElement
+    if (!el || !corps || !racine) return
+    // Du haut de la fenêtre au haut du corps : le titre ET ses marges.
+    const mesurer = () =>
+      setHauteurBarre(Math.ceil(corps.getBoundingClientRect().top - racine.getBoundingClientRect().top))
+    mesurer()
+    const ro = new ResizeObserver(mesurer)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [isOpen, subtitle])
 
   const handleClose = useCallback(() => {
     onOpenChange(false)
@@ -76,7 +103,7 @@ export function Modal({
     >
       <Layout height="fill">
         <LayoutFooter>
-          <div className="flex items-center gap-3">
+          <div ref={barreRef} className="flex items-center gap-3">
             {headerStart && <div className="flex-shrink-0">{headerStart}</div>}
             <div className="flex-1 min-w-0">
               <h2
@@ -109,8 +136,21 @@ export function Modal({
           </div>
         </LayoutFooter>
 
-        <LayoutContent className="overflow-y-auto">
+        <LayoutContent
+          className="overflow-y-auto"
+          style={{ maxHeight: `calc(100dvh - 3rem - ${hauteurBarre}px)`, height: 'auto' }}
+        >
           <div className="px-5 py-4">{children}</div>
+          {/* `-bottom-4` / `-mx-4` : la zone qui défile a 16 px de marge intérieure ; sans ce
+              décalage la barre se collait 16 px au-dessus du bord et laissait voir le contenu dessous. */}
+          {footer && (
+            <div
+              className="sticky -bottom-4 z-10 -mx-4 -mb-4 border-t px-5 py-3"
+              style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-card)' }}
+            >
+              {footer}
+            </div>
+          )}
         </LayoutContent>
       </Layout>
     </Dialog>

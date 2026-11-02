@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { ChevronDown, ChevronUp, Eye, EyeOff, Sparkles } from 'lucide-react'
 import { Button, TextInput } from '@astryxdesign/core'
 import { Modal, ModalSection, FieldGrid } from '@/components/ui/modal'
+import { SelectField } from '@/components/ui/select-field'
+import { TYPES_ACTIVITE } from '@/lib/types-activite'
 import { InlineError } from '@/components/ui/inline-error'
 import { Spinner } from '@/components/ui/spinner'
 import { adminTenants, plans as plansApi, type Plan } from '@/lib/api-client'
@@ -88,8 +90,8 @@ export function NouvelleBoulangerieModal({
     return m ? ({ type: 'error', message: m } as const) : undefined
   }
 
-  async function soumettre(e: React.FormEvent) {
-    e.preventDefault()
+  async function soumettre(e?: React.FormEvent) {
+    e?.preventDefault()
     setTentative(true)
     if (Object.keys(errs).length > 0) {
       // Un champ en erreur dans la partie repliée doit se voir.
@@ -111,8 +113,26 @@ export function NouvelleBoulangerieModal({
 
   const planChoisi = plans?.find((p) => p.id === f.planId)
 
+  const pied = (
+    <div className="flex items-center justify-between gap-3">
+      <span className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+        {planChoisi ? t('onb_recap', { plan: planChoisi.nom }) : ''}
+      </span>
+      <div className="flex gap-3">
+        <Button label={t('cancel')} variant="secondary" onClick={() => onOpenChange(false)} isDisabled={envoi} />
+        <Button
+          label={envoi ? t('saving') : t('create_tenant')}
+          variant="primary"
+          onClick={() => void soumettre()}
+          isLoading={envoi}
+          isDisabled={envoi || plans === null}
+        />
+      </div>
+    </div>
+  )
+
   return (
-    <Modal isOpen={isOpen} onOpenChange={onOpenChange} title={t('new_tenant')} size="lg" preventClose={envoi}>
+    <Modal isOpen={isOpen} onOpenChange={onOpenChange} title={t('new_tenant')} size="lg" preventClose={envoi} footer={pied}>
       <form onSubmit={soumettre} className="space-y-6" noValidate>
         {erreurServeur && <InlineError message={erreurServeur} />}
 
@@ -127,6 +147,13 @@ export function NouvelleBoulangerieModal({
             width="100%"
             placeholder="La Mie Câline — Toulouse"
             status={statut('nom')}
+          />
+          {/* Orpailleur sert aussi des restaurants, snacks, traiteurs… : « Autre » ferme la liste. */}
+          <SelectField
+            label={t('tenant_activity')}
+            value={f.typeActivite}
+            onChange={(v) => set('typeActivite', v)}
+            options={TYPES_ACTIVITE.map((a) => ({ value: a, label: t(`activity_${a}` as 'activity_autre') }))}
           />
           <FieldGrid columns={2}>
             <TextInput label={t('city')} value={f.ville} onChange={(v) => set('ville', v)} width="100%" placeholder="Toulouse" />
@@ -294,15 +321,8 @@ export function NouvelleBoulangerieModal({
           />
         </ModalSection>
 
-        <div className="flex items-center justify-between gap-3 border-t pt-4" style={{ borderColor: 'var(--color-border)' }}>
-          <span className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
-            {planChoisi ? t('onb_recap', { plan: planChoisi.nom }) : ''}
-          </span>
-          <div className="flex gap-3">
-            <Button label={t('cancel')} variant="secondary" onClick={() => onOpenChange(false)} isDisabled={envoi} />
-            <Button label={envoi ? t('saving') : t('create_tenant')} variant="primary" type="submit" isLoading={envoi} isDisabled={envoi || plans === null} />
-          </div>
-        </div>
+        {/* Entrée valide le formulaire ; le vrai bouton est dans le pied collé de la fenêtre. */}
+        <button type="submit" hidden aria-hidden tabIndex={-1} />
       </form>
     </Modal>
   )

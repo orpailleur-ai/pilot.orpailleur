@@ -25,6 +25,7 @@ interface TenantRow {
   id: string
   nom: string
   email: string | null
+  type_activite: string | null
   ville: string | null
   siret: string | null
   plan: string
@@ -41,6 +42,7 @@ function toRow(t: Tenant): TenantRow {
     id: t.id,
     nom: t.nom,
     email: t.email,
+    type_activite: t.type_activite ?? null,
     ville: t.ville,
     siret: t.siret,
     plan: t.plan,
@@ -128,7 +130,7 @@ export default function TenantsPage() {
             {row.nom}
           </span>
           <span className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
-            {row.email ?? '—'}
+            {[row.type_activite ? t(`activity_${row.type_activite}` as 'activity_autre') : null, row.email].filter(Boolean).join(' · ') || '—'}
           </span>
         </div>
       ),

@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test'
+import { TYPES_ACTIVITE } from '../lib/types-activite'
 import { FORMULAIRE_VIDE, chiffresDuSiret, erreurs, estValide, genererMotDePasse, separerNom, versCharge } from '../lib/onboarding-form'
 
 /**
@@ -33,7 +34,8 @@ test.describe('règles', () => {
 test.describe('charge envoyée', () => {
   test('omet tous les champs facultatifs vides', () => {
     const c = versCharge(complet)
-    expect(c.boulangerie).toEqual({ nom: 'Soleil' })
+    // Le type d'activité est toujours envoyé : « boulangerie » par défaut.
+    expect(c.boulangerie).toEqual({ nom: 'Soleil', type_activite: 'boulangerie' })
     expect(c).not.toHaveProperty('boutique_nom')
     expect(c.admin).toEqual({ email: 'marie@soleil.fr', password: 'huit-car!' })
   })
@@ -51,6 +53,18 @@ test.describe('charge envoyée', () => {
     expect(separerNom('Dupont')).toEqual({ nom: 'Dupont' })
     expect(separerNom('  ')).toEqual({})
     expect(separerNom('Jean de la Fontaine')).toEqual({ prenom: 'Jean', nom: 'de la Fontaine' })
+  })
+})
+
+test.describe('type d\'activité', () => {
+  test('boulangerie par défaut, et le choix part dans la charge', () => {
+    expect(FORMULAIRE_VIDE.typeActivite).toBe('boulangerie')
+    expect(versCharge({ ...complet, typeActivite: 'restaurant' }).boulangerie.type_activite).toBe('restaurant')
+    expect(versCharge({ ...complet, typeActivite: 'autre' }).boulangerie.type_activite).toBe('autre')
+  })
+  test('la liste finit par « autre » et contient les activités annoncées', () => {
+    expect(TYPES_ACTIVITE[TYPES_ACTIVITE.length - 1]).toBe('autre')
+    for (const t of ['boulangerie', 'restaurant']) expect(TYPES_ACTIVITE).toContain(t)
   })
 })
 
