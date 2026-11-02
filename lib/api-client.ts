@@ -694,6 +694,7 @@ export interface OnboardTenantInput {
   boulangerie: {
     nom: string;
     type_activite?: string;
+    siren?: string;
     siret?: string;
     email?: string;
     adresse?: string;

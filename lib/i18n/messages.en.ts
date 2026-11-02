@@ -186,6 +186,7 @@ export const en = {
   onb_recap: '{plan} subscription',
   onb_err_required: 'Required',
   onb_err_email: 'Invalid email address',
+  onb_err_siren: "SIREN has 9 digits",
   onb_err_siret: 'SIRET has 14 digits',
   onb_err_postal: 'Postal code has 5 digits',
   onb_err_password: '8 characters minimum',

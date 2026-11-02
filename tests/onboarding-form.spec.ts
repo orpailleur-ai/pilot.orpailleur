@@ -25,6 +25,12 @@ test.describe('règles', () => {
     expect(erreurs({ ...complet, adminEmail: 'pas-un-email' }).adminEmail).toBe('email')
     expect(erreurs({ ...complet, adminPassword: 'court' }).adminPassword).toBe('password')
   })
+  test('le SIREN (9 chiffres, comme sur un Kbis) : espaces acceptés, rangé en chiffres', () => {
+    expect(erreurs({ ...complet, siren: '109 890 483' })).toEqual({})
+    expect(erreurs({ ...complet, siren: '1098' }).siren).toBe('siren')
+    expect(versCharge({ ...complet, siren: '109 890 483' }).boulangerie.siren).toBe('109890483')
+    expect(versCharge(complet).boulangerie).not.toHaveProperty('siren')
+  })
   test('le SIRET se saisit avec des espaces', () => {
     expect(erreurs({ ...complet, siret: '123 456 789 00012' })).toEqual({})
     expect(chiffresDuSiret('123 456 789 00012')).toBe('12345678900012')

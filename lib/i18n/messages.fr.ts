@@ -185,6 +185,7 @@ export const fr = {
   onb_recap: 'Abonnement {plan}',
   onb_err_required: 'Obligatoire',
   onb_err_email: 'Adresse email invalide',
+  onb_err_siren: "Le SIREN compte 9 chiffres",
   onb_err_siret: 'Le SIRET compte 14 chiffres',
   onb_err_postal: 'Le code postal compte 5 chiffres',
   onb_err_password: '8 caractères minimum',

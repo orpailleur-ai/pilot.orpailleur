@@ -95,7 +95,7 @@ export function NouvelleBoulangerieModal({
     setTentative(true)
     if (Object.keys(errs).length > 0) {
       // Un champ en erreur dans la partie repliée doit se voir.
-      if (errs.siret || errs.code_postal) setDetails(true)
+      if (errs.siren || errs.siret || errs.code_postal) setDetails(true)
       return
     }
     setEnvoi(true)
@@ -181,6 +181,15 @@ export function NouvelleBoulangerieModal({
           </button>
           {details && (
             <FieldGrid columns={2}>
+              <TextInput
+                label="SIREN"
+                value={f.siren}
+                onChange={(v) => set('siren', v)}
+                onBlur={() => toucher('siren')}
+                width="100%"
+                placeholder="109 890 483"
+                status={statut('siren')}
+              />
               <TextInput
                 label={t('tenant_siret')}
                 value={f.siret}

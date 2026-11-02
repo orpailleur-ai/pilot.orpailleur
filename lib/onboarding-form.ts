@@ -14,6 +14,7 @@ export interface OnboardingForm {
   typeActivite: string
   ville: string
   email: string
+  siren: string
   siret: string
   adresse: string
   code_postal: string
@@ -26,12 +27,12 @@ export interface OnboardingForm {
 }
 
 export const FORMULAIRE_VIDE: OnboardingForm = {
-  nom: '', typeActivite: TYPE_ACTIVITE_DEFAUT, ville: '', email: '', siret: '', adresse: '', code_postal: '',
+  nom: '', typeActivite: TYPE_ACTIVITE_DEFAUT, ville: '', email: '', siren: '', siret: '', adresse: '', code_postal: '',
   planId: '', periode: 'monthly', adminNom: '', adminEmail: '', adminPassword: '', boutiqueNom: '',
 }
 
-export type ChampErreur = 'nom' | 'email' | 'siret' | 'code_postal' | 'planId' | 'adminEmail' | 'adminPassword'
-export type CodeErreur = 'required' | 'email' | 'siret' | 'postal' | 'password'
+export type ChampErreur = 'nom' | 'email' | 'siren' | 'siret' | 'code_postal' | 'planId' | 'adminEmail' | 'adminPassword'
+export type CodeErreur = 'required' | 'email' | 'siren' | 'siret' | 'postal' | 'password'
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
 
@@ -43,6 +44,7 @@ export function erreurs(f: OnboardingForm): Partial<Record<ChampErreur, CodeErre
   const e: Partial<Record<ChampErreur, CodeErreur>> = {}
   if (!f.nom.trim()) e.nom = 'required'
   if (f.email.trim() && !EMAIL.test(f.email.trim())) e.email = 'email'
+  if (f.siren.trim() && !/^\d{9}$/.test(chiffresDuSiret(f.siren))) e.siren = 'siren'
   if (f.siret.trim() && !/^\d{14}$/.test(chiffresDuSiret(f.siret))) e.siret = 'siret'
   if (f.code_postal.trim() && !/^\d{5}$/.test(f.code_postal.trim())) e.code_postal = 'postal'
   if (!f.planId) e.planId = 'required'
@@ -71,6 +73,7 @@ export function versCharge(f: OnboardingForm): OnboardTenantInput {
     boulangerie: {
       nom: f.nom.trim(),
       type_activite: f.typeActivite,
+      ...(ou(f.siren) && { siren: chiffresDuSiret(f.siren) }),
       ...(ou(f.siret) && { siret: chiffresDuSiret(f.siret) }),
       ...(ou(f.email) && { email: ou(f.email) }),
       ...(ou(f.adresse) && { adresse: ou(f.adresse) }),
