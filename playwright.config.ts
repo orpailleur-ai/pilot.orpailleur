@@ -94,6 +94,18 @@ export default defineConfig({
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
+      // Le contrôle de mise en page tourne contre un serveur LOCAL, API simulée : jamais contre la production.
+      testIgnore: /modals-layout\.spec\.ts/,
+    },
+    {
+      name: 'mise-en-page-poste',
+      use: { ...devices['Desktop Chrome'], viewport: { width: 1280, height: 900 } },
+      testMatch: /modals-layout\.spec\.ts/,
+    },
+    {
+      name: 'mise-en-page-telephone',
+      use: { ...devices['Desktop Chrome'], viewport: { width: 390, height: 844 } },
+      testMatch: /modals-layout\.spec\.ts/,
     },
   ],
 })

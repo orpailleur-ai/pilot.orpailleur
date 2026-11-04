@@ -289,8 +289,57 @@ html:root {
     flex-direction: column;
   }
 
+  /* Une fenêtre FERMÉE ne se dessine pas. `display:flex` ci-dessus l'emporte sur `dialog:not([open]){display:none}`
+     du navigateur : sans cette règle, chaque fenêtre fermée restait une feuille invisible (opacité 0) qui AVALAIT
+     les appuis — sur téléphone, le bouton d'action d'une page ne répondait plus. */
+  .orp-modal:not([open]) {
+    display: none;
+  }
+
   .orp-modal > * {
     flex: 1 1 auto;
     min-height: 0;
   }
+
+  /* ── La grille de champs d'un formulaire ──────────────────────────────────
+     Le nombre de colonnes dépend de la LARGEUR RÉELLE de la grille (celle de la fenêtre), pas de l'écran :
+     une colonne ne descend jamais sous `--fg-min`, et il n'y en a jamais plus de `--fg-cols`.
+     `minmax(0, 1fr)` autorise chaque cellule à rétrécir : le contenu ne pousse plus la colonne. */
+  .orp-fieldgrid {
+    --fg-gap: 0.75rem;
+    --fg-min: 13rem;
+    --fg-cols: 2;
+    display: grid;
+    gap: var(--fg-gap);
+    align-items: start;
+    grid-template-columns: repeat(
+      auto-fit,
+      minmax(max(min(100%, var(--fg-min)), calc((100% - (var(--fg-cols) - 1) * var(--fg-gap)) / var(--fg-cols))), 1fr)
+    );
+  }
+  .orp-fieldgrid > * { min-width: 0; }
+  .orp-fieldgrid > .orp-fieldgrid-full { grid-column: 1 / -1; }
+
+  /* ── Un champ : libellé, description, contrôle, erreur ────────────────────
+     Même typographie que les libellés d'Astryx ; le libellé PASSE À LA LIGNE au lieu de déborder. */
+  .orp-field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-1, 0.25rem);
+    min-width: 0;
+  }
+  .orp-field-label {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    column-gap: var(--spacing-1, 0.25rem);
+    font-size: var(--text-label-size, 0.875rem);
+    font-weight: var(--text-label-weight, 600);
+    line-height: var(--text-label-leading, 1.25rem);
+    color: var(--color-text-secondary);
+    overflow-wrap: anywhere;
+  }
+  .orp-field-tag { font-size: 0.85em; font-weight: 400; }
+  .orp-field-desc { font-size: 0.75rem; line-height: 1.4; color: var(--color-text-secondary); overflow-wrap: anywhere; }
+  .orp-field-error { font-size: 0.75rem; line-height: 1.4; color: var(--color-danger-text, var(--color-danger)); }
 }

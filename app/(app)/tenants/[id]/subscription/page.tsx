@@ -236,13 +236,8 @@ export default function TenantSubscriptionPage() {
           <ModalSection title={t('subscriptions_plan', 'Plan')}>
             <FieldGrid columns={1}>
               <div>
-                <label
-                  className="mb-1 block text-xs font-medium"
-                  style={{ color: 'var(--color-text-secondary)' }}
-                >
-                  {t('subscriptions_plan', 'Plan')}
-                </label>
                 <SelectField
+                  label={t('subscriptions_plan', 'Plan')}
                   value={form.planId}
                   onChange={(val) => { setForm((f) => ({ ...f, planId: val })); formErrors.clearError('planId') }}
                   options={[
@@ -256,13 +251,8 @@ export default function TenantSubscriptionPage() {
                 />
               </div>
               <div>
-                <label
-                  className="mb-1 block text-xs font-medium"
-                  style={{ color: 'var(--color-text-secondary)' }}
-                >
-                  {t('subscription_period', 'Période')}
-                </label>
                 <SelectField
+                  label={t('subscription_period', 'Période')}
                   value={form.periode}
                   onChange={(val) => setForm((f) => ({ ...f, periode: val as 'monthly' | 'yearly' }))}
                   options={[

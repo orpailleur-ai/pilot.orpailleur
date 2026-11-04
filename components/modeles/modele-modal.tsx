@@ -133,7 +133,6 @@ export function ModeleModal({
               />
               <TextInput
                 label={t('ai_models_model')}
-                isLabelHidden
                 value={String(v['model'])}
                 onChange={(val) => set('model', val)}
                 isRequired

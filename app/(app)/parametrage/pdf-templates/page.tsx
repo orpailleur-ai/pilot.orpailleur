@@ -373,7 +373,8 @@ interface EditModalProps {
 function EditModal({ mode, instance, scopes, saving, onSave, onClose }: EditModalProps) {
   const { t } = useI18n()
   const [name, setName] = useState(instance?.name ?? '')
-  const [scope, setScope] = useState(instance?.scope ?? scopes[0]?.scope ?? 'commande')
+  // Le périmètre est fixé à la création : affiché en lecture seule, jamais modifié ici.
+  const [scope] = useState(instance?.scope ?? scopes[0]?.scope ?? 'commande')
   const [body, setBody] = useState(instance?.body ?? '')
   const [actif, setActif] = useState(instance?.actif ?? false)
 
@@ -419,16 +420,6 @@ function EditModal({ mode, instance, scopes, saving, onSave, onClose }: EditModa
               {t('pdf_templates_form_scope_hint')}
             </p>
           )}
-          <div style={{ display: 'none' }}>
-            {/* Hidden select for form submission - scope is set at creation */}
-            <select value={scope} onChange={(e) => setScope(e.target.value)}>
-              {scopes.map((s) => (
-                <option key={s.scope} value={s.scope}>
-                  {t(SCOPE_LABELS[s.scope] ?? s.scope)}
-                </option>
-              ))}
-            </select>
-          </div>
         </ModalSection>
 
         <ModalSection title={t('pdf_templates_form_body')}>

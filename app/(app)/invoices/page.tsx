@@ -1,5 +1,6 @@
 'use client'
 
+import { Champ } from '@/components/ui/champ'
 import { useState, useEffect } from 'react'
 import { FileText, CheckCircle, Clock, AlertTriangle, Ban, Download, Loader2 } from 'lucide-react'
 import { Button, SegmentedControl, SegmentedControlItem, useToast } from '@astryxdesign/core'
@@ -277,18 +278,18 @@ export default function InvoicesPage() {
               Facture <strong>{selectedInvoice.numero}</strong> —{' '}
               <strong>{formatPrice(selectedInvoice.montantCents)}</strong>
             </p>
-            <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
-                {t('invoice_payment_date')}
-              </label>
-              <input
-                type="date"
-                className="h-9 rounded-md border px-3 text-sm"
-                style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-background-surface)', color: 'var(--color-text-primary)' }}
-                value={paymentDate}
-                onChange={(e) => setPaymentDate(e.target.value)}
-              />
-            </div>
+            <Champ label={t('invoice_payment_date')}>
+              {(id) => (
+                <input
+                  id={id}
+                  type="date"
+                  className="h-9 rounded-md border px-3 text-sm"
+                  style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-background-surface)', color: 'var(--color-text-primary)' }}
+                  value={paymentDate}
+                  onChange={(e) => setPaymentDate(e.target.value)}
+                />
+              )}
+            </Champ>
             <div className="flex gap-3 border-t pt-4" style={{ borderColor: 'var(--color-border)' }}>
               <Button
                 label={t('cancel')}

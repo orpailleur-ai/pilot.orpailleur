@@ -166,7 +166,7 @@ export interface ModalSectionProps {
 
 export function ModalSection({ title, description, children, start }: ModalSectionProps) {
   return (
-    <div className="space-y-3">
+    <div className="flex flex-col gap-3">
       <div className="flex items-center gap-2">
         {start && <div className="text-muted-foreground">{start}</div>}
         <div>
@@ -176,26 +176,41 @@ export function ModalSection({ title, description, children, start }: ModalSecti
           )}
         </div>
       </div>
-      <div className="space-y-3">{children}</div>
+      <div className="flex flex-col gap-3">{children}</div>
     </div>
   )
 }
 
 export interface FieldGridProps {
   children: ReactNode
+  /** Nombre MAXIMAL de colonnes : la grille en affiche moins quand la fenêtre est étroite. */
   columns?: 1 | 2 | 3
+  /** Champs courts (nombre + unité) : colonnes plus étroites autorisées. */
+  compact?: boolean
   className?: string
 }
 
-export function FieldGrid({ children, columns = 2, className = '' }: FieldGridProps) {
-  const cols = { 1: 'grid-cols-1', 2: 'grid-cols-1 sm:grid-cols-2', 3: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' }
+/**
+ * La grille des champs d'un formulaire. Le nombre de colonnes suit la largeur RÉELLE de la fenêtre, pas celle de
+ * l'écran (voir `.orp-fieldgrid` dans globals.css) : une colonne ne descend jamais sous 13 rem (9,5 rem en
+ * `compact`) — c'est ce qui évite qu'un libellé, une description ou une unité écrase le champ voisin.
+ */
+export function FieldGrid({ children, columns = 2, compact = false, className = '' }: FieldGridProps) {
   return (
-    <div className={`grid ${cols[columns]} gap-3 ${className}`}>
+    <div
+      className={`orp-fieldgrid ${className}`}
+      style={{ '--fg-cols': columns, '--fg-min': compact ? '9.5rem' : '13rem' } as React.CSSProperties}
+    >
       {children}
     </div>
   )
 }
 
+/** Un champ qui prend toute la largeur de la grille (adresse, description longue…). */
+export function FieldGridFull({ children }: { children: ReactNode }) {
+  return <div className="orp-fieldgrid-full">{children}</div>
+}
+
 Modal.Section = ModalSection
 Modal.FieldGrid = FieldGrid
-Modal.Footer = ModalSection
+Modal.FieldGridFull = FieldGridFull
